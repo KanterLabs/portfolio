@@ -6,8 +6,8 @@ import { getCollection } from 'astro:content';
 
 const allProjects = await getCollection('projects');
 const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
-const featuredProject = sorted.find((p) => p.data.featured)!;
-const supportingProjects = sorted.filter((p) => !p.data.featured);
+const featuredProject = sorted.find((project) => project.data.featured)!;
+const supportingProjects = sorted.filter((project) => !project.data.featured);
 
 const capabilityGroups = [
   {
@@ -315,7 +315,7 @@ const profilePoints = [
                 Featured project
               </p>
               <div class="flex flex-wrap gap-2">
-                {featuredProject.stack.map((item) => (
+                {featuredProject.data.stack.map((item) => (
                   <span
                     class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(148,163,184,0.18)] bg-[rgba(148,163,184,0.08)] text-[#d8e0ec] text-[0.8rem] font-medium"
                   >
@@ -324,11 +324,25 @@ const profilePoints = [
                 ))}
               </div>
             </div>
-            <h3 class="text-[1.28rem] leading-[1.25] tracking-[-0.02em] font-bold mb-3">
-              {featuredProject.name}
-            </h3>
-            <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">{featuredProject.summary}</p>
-          </GlassCard>
+              <h3 class="text-[1.28rem] leading-[1.25] tracking-[-0.02em] font-bold mb-3">
+                {featuredProject.data.title}
+              </h3>
+              <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+                {featuredProject.data.summary}
+              </p>
+              <div class="mt-6">
+                <a
+                  href={`/projects/${featuredProject.id}`}
+                  class="inline-flex items-center gap-2 text-[#94a3b8] hover:text-[#f1f4f9] transition-colors duration-[180ms] font-medium"
+                >
+                  Read case study
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 17L17 7" />
+                    <path d="M9 7h8v8" />
+                  </svg>
+                </a>
+              </div>
+            </GlassCard>
 
           <!-- Supporting projects -->
           <div class="grid grid-cols-2 gap-5 max-[960px]:grid-cols-1">
@@ -338,7 +352,7 @@ const profilePoints = [
                 hover={true}
               >
                 <div class="flex flex-wrap gap-2 mb-4">
-                  {project.stack.map((item) => (
+                  {project.data.stack.map((item) => (
                     <span
                       class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(148,163,184,0.18)] bg-[rgba(148,163,184,0.08)] text-[#d8e0ec] text-[0.8rem] font-medium"
                     >
@@ -347,9 +361,21 @@ const profilePoints = [
                   ))}
                 </div>
                 <h3 class="text-[1.28rem] leading-[1.25] tracking-[-0.02em] font-bold mb-3">
-                  {project.name}
+                  {project.data.title}
                 </h3>
-                <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">{project.summary}</p>
+                <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">{project.data.summary}</p>
+                <div class="mt-6">
+                  <a
+                    href={`/projects/${project.id}`}
+                    class="inline-flex items-center gap-2 text-[#94a3b8] hover:text-[#f1f4f9] transition-colors duration-[180ms] font-medium"
+                  >
+                    Read case study
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M7 17L17 7" />
+                      <path d="M9 7h8v8" />
+                    </svg>
+                  </a>
+                </div>
               </GlassCard>
             ))}
           </div>
