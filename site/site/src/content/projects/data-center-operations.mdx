@@ -1,0 +1,96 @@
+---
+title: Data Center Operations Experience
+summary: Hands-on internship experience at InterServer performing rack-and-stack, PXE boot imaging, server deployment, hardware troubleshooting, and maintaining operational reliability in a production data center environment.
+featured: false
+order: 3
+stack:
+  - Linux
+  - PXE Boot
+  - Nginx
+  - Server Hardware
+  - IPMI / iDRAC
+  - Bash
+status: shipped
+date: 2025-05-01
+---
+
+## Overview
+
+This is not a software project — it is a record of practical, physical infrastructure work done as an internship at **InterServer**, a web hosting and colocation provider. The experience covered the full lifecycle of server hardware in a production data center: receiving equipment, deploying it, configuring it, and keeping it running.
+
+The skills built here are the foundation for understanding what "infrastructure" actually means at the physical layer — the layer that cloud providers abstract away but still depend on.
+
+## What the Work Involved
+
+### Rack-and-Stack
+
+New servers arrive as hardware in boxes. Rack-and-stack is the process of installing them into server racks in the correct position, running and managing cables, and making sure everything is physically secure and correctly labeled.
+
+This sounds simple but involves attention to detail at scale:
+
+- Cable management affects airflow, which affects operating temperatures
+- Incorrect rack unit placement can block access to other equipment
+- Label discipline matters — unlabeled cables become problems at 2am during an outage
+
+Working in a live data center means doing this without affecting adjacent equipment that may be serving production traffic.
+
+### PXE Boot Imaging
+
+Rather than manually installing an OS on each server, the data center uses **PXE (Preboot eXecution Environment)** to network-boot new machines and deploy a standard OS image over the network.
+
+The workflow:
+
+1. Server boots from NIC rather than local disk
+2. DHCP server assigns an IP and points to the PXE boot server
+3. PXE server delivers a bootloader and OS image over TFTP/HTTP
+4. The OS installs automatically using a preseed or kickstart configuration
+5. Post-install scripts configure hostname, networking, SSH keys, and monitoring agents
+
+This process scales to imaging dozens of servers without touching each one individually. Understanding it requires knowing how DHCP, TFTP, HTTP, and DNS interact in a network boot sequence — not just running a script.
+
+### Server Deployment
+
+After imaging, servers are handed off for deployment into their intended role. This involved:
+
+- Verifying hardware inventory (CPU, RAM, disk count and size) against the order
+- Running burn-in tests to catch hardware defects before the server goes into production
+- Configuring RAID arrays where required
+- Setting up IPMI/iDRAC remote access for out-of-band management
+- Handing off to network team for IP assignment and routing
+
+### Hardware Troubleshooting
+
+Production hardware fails. The work included diagnosing and resolving:
+
+**Drive failures** — identifying failed drives from RAID controller alerts or SMART errors, hot-swapping replacement drives, and verifying the array rebuilt correctly.
+
+**Memory errors** — using IPMI event logs and `mcelog` to identify ECC memory errors, isolating the faulty DIMM, and replacing it without taking the system down where possible.
+
+**NIC issues** — diagnosing link-down events, checking cabling and SFP modules, testing with known-good hardware to isolate whether the fault was in the cable, switch port, or NIC.
+
+**POST failures** — servers that would not boot required stepping through the BIOS POST sequence, checking error codes, and isolating the cause (failed component, wrong hardware configuration, or firmware issue).
+
+The process in all cases is the same: gather information, form a hypothesis, test it, and either confirm or rule it out. The physical layer does not have stack traces — you work with indicator lights, log files, and hardware specs.
+
+## Operating in a Production Environment
+
+A data center is not a lab. Mistakes have real consequences: a misconfigured network switch can take down customer-facing services. Working in this environment builds habits that matter in any infrastructure role:
+
+**Change control** — knowing what you are about to do, communicating it to others, and having a rollback plan before making changes to live systems.
+
+**Documentation** — recording what was done, when, and why. If something breaks two weeks later, someone needs to know what changed.
+
+**Situational awareness** — understanding which systems are production-critical and which can tolerate downtime, so work can be sequenced correctly.
+
+**Clear communication** — data center work is often done with other people nearby doing their own work. Clear, direct communication about what is happening and what help is needed is a core skill.
+
+## What This Demonstrates
+
+Data center operations experience is the foundation that makes infrastructure thinking concrete rather than abstract. The skills it covers:
+
+- **Server hardware** — understanding CPU, RAM, storage, and NIC specifications and how they relate to workload requirements
+- **Linux at the physical layer** — installing, configuring, and troubleshooting Linux on bare metal rather than in a VM or container
+- **PXE and network booting** — understanding the DHCP/TFTP/HTTP chain that makes automated OS deployment work
+- **RAID and storage** — managing hardware RAID arrays, understanding redundancy levels, handling drive replacement
+- **Out-of-band management** — using IPMI/iDRAC for remote hardware access and diagnostics
+- **Operational discipline** — change control, documentation, and communication practices that make infrastructure teams function reliably

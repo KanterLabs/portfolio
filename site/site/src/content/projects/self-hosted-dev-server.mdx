@@ -1,0 +1,94 @@
+---
+title: Self-Hosted Development Server
+summary: A self-hosted Proxmox hypervisor environment running Ubuntu VMs used for remote development, personal backups, and hands-on Linux system administration — built to maintain real infrastructure skills outside of a lab setting.
+featured: false
+order: 2
+stack:
+  - Proxmox VE
+  - Ubuntu Server
+  - Linux
+  - SSH
+  - ZFS
+status: in-progress
+date: 2025-09-01
+---
+
+## Background
+
+Cloud services are convenient, but they abstract away the work of managing actual infrastructure. This homelab exists to keep those skills sharp — provisioning machines, managing storage, troubleshooting network issues, and administering Linux systems the way you would in a data center or on a self-managed server fleet.
+
+The setup runs on spare hardware at home and serves as a personal platform for development, backups, and experimenting with services before deploying them to production.
+
+## What's Running
+
+### Proxmox VE Hypervisor
+
+**Proxmox Virtual Environment** is an open-source hypervisor that runs KVM virtual machines and LXC containers. It provides a web UI for managing VMs, an API for automation, and a built-in backup scheduler.
+
+The host machine runs Proxmox directly on the bare metal, with VMs provisioned on top for different purposes.
+
+### Primary Ubuntu Development VM
+
+The main VM is an Ubuntu Server instance used for remote development. VS Code's Remote SSH extension connects to it directly, so development happens on a real Linux machine rather than a local macOS or Windows environment.
+
+Benefits of this setup over a local dev environment:
+
+- Code runs on Linux, where production systems run
+- Development environment is separate from the local machine — no conflicts
+- The VM can be snapshotted, cloned, or rebuilt without affecting other machines
+- Storage and compute can be expanded without buying new hardware
+
+### Backup Storage
+
+A separate VM manages personal backups using ZFS for storage integrity. ZFS provides checksumming, compression, and snapshot support — important for a backup target, where silent data corruption is a real risk on consumer hardware.
+
+Backups from laptops and workstations run on a schedule and are versioned, so rolling back to a previous state is possible without a full restore.
+
+## Remote Access
+
+The development VM is accessible over SSH from anywhere. Access is restricted to key-based authentication; password authentication is disabled. The Proxmox web UI is accessible on the local network only.
+
+Port forwarding through the home router exposes SSH on a non-standard port. A dynamic DNS service keeps the external hostname up to date if the ISP-assigned IP changes.
+
+## Linux Administration Skills This Covers
+
+Running this environment on an ongoing basis exercises skills that do not come from tutorial-based learning:
+
+**Storage management**
+- Partitioning disks and setting up ZFS pools
+- Monitoring disk health with `smartctl`
+- Managing snapshot schedules and retention policies
+
+**Networking**
+- Configuring static IP assignments and VLANs in Proxmox
+- Troubleshooting DNS resolution inside VMs
+- Setting up SSH tunnels for secure access to internal services
+
+**System administration**
+- Managing systemd services — enabling, disabling, reading logs with `journalctl`
+- Monitoring resource usage with `htop`, `iostat`, `df`
+- Automating tasks with cron
+- Keeping systems updated and patched
+
+**Security basics**
+- SSH hardening (no root login, key-only auth, fail2ban)
+- Firewall configuration with `ufw`
+- Reviewing auth logs for unexpected access attempts
+
+## Challenges
+
+**Consumer hardware is not designed for 24/7 operation.** Drives fail, fans clog, and UPS management becomes relevant. Running a homelab on consumer hardware gives direct exposure to the operational concerns that enterprise hardware tries to abstract away.
+
+**Proxmox networking can be unintuitive** when bridging multiple VMs onto the same network segment. Getting inter-VM networking, NAT, and external access configured correctly required reading the Proxmox documentation closely and doing a fair amount of trial and error.
+
+**Backups matter more than you expect.** After losing work once due to a failed VM disk, the backup setup was redesigned to be more robust and to verify restore integrity on a schedule rather than assuming the backups are usable.
+
+## What This Demonstrates
+
+This project is less about a finished product and more about ongoing operational practice. The relevant skills it exercises are:
+
+- **Virtualization** — hypervisor management, VM provisioning, snapshots
+- **Linux system administration** — real, ongoing administration of running systems
+- **Storage management** — ZFS, backups, disk health monitoring
+- **SSH and remote access** — key management, tunneling, secure configuration
+- **Self-directed operations** — designing and maintaining infrastructure without a managed service handling the hard parts

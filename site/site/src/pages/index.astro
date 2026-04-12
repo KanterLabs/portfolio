@@ -1,17 +1,493 @@
 ---
+import AnimatedSection from '../components/AnimatedSection.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GlassCard from '../components/GlassCard.astro';
+import { getCollection } from 'astro:content';
 
+const allProjects = await getCollection('projects');
+const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
+const featuredProject = sorted.find((p) => p.data.featured)!;
+const supportingProjects = sorted.filter((p) => !p.data.featured);
+
+const capabilityGroups = [
+  {
+    name: 'Infrastructure',
+    description: 'Systems work, hosting, and platform fundamentals.',
+    items: ['Linux', 'Nginx', 'Google Cloud', 'Terraform', 'Proxmox', 'PXE Boot'],
+  },
+  {
+    name: 'Development',
+    description: 'Frontend and scripting tools used to build and ship projects.',
+    items: ['Astro', 'HTML', 'CSS', 'JavaScript', 'Python', 'Git'],
+  },
+  {
+    name: 'Operations',
+    description: 'Workflow, deployment, and practical day-to-day tooling.',
+    items: ['GitHub Actions', 'SSH', 'Virtualization', 'Windows', 'Containers'],
+  },
+];
+
+const heroFacts = [
+  'Computer Science student at Southern Connecticut State University',
+  'Hands-on data center internship experience at InterServer',
+  'Portfolio shipped as a static site with cloud infrastructure behind it',
+];
+
+const heroMetrics = [
+  { value: '2 VMs', label: 'Cloud deployment' },
+  { value: 'Static Astro', label: 'Fast static frontend' },
+  { value: 'GitHub CI/CD', label: 'Automated delivery' },
+];
+
+const profilePoints = [
+  'Rack-and-stack and server deployment experience',
+  'Linux administration and troubleshooting background',
+  'Self-hosted systems for development, backups, and web app hosting',
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout
+  title="Shane Kanterman | Infrastructure and Web Projects"
+  description="Portfolio site for Shane Kanterman, a Computer Science student with hands-on Linux, server deployment, and cloud-hosted web project experience."
+>
+  <!-- Backdrop -->
+  <div class="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
+    <div
+      class="absolute w-[34rem] h-[34rem] rounded-full blur-[120px] opacity-15"
+      style="top:-10rem;left:-8rem;background:#7a8fa8;"
+    ></div>
+    <div
+      class="absolute w-[34rem] h-[34rem] rounded-full blur-[120px] opacity-15"
+      style="top:20rem;right:-10rem;background:#8da4b8;"
+    ></div>
+    <div
+      class="absolute inset-0"
+      style="
+        background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
+        background-size:54px 54px;
+        mask-image:radial-gradient(circle at top,black 28%,transparent 82%);
+      "
+    ></div>
+  </div>
+
+  <!-- Page shell -->
+  <div
+    class="relative z-10 w-[min(calc(100%-2rem),1240px)] mx-auto pb-20 max-[780px]:w-[min(calc(100%-2rem),1240px)]"
+  >
+    <!-- Header -->
+    <header class="site-header sticky top-4 z-20 pt-4" id="header">
+      <div
+        class="header-inner glass flex items-center justify-between gap-4 px-5 py-4 rounded-full transition-[background-color,border-color,padding] duration-[180ms] ease-out"
+      >
+        <a
+          class="inline-flex items-center gap-3.5 min-w-0"
+          href="#top"
+          aria-label="Shane Kanterman home"
+        >
+          <span
+            class="inline-flex items-center justify-center w-11 h-11 rounded-full font-extrabold text-sm tracking-widest text-[#04101d] flex-shrink-0"
+            style="background:var(--accent-gradient);"
+          >
+            SK
+          </span>
+          <span class="flex flex-col min-w-0">
+            <strong class="text-[0.95rem] leading-tight">Shane Kanterman</strong>
+            <span class="text-[0.76rem] leading-tight text-[#6e7f99] max-[780px]:hidden">
+              Infrastructure and Web Projects
+            </span>
+          </span>
+        </a>
+
+        <nav class="flex items-center gap-6 max-[780px]:hidden" aria-label="Primary">
+          {['About', 'Projects', 'Skills', 'Contact'].map((item) => (
+            <a
+              href={`#${item.toLowerCase()}`}
+              class="text-[#a0afc4] hover:text-[#f1f4f9] transition-colors duration-[180ms]"
+            >
+              {item}
+            </a>
+          ))}
+        </nav>
+
+        <button
+          class="mobile-toggle hidden max-[780px]:inline-grid place-items-center w-11 h-11 border border-[rgba(148,163,184,0.18)] bg-[rgba(10,20,35,0.7)] rounded-full p-0 cursor-pointer"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+        >
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#f1f4f9] rounded-full transition-transform duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#f1f4f9] rounded-full transition-[transform,opacity] duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#f1f4f9] rounded-full transition-transform duration-[180ms]"></span>
+          <span class="sr-only">Toggle navigation</span>
+        </button>
+      </div>
+
+      <nav
+        class="mobile-nav glass mt-3.5 p-3 rounded-[var(--radius-md)]"
+        id="mobile-nav"
+        aria-label="Mobile navigation"
+        hidden
+      >
+        {['About', 'Projects', 'Skills', 'Contact'].map((item) => (
+          <a
+            href={`#${item.toLowerCase()}`}
+            class="block px-4 py-3.5 rounded-xl text-[#a0afc4] hover:text-[#f1f4f9] hover:bg-[rgba(148,163,184,0.08)] transition-colors duration-[180ms]"
+          >
+            {item}
+          </a>
+        ))}
+      </nav>
+    </header>
+
+    <main class="pt-8">
+      <!-- Hero -->
+      <section
+        class="grid grid-cols-[minmax(0,1.15fr)_minmax(18rem,24rem)] gap-10 items-start min-h-[calc(100vh-8rem)] pt-6 pb-20 scroll-mt-[10.5rem] max-[960px]:grid-cols-1 max-[960px]:min-h-0 max-[960px]:pt-9 max-[960px]:pb-11"
+        id="top"
+      >
+        <!-- Copy -->
+        <div>
+          <p class="mb-4 text-[#94a3b8] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
+            Computer Science Student
+          </p>
+          <h1
+            class="text-[clamp(2.6rem,4.5vw,4.2rem)] leading-[1.06] tracking-[-0.04em] mb-5 max-w-[14ch] font-extrabold overflow-wrap-break-word"
+          >
+            Building <span class="gradient-text">reliable web systems</span> with a practical
+            infrastructure background.
+          </h1>
+          <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem] max-w-[48rem]">
+            I build projects that connect frontend delivery with real hosting, deployment, and
+            operational thinking. This portfolio is designed to show both the code and the systems
+            mindset behind it.
+          </p>
+
+          <div class="flex flex-wrap gap-4 mt-8 max-[780px]:flex-col max-[780px]:items-stretch">
+            <a class="btn btn-primary" href="#projects">
+              View Projects
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 17L17 7" />
+                <path d="M9 7h8v8" />
+              </svg>
+            </a>
+            <a
+              class="btn btn-secondary"
+              href="https://www.linkedin.com/in/shane-kanterman-4511a2234"
+              target="_blank"
+              rel="noopener"
+            >
+              LinkedIn
+            </a>
+          </div>
+        </div>
+
+        <!-- Hero panel -->
+        <GlassCard
+          class="sticky top-28 flex flex-col gap-8 p-8 max-[960px]:static"
+          hover={false}
+          style="background:linear-gradient(180deg,rgba(13,22,36,0.96),rgba(10,18,31,0.92));"
+        >
+          <div>
+            <p class="mb-4 text-[#6e7f99] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+              Current focus
+            </p>
+            <ul class="grid gap-4 p-0 list-none">
+              {heroFacts.map((fact) => (
+                <li class="relative pl-5 text-[#a0afc4] leading-[1.6] text-[0.95rem]">
+                  <span
+                    class="absolute left-0 top-[0.72rem] -translate-y-1/2 w-1.5 h-1.5 rounded-full"
+                    style="background:#94a3b8;box-shadow:0 0 0 4px rgba(148,163,184,0.1);"
+                    aria-hidden="true"
+                  ></span>
+                  {fact}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div class="grid gap-2.5 pt-5 border-t border-[rgba(148,163,184,0.18)]">
+            {heroMetrics.map((metric) => (
+              <div class="flex justify-between items-baseline gap-4 overflow-wrap-break-word">
+                <span class="text-[0.93rem] font-bold text-[#f1f4f9] leading-snug shrink-0">
+                  {metric.value}
+                </span>
+                <span class="text-[0.82rem] text-[#6e7f99] leading-snug text-right">
+                  {metric.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      </section>
+
+      <!-- About -->
+      <AnimatedSection
+        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
+        id="about"
+        delay={1}
+      >
+        <div class="max-w-[48rem] mb-12 max-[780px]:mb-9">
+          <p class="mb-4 text-[#94a3b8] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
+            About
+          </p>
+          <h2
+            class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.045em] mb-5 font-extrabold max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
+          >
+            From data center work to software projects.
+          </h2>
+          <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+            My background is rooted in infrastructure, deployment, and systems work. I am growing
+            that into software development by building projects that are designed, shipped, and run
+            like real products.
+          </p>
+        </div>
+
+        <div
+          class="grid grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)] gap-5 max-[960px]:grid-cols-1"
+        >
+          <GlassCard
+            class="grid gap-5 p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6"
+            hover={true}
+          >
+            <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+              I am a Computer Science student at Southern Connecticut State University with hands-on
+              experience in rack-and-stack, server deployment, PXE boot imaging, Linux
+              administration, and hardware troubleshooting.
+            </p>
+            <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+              I completed a data center internship at InterServer and continue building my skills
+              through self-hosted systems for remote development, backups, and web app hosting.
+            </p>
+          </GlassCard>
+
+          <GlassCard
+            class="p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6"
+            hover={true}
+          >
+            <p class="mb-4 text-[#6e7f99] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+              What that looks like
+            </p>
+            <ul class="grid gap-4 p-0 list-none">
+              {profilePoints.map((point) => (
+                <li class="relative pl-5 text-[#a0afc4] leading-[1.6] text-[0.95rem]">
+                  <span
+                    class="absolute left-0 top-[0.72rem] -translate-y-1/2 w-1.5 h-1.5 rounded-full"
+                    style="background:#94a3b8;box-shadow:0 0 0 4px rgba(148,163,184,0.1);"
+                    aria-hidden="true"
+                  ></span>
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </GlassCard>
+        </div>
+      </AnimatedSection>
+
+      <!-- Projects -->
+      <AnimatedSection
+        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
+        id="projects"
+        delay={1}
+      >
+        <div class="max-w-[48rem] mb-11 max-[780px]:mb-9">
+          <p class="mb-4 text-[#94a3b8] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
+            Projects
+          </p>
+          <h2
+            class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.045em] mb-5 font-extrabold max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
+          >
+            Work that shows how I build and deploy.
+          </h2>
+          <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+            The strongest projects here are the ones that combine implementation with hosting,
+            automation, and operational discipline.
+          </p>
+        </div>
+
+        <div class="grid gap-5">
+          <!-- Featured project -->
+          <GlassCard
+            class="p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6"
+            hover={true}
+          >
+            <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+              <p class="text-[#6e7f99] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+                Featured project
+              </p>
+              <div class="flex flex-wrap gap-2">
+                {featuredProject.stack.map((item) => (
+                  <span
+                    class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(148,163,184,0.18)] bg-[rgba(148,163,184,0.08)] text-[#d8e0ec] text-[0.8rem] font-medium"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <h3 class="text-[1.28rem] leading-[1.25] tracking-[-0.02em] font-bold mb-3">
+              {featuredProject.name}
+            </h3>
+            <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">{featuredProject.summary}</p>
+          </GlassCard>
+
+          <!-- Supporting projects -->
+          <div class="grid grid-cols-2 gap-5 max-[960px]:grid-cols-1">
+            {supportingProjects.map((project) => (
+              <GlassCard
+                class="p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6"
+                hover={true}
+              >
+                <div class="flex flex-wrap gap-2 mb-4">
+                  {project.stack.map((item) => (
+                    <span
+                      class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(148,163,184,0.18)] bg-[rgba(148,163,184,0.08)] text-[#d8e0ec] text-[0.8rem] font-medium"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+                <h3 class="text-[1.28rem] leading-[1.25] tracking-[-0.02em] font-bold mb-3">
+                  {project.name}
+                </h3>
+                <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">{project.summary}</p>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      </AnimatedSection>
+
+      <!-- Skills -->
+      <AnimatedSection
+        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
+        id="skills"
+        delay={1}
+      >
+        <div class="max-w-[48rem] mb-12 max-[780px]:mb-9">
+          <p class="mb-4 text-[#94a3b8] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
+            Skills
+          </p>
+          <h2
+            class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.045em] mb-5 font-extrabold max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
+          >
+            Current tools and areas of focus.
+          </h2>
+          <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+            The goal is not just to know tools, but to use them together to ship dependable work.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-5 max-[960px]:grid-cols-2 max-[580px]:grid-cols-1">
+          {capabilityGroups.map((group) => (
+            <GlassCard
+              class="grid content-start gap-4 p-8 min-h-full overflow-wrap-break-word min-w-0 max-[780px]:p-6"
+              hover={true}
+            >
+              <p class="text-[#6e7f99] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+                {group.name}
+              </p>
+              <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">{group.description}</p>
+              <div class="flex flex-wrap gap-2">
+                {group.items.map((item) => (
+                  <span
+                    class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(148,163,184,0.18)] bg-[rgba(148,163,184,0.08)] text-[#d8e0ec] text-[0.8rem] font-medium"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      </AnimatedSection>
+
+      <!-- Contact -->
+      <AnimatedSection
+        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
+        id="contact"
+        delay={1}
+      >
+        <GlassCard
+          class="grid grid-cols-[minmax(0,1.4fr)_auto] gap-10 items-center p-8 overflow-wrap-break-word min-w-0 max-[960px]:grid-cols-1 max-[780px]:p-6"
+          hover={false}
+          style="background:linear-gradient(135deg,rgba(13,22,38,0.98),rgba(11,18,31,0.95));"
+        >
+          <div class="max-w-[38rem]">
+            <p class="mb-4 text-[#94a3b8] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
+              Contact
+            </p>
+            <h2
+              class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.045em] mb-5 font-extrabold max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
+            >
+              Open to technical opportunities and connections.
+            </h2>
+            <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+              I am currently open to part-time, contract, and junior roles related to
+              infrastructure, deployment, and software development.
+            </p>
+          </div>
+
+          <div class="max-[780px]:w-full">
+            <a
+              class="btn btn-primary max-[780px]:w-full"
+              href="https://www.linkedin.com/in/shane-kanterman-4511a2234"
+              target="_blank"
+              rel="noopener"
+            >
+              Connect on LinkedIn
+            </a>
+          </div>
+        </GlassCard>
+      </AnimatedSection>
+
+      <!-- Footer -->
+      <footer class="pt-18 pb-0 text-center text-[#6e7f99] text-[0.88rem]">
+        <p>© {new Date().getFullYear()} Shane Kanterman. Built with Astro and deployed on GCP.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const header = document.getElementById('header') as HTMLElement | null;
+    const mobileToggle = document.querySelector<HTMLButtonElement>('.mobile-toggle');
+    const mobileNav = document.getElementById('mobile-nav') as HTMLElement | null;
+
+    const syncHeader = (): void => {
+      if (!header) return;
+      header.classList.toggle('is-scrolled', window.scrollY > 12);
+    };
+
+    syncHeader();
+    window.addEventListener('scroll', syncHeader, { passive: true });
+
+    if (mobileToggle && mobileNav) {
+      mobileToggle.addEventListener('click', () => {
+        const expanded = mobileToggle.getAttribute('aria-expanded') === 'true';
+        mobileToggle.setAttribute('aria-expanded', String(!expanded));
+        mobileNav.hidden = expanded;
+
+        // Animate hamburger → X
+        const spans = mobileToggle.querySelectorAll<HTMLSpanElement>('span:not(.sr-only)');
+        if (!expanded) {
+          spans[0]?.style.setProperty('transform', 'translateY(8px) rotate(45deg)');
+          spans[1]?.style.setProperty('opacity', '0');
+          spans[2]?.style.setProperty('transform', 'translateY(-8px) rotate(-45deg)');
+        } else {
+          spans[0]?.style.removeProperty('transform');
+          spans[1]?.style.removeProperty('opacity');
+          spans[2]?.style.removeProperty('transform');
+        }
+      });
+
+      mobileNav.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          mobileToggle.setAttribute('aria-expanded', 'false');
+          mobileNav.hidden = true;
+          const spans = mobileToggle.querySelectorAll<HTMLSpanElement>('span:not(.sr-only)');
+          spans[0]?.style.removeProperty('transform');
+          spans[1]?.style.removeProperty('opacity');
+          spans[2]?.style.removeProperty('transform');
+        });
+      });
+    }
+  </script>
+</BaseLayout>

@@ -1,0 +1,199 @@
+---
+title: Multi-Node Portfolio Deployment
+summary: A static Astro portfolio deployed across two GCP VMs behind Cloudflare's load balancer, with fully automated delivery from GitHub Actions. Built to demonstrate production-grade deployment thinking, not just frontend code.
+featured: true
+order: 1
+stack:
+  - Astro
+  - Nginx
+  - GCP Compute Engine
+  - Terraform
+  - Cloudflare
+  - GitHub Actions
+status: shipped
+date: 2026-04-12
+links:
+  - label: GitHub Repository
+    href: https://github.com/shanekanterman/multi-node-server
+---
+
+import DiagramFigure from '../../components/DiagramFigure.astro';
+
+## The Problem
+
+Most student portfolios are static sites deployed to a single free hosting tier — Netlify, Vercel, GitHub Pages. That is fine for showing frontend code, but it does not demonstrate any understanding of how websites actually run in production.
+
+The goal here was to build something that a hiring manager with infrastructure or DevOps experience would recognize as real: redundant origin servers, health-checked failover, automated deployment to multiple targets, and a cost-conscious cloud setup.
+
+## Architecture Overview
+
+Traffic enters through **Cloudflare**, which acts as the DNS resolver, CDN, TLS terminator, and load balancer. Cloudflare routes requests to one of two **GCP Compute Engine `e2-micro` VMs** in separate availability zones. Each VM runs **Nginx** serving a static build of this Astro site.
+
+```
+Internet
+   │
+Cloudflare DNS + CDN
+   │
+Cloudflare Load Balancer
+   ├─────────────────────────────┐
+   │                             │
+GCP VM 1                        GCP VM 2
+us-central1-a                   us-central1-b
+Nginx → /var/www/html           Nginx → /var/www/html
+```
+
+<DiagramFigure
+  src="/diagrams/architecture-diagram.svg"
+  alt="Multi-node architecture: Cloudflare load balancer routing to two GCP VMs running Nginx"
+  caption="Cloudflare distributes traffic across two origin VMs in separate GCP availability zones."
+  wide={true}
+/>
+
+## Why Two VMs in Separate Zones
+
+A single VM has two failure modes: the instance crashes, or the zone goes down. Placing the two origins in `us-central1-a` and `us-central1-b` means a zonal outage takes out at most one origin. Cloudflare's health checks detect the failure within seconds and remove the unhealthy origin from rotation — the site stays up.
+
+This is the same pattern used by production services, scaled down to minimal cost.
+
+## Infrastructure Setup
+
+### Google Cloud Compute Engine
+
+Each VM is provisioned as an `e2-micro` instance on Debian 12. This tier falls within GCP's free tier for one instance per month; the second instance costs roughly **$6–8/month**.
+
+Provisioning is handled by a Terraform configuration that creates:
+
+- VPC network and firewall rules (ports 80, 443 open; port 22 restricted)
+- Two VM instances with startup scripts
+- External IP addresses for both origins
+
+### Nginx Configuration
+
+Each VM runs a minimal Nginx config serving static files from `/var/www/html`. A dedicated health endpoint responds to Cloudflare's health checks:
+
+```nginx
+server {
+    listen 80;
+
+    root /var/www/html;
+    index index.html;
+
+    location /healthz {
+        return 200 'OK';
+        add_header Content-Type text/plain;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+Cloudflare polls `/healthz` on each origin every 60 seconds. If an origin stops responding with `200 OK`, Cloudflare marks it unhealthy and stops sending traffic to it.
+
+### Cloudflare
+
+Cloudflare provides several things that would otherwise require separate infrastructure:
+
+| Feature | What it replaces |
+|---|---|
+| TLS termination (Universal SSL) | Certificate management on the VMs |
+| CDN | Separate caching layer |
+| Load balancer | A dedicated load balancer VM or GCP LB |
+| DDoS protection | Additional security tooling |
+| Health checks | A separate uptime monitoring service |
+
+The Cloudflare Load Balancer plan costs approximately **$5/month** and handles all of the above.
+
+## CI/CD Pipeline
+
+Deployment is automated through a **GitHub Actions** workflow that triggers on every push to `main`.
+
+### Workflow Steps
+
+1. Check out the repository
+2. Install Node dependencies
+3. Run `astro build` to produce the static output in `/dist`
+4. SSH into VM 1, copy the build output, reload Nginx
+5. SSH into VM 2, copy the build output, reload Nginx
+
+```yaml
+# .github/workflows/deploy.yml (simplified)
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci && npm run build
+        working-directory: site/site
+
+      - name: Deploy to VM 1
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.ORIGIN1_HOST }}
+          username: ${{ secrets.ORIGIN_USER }}
+          key: ${{ secrets.ORIGIN_SSH_KEY }}
+          source: site/site/dist/*
+          target: /var/www/html
+
+      - name: Deploy to VM 2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.ORIGIN2_HOST }}
+          username: ${{ secrets.ORIGIN_USER }}
+          key: ${{ secrets.ORIGIN_SSH_KEY }}
+          source: site/site/dist/*
+          target: /var/www/html
+```
+
+Repository secrets hold the VM IPs and SSH credentials — no credentials are stored in code.
+
+## Cost Breakdown
+
+Running two origin VMs behind Cloudflare stays well under $20/month.
+
+| Resource | Estimated Monthly Cost |
+|---|---|
+| GCP e2-micro VM 1 | Free tier |
+| GCP e2-micro VM 2 | ~$6–8 |
+| Persistent disks | ~$1 |
+| Cloudflare Load Balancer | ~$5 |
+| Network egress | ~$0–2 |
+| **Total** | **~$12–16/month** |
+
+The architecture could be scaled significantly — more origins, more regions — without changing any of the application code.
+
+## Monitoring
+
+Google Cloud Monitoring tracks CPU utilization and VM uptime. Cloudflare's dashboard shows origin health status, request volume, and cache hit rates. Nginx logs on each VM capture access and error events.
+
+No external monitoring tool is needed at this scale.
+
+## Challenges
+
+**Getting Cloudflare and GCP firewall rules aligned** took several iterations. Cloudflare proxies traffic through its own IP ranges, so the GCP firewall rules needed to allow those ranges rather than arbitrary internet traffic — otherwise origin health checks failed intermittently.
+
+**Keeping both VMs in sync** is handled by the pipeline deploying to both in sequence. The gap between deployments is a few seconds; in a higher-traffic setup this would require a blue/green or rolling deployment approach.
+
+**SSH key management** for GitHub Actions required generating a dedicated deploy key rather than using a personal key, and scoping GCP firewall rules to block direct SSH access from outside the deployment runner's IP range.
+
+## What This Demonstrates
+
+This project is intentionally simple in the application layer (a static Astro site) so the infrastructure decisions are clearly visible. The skills it exercises are:
+
+- **Cloud infrastructure design** — multi-zone VM placement, networking, firewall rules
+- **Edge networking** — CDN configuration, load balancing, health checks
+- **CI/CD pipelines** — automated build and multi-target deployment
+- **Cost-aware infrastructure** — right-sizing compute, leveraging free tiers
+- **Linux administration** — Nginx config, systemd, SSH access management
+- **Infrastructure as Code** — Terraform for reproducible provisioning
+
+## Future Work
+
+- Migrate provisioning fully to Terraform (currently partially manual)
+- Add Cloudflare WAF rules for additional protection
+- Set up centralized log aggregation
+- Explore canary deployments — deploy to one VM first, verify health, then promote to the second

@@ -1,0 +1,13 @@
+---
+interface Props {
+  class?: string;
+  hover?: boolean;
+  style?: string;
+}
+
+const { class: className = '', hover = true, style } = Astro.props;
+---
+
+<div class={`glass ${hover ? 'glass-hover' : ''} ${className}`} style={style}>
+  <slot />
+</div>
