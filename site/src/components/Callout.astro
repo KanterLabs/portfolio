@@ -1,0 +1,51 @@
+---
+interface Props {
+  type?: 'note' | 'tip' | 'warning';
+  title?: string;
+}
+
+const { type = 'note', title } = Astro.props;
+
+const config = {
+  note: {
+    label: 'Note',
+    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    borderColor: 'rgba(148,163,184,0.4)',
+    labelColor: '#94a3b8',
+    bgColor: 'rgba(148,163,184,0.06)',
+  },
+  tip: {
+    label: 'Tip',
+    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6L15 17H9l-.7-2C6.3 13.7 5 11.5 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/><path d="M9 17h6"/></svg>`,
+    borderColor: 'rgba(134,239,172,0.4)',
+    labelColor: '#86efac',
+    bgColor: 'rgba(134,239,172,0.05)',
+  },
+  warning: {
+    label: 'Warning',
+    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    borderColor: 'rgba(252,211,77,0.4)',
+    labelColor: '#fcd34d',
+    bgColor: 'rgba(252,211,77,0.05)',
+  },
+} as const;
+
+const c = config[type];
+const displayTitle = title ?? c.label;
+---
+
+<div
+  class="callout not-prose my-6 rounded-[14px] px-5 py-4"
+  style={`border-left: 3px solid ${c.borderColor}; background: ${c.bgColor}; border: 1px solid ${c.borderColor};`}
+>
+  <p
+    class="callout-label flex items-center gap-2 mb-2 text-[0.8rem] font-bold tracking-[0.1em] uppercase"
+    style={`color: ${c.labelColor};`}
+  >
+    <span set:html={c.icon} />
+    {displayTitle}
+  </p>
+  <div class="callout-body text-[#a0afc4] text-[0.96rem] leading-[1.75]">
+    <slot />
+  </div>
+</div>

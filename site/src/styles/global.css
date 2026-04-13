@@ -188,43 +188,83 @@ select {
 /* ─── Prose (project write-ups) ─────────────────────────────────────────── */
 .prose {
   color: #a0afc4;
-  line-height: 1.8;
-  font-size: 1.04rem;
+  line-height: 1.82;
+  font-size: 1.06rem;
 }
 
+/* ── Headings ── */
 .prose h2 {
+  scroll-margin-top: 7rem;
   color: #f1f4f9;
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
   font-weight: 800;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.038em;
   line-height: 1.1;
-  margin-top: 3.5rem;
-  margin-bottom: 1rem;
+  margin-top: 4rem;
+  margin-bottom: 1.1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  position: relative;
+}
+
+.prose h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 .prose h3 {
-  color: #f1f4f9;
-  font-size: 1.2rem;
+  scroll-margin-top: 7rem;
+  color: #e4eaf4;
+  font-size: 1.22rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-  margin-top: 2.5rem;
-  margin-bottom: 0.75rem;
+  letter-spacing: -0.022em;
+  line-height: 1.28;
+  margin-top: 2.75rem;
+  margin-bottom: 0.8rem;
 }
 
 .prose h4 {
-  color: #d8e0ec;
-  font-size: 0.95rem;
+  color: #94a3b8;
+  font-size: 0.82rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-top: 2rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 
+/* ── Heading anchor links ── */
+.prose h2 .heading-anchor,
+.prose h3 .heading-anchor {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  text-decoration: none;
+  color: rgba(148, 163, 184, 0.5);
+  font-size: 0.75em;
+  font-weight: 400;
+  vertical-align: middle;
+}
+
+.prose h2:hover > .heading-anchor,
+.prose h3:hover > .heading-anchor,
+.prose h2 > .heading-anchor:hover,
+.prose h3 > .heading-anchor:hover {
+  opacity: 1;
+}
+
+.prose h2 > .heading-anchor:hover,
+.prose h3 > .heading-anchor:hover {
+  color: #94a3b8;
+}
+
+/* ── Body text ── */
 .prose p {
   margin-top: 0;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.5rem;
 }
 
 .prose p:last-child {
@@ -236,128 +276,206 @@ select {
   font-weight: 600;
 }
 
-.prose a {
+.prose em {
+  color: #c4d0e4;
+}
+
+/* ── Links ── */
+.prose a:not(.heading-anchor) {
   color: #94a3b8;
   text-decoration: underline;
   text-underline-offset: 3px;
-  text-decoration-color: rgba(148, 163, 184, 0.4);
+  text-decoration-color: rgba(148, 163, 184, 0.35);
   transition: color 180ms ease, text-decoration-color 180ms ease;
 }
 
-.prose a:hover {
+.prose a:not(.heading-anchor):hover {
   color: #f1f4f9;
-  text-decoration-color: rgba(226, 232, 240, 0.6);
+  text-decoration-color: rgba(226, 232, 240, 0.5);
 }
 
-.prose ul,
-.prose ol {
-  padding-left: 1.5rem;
-  margin-bottom: 1.4rem;
-}
-
+/* ── Lists ── */
 .prose ul {
   list-style: none;
   padding-left: 0;
+  margin-bottom: 1.5rem;
 }
 
 .prose ul li {
   position: relative;
-  padding-left: 1.4rem;
-  margin-bottom: 0.55rem;
+  padding-left: 1.5rem;
+  margin-bottom: 0.6rem;
 }
 
 .prose ul li::before {
   content: '';
   position: absolute;
-  left: 0;
+  left: 0.25rem;
   top: 0.72rem;
   transform: translateY(-50%);
-  width: 0.35rem;
-  height: 0.35rem;
+  width: 0.3rem;
+  height: 0.3rem;
   border-radius: 999px;
-  background: #94a3b8;
+  background: rgba(148, 163, 184, 0.6);
 }
 
 .prose ol {
-  list-style: decimal;
+  list-style: none;
+  padding-left: 0;
+  counter-reset: ol-counter;
+  margin-bottom: 1.5rem;
 }
 
 .prose ol li {
-  margin-bottom: 0.55rem;
-  padding-left: 0.25rem;
+  counter-increment: ol-counter;
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: 0.6rem;
 }
 
-.prose ol li::marker {
+.prose ol li::before {
+  content: counter(ol-counter) '.';
+  position: absolute;
+  left: 0;
+  top: 0;
   color: #6e7f99;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.4rem;
 }
 
-.prose code {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-  font-size: 0.875em;
+/* ── Nested lists ── */
+.prose li > ul,
+.prose li > ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+/* ── Inline code ── */
+.prose :not(pre) > code {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.865em;
   color: #d8e0ec;
   background: rgba(148, 163, 184, 0.1);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 5px;
-  padding: 0.15em 0.45em;
+  padding: 0.14em 0.42em;
 }
 
+/* ── Code blocks (Shiki) ── */
 .prose pre {
-  background: rgba(7, 14, 26, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  position: relative;
   border-radius: 14px;
-  padding: 1.5rem;
-  overflow-x: auto;
-  margin: 1.75rem 0;
-  font-size: 0.875rem;
-  line-height: 1.7;
+  overflow: hidden;
+  margin: 2rem 0;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+}
+
+/* Language label bar */
+.prose pre[data-language]::before {
+  content: attr(data-language);
+  display: block;
+  padding: 0.5rem 1.1rem;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.6);
 }
 
 .prose pre code {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: inherit;
-  color: #d8e0ec;
+  display: block;
+  padding: 1.4rem 1.25rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.72;
+  background: none !important;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
+/* Shiki keeps background on the pre — override to match design */
+.prose pre.astro-code,
+.prose pre.shiki {
+  background: rgba(6, 12, 23, 0.95) !important;
+}
+
+/* ── Blockquote ── */
 .prose blockquote {
-  border-left: 3px solid rgba(148, 163, 184, 0.35);
-  padding-left: 1.25rem;
-  margin: 1.75rem 0;
-  color: #6e7f99;
+  border-left: 3px solid rgba(148, 163, 184, 0.3);
+  padding: 0.1rem 0 0.1rem 1.25rem;
+  margin: 2rem 0;
+  color: #8290ae;
   font-style: italic;
 }
 
-.prose hr {
-  border: none;
-  border-top: 1px solid rgba(148, 163, 184, 0.14);
-  margin: 3rem 0;
+.prose blockquote p {
+  margin-bottom: 0;
 }
 
+/* ── Horizontal rule ── */
+.prose hr {
+  border: none;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  margin: 3.5rem 0;
+}
+
+/* ── Tables ── */
 .prose table {
+  display: block;
   width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
-  margin: 1.75rem 0;
-  font-size: 0.93rem;
+  margin: 2rem 0;
+  font-size: 0.92rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.prose thead {
+  background: rgba(148, 163, 184, 0.07);
 }
 
 .prose th {
   text-align: left;
   color: #d8e0ec;
   font-weight: 600;
-  padding: 0.65rem 1rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  white-space: nowrap;
 }
 
 .prose td {
-  padding: 0.65rem 1rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.07);
   vertical-align: top;
+  color: #a0afc4;
 }
 
 .prose tr:last-child td {
   border-bottom: none;
+}
+
+.prose tbody tr:hover td {
+  background: rgba(148, 163, 184, 0.04);
+}
+
+/* ── Figures / DiagramFigure ── */
+.prose figure {
+  margin: 2.5rem 0;
+}
+
+/* ── ToC sidebar active link ── */
+.toc-link-active {
+  color: #f1f4f9 !important;
+  background: rgba(148, 163, 184, 0.08);
 }
 
 /* ─── Reduced motion ─────────────────────────────────────────────────────── */

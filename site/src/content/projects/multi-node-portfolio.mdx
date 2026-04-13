@@ -18,6 +18,7 @@ links:
 ---
 
 import DiagramFigure from '../../components/DiagramFigure.astro';
+import Callout from '../../components/Callout.astro';
 
 ## The Problem
 
@@ -105,6 +106,10 @@ Cloudflare provides several things that would otherwise require separate infrast
 
 The Cloudflare Load Balancer plan costs approximately **$5/month** and handles all of the above.
 
+<Callout type="note">
+  The Cloudflare Load Balancer is a paid add-on and is not included in the free tier. Budget approximately $5/month for this component.
+</Callout>
+
 ## CI/CD Pipeline
 
 Deployment is automated through a **GitHub Actions** workflow that triggers on every push to `main`.
@@ -128,7 +133,7 @@ jobs:
         with:
           node-version: 22
       - run: npm ci && npm run build
-        working-directory: site/site
+        working-directory: site
 
       - name: Deploy to VM 1
         uses: appleboy/scp-action@v0.1.7
@@ -136,7 +141,7 @@ jobs:
           host: ${{ secrets.ORIGIN1_HOST }}
           username: ${{ secrets.ORIGIN_USER }}
           key: ${{ secrets.ORIGIN_SSH_KEY }}
-          source: site/site/dist/*
+          source: site/dist/*
           target: /var/www/html
 
       - name: Deploy to VM 2
@@ -145,11 +150,15 @@ jobs:
           host: ${{ secrets.ORIGIN2_HOST }}
           username: ${{ secrets.ORIGIN_USER }}
           key: ${{ secrets.ORIGIN_SSH_KEY }}
-          source: site/site/dist/*
+          source: site/dist/*
           target: /var/www/html
 ```
 
 Repository secrets hold the VM IPs and SSH credentials — no credentials are stored in code.
+
+<Callout type="tip">
+  Generate a dedicated ED25519 deploy key per environment rather than reusing a personal SSH key. Scope the GCP firewall rule for port 22 to GitHub Actions IP ranges only.
+</Callout>
 
 ## Cost Breakdown
 
