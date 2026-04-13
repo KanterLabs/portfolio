@@ -50,26 +50,6 @@ const profilePoints = [
   title="Shane Kanterman | Infrastructure and Web Projects"
   description="Portfolio site for Shane Kanterman, a Computer Science student with hands-on Linux, server deployment, and cloud-hosted web project experience."
 >
-  <!-- Backdrop -->
-  <div class="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
-    <div
-      class="absolute w-[34rem] h-[34rem] rounded-full blur-[120px] opacity-15"
-      style="top:-10rem;left:-8rem;background:#7a8fa8;"
-    ></div>
-    <div
-      class="absolute w-[34rem] h-[34rem] rounded-full blur-[120px] opacity-15"
-      style="top:20rem;right:-10rem;background:#8da4b8;"
-    ></div>
-    <div
-      class="absolute inset-0"
-      style="
-        background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
-        background-size:54px 54px;
-        mask-image:radial-gradient(circle at top,black 28%,transparent 82%);
-      "
-    ></div>
-  </div>
-
   <!-- Page shell -->
   <div
     class="relative z-10 w-[min(calc(100%-2rem),1240px)] mx-auto pb-20 max-[780px]:w-[min(calc(100%-2rem),1240px)]"
@@ -77,7 +57,7 @@ const profilePoints = [
     <!-- Header -->
     <header class="site-header sticky top-4 z-20 pt-4" id="header">
       <div
-        class="header-inner glass flex items-center justify-between gap-4 px-5 py-4 rounded-full transition-[background-color,border-color,padding] duration-[180ms] ease-out"
+        class="header-inner glass flex items-center justify-between gap-4 px-5 py-4 rounded-full transition-[background-color,border-color,padding,box-shadow] duration-[180ms] ease-out"
       >
         <a
           class="inline-flex items-center gap-3.5 min-w-0"
@@ -85,14 +65,14 @@ const profilePoints = [
           aria-label="Shane Kanterman home"
         >
           <span
-            class="inline-flex items-center justify-center w-11 h-11 rounded-full font-extrabold text-sm tracking-widest text-[#04101d] flex-shrink-0"
-            style="background:var(--accent-gradient);"
+            class="inline-flex items-center justify-center w-11 h-11 rounded-full font-extrabold text-sm tracking-widest text-white flex-shrink-0"
+            style="background:#1e293b;"
           >
             SK
           </span>
           <span class="flex flex-col min-w-0">
-            <strong class="text-[0.95rem] leading-tight">Shane Kanterman</strong>
-            <span class="text-[0.76rem] leading-tight text-[#6e7f99] max-[780px]:hidden">
+            <strong class="text-[0.95rem] leading-tight text-[#18181b]">Shane Kanterman</strong>
+            <span class="text-[0.76rem] leading-tight text-[#71717a] max-[780px]:hidden">
               Infrastructure and Web Projects
             </span>
           </span>
@@ -102,7 +82,7 @@ const profilePoints = [
           {['About', 'Projects', 'Skills', 'Contact'].map((item) => (
             <a
               href={`#${item.toLowerCase()}`}
-              class="text-[#a0afc4] hover:text-[#f1f4f9] transition-colors duration-[180ms]"
+              class="text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms] font-medium"
             >
               {item}
             </a>
@@ -110,14 +90,14 @@ const profilePoints = [
         </nav>
 
         <button
-          class="mobile-toggle hidden max-[780px]:inline-grid place-items-center w-11 h-11 border border-[rgba(148,163,184,0.18)] bg-[rgba(10,20,35,0.7)] rounded-full p-0 cursor-pointer"
+          class="mobile-toggle hidden max-[780px]:inline-grid place-items-center w-11 h-11 border border-[rgba(0,0,0,0.10)] bg-white rounded-full p-0 cursor-pointer"
           type="button"
           aria-expanded="false"
           aria-controls="mobile-nav"
         >
-          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#f1f4f9] rounded-full transition-transform duration-[180ms]"></span>
-          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#f1f4f9] rounded-full transition-[transform,opacity] duration-[180ms]"></span>
-          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#f1f4f9] rounded-full transition-transform duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#18181b] rounded-full transition-transform duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#18181b] rounded-full transition-[transform,opacity] duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#18181b] rounded-full transition-transform duration-[180ms]"></span>
           <span class="sr-only">Toggle navigation</span>
         </button>
       </div>
@@ -131,7 +111,7 @@ const profilePoints = [
         {['About', 'Projects', 'Skills', 'Contact'].map((item) => (
           <a
             href={`#${item.toLowerCase()}`}
-            class="block px-4 py-3.5 rounded-xl text-[#a0afc4] hover:text-[#f1f4f9] hover:bg-[rgba(148,163,184,0.08)] transition-colors duration-[180ms]"
+            class="block px-4 py-3.5 rounded-xl text-[#52525b] hover:text-[#18181b] hover:bg-[rgba(0,0,0,0.04)] transition-colors duration-[180ms]"
           >
             {item}
           </a>
@@ -147,16 +127,16 @@ const profilePoints = [
       >
         <!-- Copy -->
         <div>
-          <p class="mb-4 text-[#94a3b8] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
+          <p class="mb-4 text-[#71717a] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
             Computer Science Student
           </p>
           <h1
-            class="text-[clamp(2.6rem,4.5vw,4.2rem)] leading-[1.06] tracking-[-0.04em] mb-5 max-w-[14ch] font-extrabold overflow-wrap-break-word"
+            class="text-[clamp(2.6rem,4.5vw,4.2rem)] leading-[1.06] tracking-[-0.02em] mb-5 max-w-[14ch] font-extrabold overflow-wrap-break-word text-[#18181b]"
           >
             Building <span class="gradient-text">reliable web systems</span> with a practical
             infrastructure background.
           </h1>
-          <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem] max-w-[48rem]">
+          <p class="text-[#52525b] leading-[1.75] text-[1.04rem] max-w-[48rem]">
             I build projects that connect frontend delivery with real hosting, deployment, and
             operational thinking. This portfolio is designed to show both the code and the systems
             mindset behind it.
@@ -185,18 +165,17 @@ const profilePoints = [
         <GlassCard
           class="sticky top-28 flex flex-col gap-8 p-8 max-[960px]:static"
           hover={false}
-          style="background:linear-gradient(180deg,rgba(13,22,36,0.96),rgba(10,18,31,0.92));"
         >
           <div>
-            <p class="mb-4 text-[#6e7f99] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+            <p class="mb-4 text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
               Current focus
             </p>
             <ul class="grid gap-4 p-0 list-none">
               {heroFacts.map((fact) => (
-                <li class="relative pl-5 text-[#a0afc4] leading-[1.6] text-[0.95rem]">
+                <li class="relative pl-5 text-[#52525b] leading-[1.6] text-[0.95rem]">
                   <span
                     class="absolute left-0 top-[0.72rem] -translate-y-1/2 w-1.5 h-1.5 rounded-full"
-                    style="background:#94a3b8;box-shadow:0 0 0 4px rgba(148,163,184,0.1);"
+                    style="background:#1e293b;box-shadow:0 0 0 4px rgba(30,41,59,0.08);"
                     aria-hidden="true"
                   ></span>
                   {fact}
@@ -205,13 +184,13 @@ const profilePoints = [
             </ul>
           </div>
 
-          <div class="grid gap-2.5 pt-5 border-t border-[rgba(148,163,184,0.18)]">
+          <div class="grid gap-2.5 pt-5 border-t border-[rgba(0,0,0,0.08)]">
             {heroMetrics.map((metric) => (
               <div class="flex justify-between items-baseline gap-4 overflow-wrap-break-word">
-                <span class="text-[0.93rem] font-bold text-[#f1f4f9] leading-snug shrink-0">
+                <span class="text-[0.93rem] font-bold text-[#18181b] leading-snug shrink-0">
                   {metric.value}
                 </span>
-                <span class="text-[0.82rem] text-[#6e7f99] leading-snug text-right">
+                <span class="text-[0.82rem] text-[#71717a] leading-snug text-right">
                   {metric.label}
                 </span>
               </div>
@@ -227,15 +206,15 @@ const profilePoints = [
         delay={1}
       >
         <div class="max-w-[48rem] mb-12 max-[780px]:mb-9">
-          <p class="mb-4 text-[#94a3b8] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
+          <p class="mb-4 text-[#71717a] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
             About
           </p>
           <h2
-            class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.045em] mb-5 font-extrabold max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
+            class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.02em] mb-5 font-extrabold text-[#18181b] max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
           >
             From data center work to software projects.
           </h2>
-          <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+          <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
             My background is rooted in infrastructure, deployment, and systems work. I am growing
             that into software development by building projects that are designed, shipped, and run
             like real products.
@@ -249,12 +228,12 @@ const profilePoints = [
             class="grid gap-5 p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6"
             hover={true}
           >
-            <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+            <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
               I am a Computer Science student at Southern Connecticut State University with hands-on
               experience in rack-and-stack, server deployment, PXE boot imaging, Linux
               administration, and hardware troubleshooting.
             </p>
-            <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+            <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
               I completed a data center internship at InterServer and continue building my skills
               through self-hosted systems for remote development, backups, and web app hosting.
             </p>
@@ -264,15 +243,15 @@ const profilePoints = [
             class="p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6"
             hover={true}
           >
-            <p class="mb-4 text-[#6e7f99] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+            <p class="mb-4 text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
               What that looks like
             </p>
             <ul class="grid gap-4 p-0 list-none">
               {profilePoints.map((point) => (
-                <li class="relative pl-5 text-[#a0afc4] leading-[1.6] text-[0.95rem]">
+                <li class="relative pl-5 text-[#52525b] leading-[1.6] text-[0.95rem]">
                   <span
                     class="absolute left-0 top-[0.72rem] -translate-y-1/2 w-1.5 h-1.5 rounded-full"
-                    style="background:#94a3b8;box-shadow:0 0 0 4px rgba(148,163,184,0.1);"
+                    style="background:#1e293b;box-shadow:0 0 0 4px rgba(30,41,59,0.08);"
                     aria-hidden="true"
                   ></span>
                   {point}
@@ -290,15 +269,15 @@ const profilePoints = [
         delay={1}
       >
         <div class="max-w-[48rem] mb-11 max-[780px]:mb-9">
-          <p class="mb-4 text-[#94a3b8] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
+          <p class="mb-4 text-[#71717a] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
             Projects
           </p>
           <h2
-            class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.045em] mb-5 font-extrabold max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
+            class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.02em] mb-5 font-extrabold text-[#18181b] max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
           >
             Work that shows how I build and deploy.
           </h2>
-          <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+          <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
             The strongest projects here are the ones that combine implementation with hosting,
             automation, and operational discipline.
           </p>
@@ -311,29 +290,29 @@ const profilePoints = [
             hover={true}
           >
             <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
-              <p class="text-[#6e7f99] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+              <p class="text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
                 Featured project
               </p>
               <div class="flex flex-wrap gap-2">
                 {featuredProject.data.stack.map((item) => (
                   <span
-                    class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(148,163,184,0.18)] bg-[rgba(148,163,184,0.08)] text-[#d8e0ec] text-[0.8rem] font-medium"
+                    class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(0,0,0,0.10)] bg-[rgba(0,0,0,0.04)] text-[#1e293b] text-[0.8rem] font-medium"
                   >
                     {item}
                   </span>
                 ))}
               </div>
             </div>
-              <h3 class="text-[1.28rem] leading-[1.25] tracking-[-0.02em] font-bold mb-3">
+              <h3 class="text-[1.28rem] leading-[1.25] tracking-[-0.01em] font-bold mb-3 text-[#18181b]">
                 {featuredProject.data.title}
               </h3>
-              <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+              <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
                 {featuredProject.data.summary}
               </p>
               <div class="mt-6">
                 <a
                   href={`/projects/${featuredProject.id}`}
-                  class="inline-flex items-center gap-2 text-[#94a3b8] hover:text-[#f1f4f9] transition-colors duration-[180ms] font-medium"
+                  class="inline-flex items-center gap-2 text-[#1e293b] hover:text-[#0f172a] transition-colors duration-[180ms] font-medium"
                 >
                   Read case study
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -354,20 +333,20 @@ const profilePoints = [
                 <div class="flex flex-wrap gap-2 mb-4">
                   {project.data.stack.map((item) => (
                     <span
-                      class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(148,163,184,0.18)] bg-[rgba(148,163,184,0.08)] text-[#d8e0ec] text-[0.8rem] font-medium"
+                      class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(0,0,0,0.10)] bg-[rgba(0,0,0,0.04)] text-[#1e293b] text-[0.8rem] font-medium"
                     >
                       {item}
                     </span>
                   ))}
                 </div>
-                <h3 class="text-[1.28rem] leading-[1.25] tracking-[-0.02em] font-bold mb-3">
+                <h3 class="text-[1.28rem] leading-[1.25] tracking-[-0.01em] font-bold mb-3 text-[#18181b]">
                   {project.data.title}
                 </h3>
-                <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">{project.data.summary}</p>
+                <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">{project.data.summary}</p>
                 <div class="mt-6">
                   <a
                     href={`/projects/${project.id}`}
-                    class="inline-flex items-center gap-2 text-[#94a3b8] hover:text-[#f1f4f9] transition-colors duration-[180ms] font-medium"
+                    class="inline-flex items-center gap-2 text-[#1e293b] hover:text-[#0f172a] transition-colors duration-[180ms] font-medium"
                   >
                     Read case study
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -389,15 +368,15 @@ const profilePoints = [
         delay={1}
       >
         <div class="max-w-[48rem] mb-12 max-[780px]:mb-9">
-          <p class="mb-4 text-[#94a3b8] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
+          <p class="mb-4 text-[#71717a] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
             Skills
           </p>
           <h2
-            class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.045em] mb-5 font-extrabold max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
+            class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.02em] mb-5 font-extrabold text-[#18181b] max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
           >
             Current tools and areas of focus.
           </h2>
-          <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+          <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
             The goal is not just to know tools, but to use them together to ship dependable work.
           </p>
         </div>
@@ -408,14 +387,14 @@ const profilePoints = [
               class="grid content-start gap-4 p-8 min-h-full overflow-wrap-break-word min-w-0 max-[780px]:p-6"
               hover={true}
             >
-              <p class="text-[#6e7f99] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+              <p class="text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
                 {group.name}
               </p>
-              <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">{group.description}</p>
+              <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">{group.description}</p>
               <div class="flex flex-wrap gap-2">
                 {group.items.map((item) => (
                   <span
-                    class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(148,163,184,0.18)] bg-[rgba(148,163,184,0.08)] text-[#d8e0ec] text-[0.8rem] font-medium"
+                    class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(0,0,0,0.10)] bg-[rgba(0,0,0,0.04)] text-[#1e293b] text-[0.8rem] font-medium"
                   >
                     {item}
                   </span>
@@ -435,18 +414,17 @@ const profilePoints = [
         <GlassCard
           class="grid grid-cols-[minmax(0,1.4fr)_auto] gap-10 items-center p-8 overflow-wrap-break-word min-w-0 max-[960px]:grid-cols-1 max-[780px]:p-6"
           hover={false}
-          style="background:linear-gradient(135deg,rgba(13,22,38,0.98),rgba(11,18,31,0.95));"
         >
           <div class="max-w-[38rem]">
-            <p class="mb-4 text-[#94a3b8] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
+            <p class="mb-4 text-[#71717a] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
               Contact
             </p>
             <h2
-              class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.045em] mb-5 font-extrabold max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
+              class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.02em] mb-5 font-extrabold text-[#18181b] max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
             >
               Open to technical opportunities and connections.
             </h2>
-            <p class="text-[#a0afc4] leading-[1.75] text-[1.04rem]">
+            <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
               I am currently open to part-time, contract, and junior roles related to
               infrastructure, deployment, and software development.
             </p>
@@ -466,7 +444,7 @@ const profilePoints = [
       </AnimatedSection>
 
       <!-- Footer -->
-      <footer class="pt-18 pb-0 text-center text-[#6e7f99] text-[0.88rem]">
+      <footer class="pt-18 pb-0 text-center text-[#a1a1aa] text-[0.88rem]">
         <p>© {new Date().getFullYear()} Shane Kanterman. Built with Astro and deployed on GCP.</p>
       </footer>
     </main>

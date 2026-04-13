@@ -21,9 +21,9 @@ const statusLabel: Record<string, string> = {
 };
 
 const statusColor: Record<string, string> = {
-  shipped: '#86efac',
-  'in-progress': '#fcd34d',
-  archived: '#6e7f99',
+  shipped: '#16a34a',
+  'in-progress': '#d97706',
+  archived: '#71717a',
 };
 
 // Reading time from word count
@@ -52,25 +52,9 @@ for (const match of headingMatches) {
   <div
     id="progress-bar"
     class="fixed top-0 left-0 h-[2px] z-50 w-0 transition-none"
-    style="background:var(--accent-gradient);"
+    style="background:#1e293b;"
     aria-hidden="true"
   ></div>
-
-  <!-- Backdrop -->
-  <div class="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
-    <div
-      class="absolute w-[34rem] h-[34rem] rounded-full blur-[120px] opacity-15"
-      style="top:-10rem;left:-8rem;background:#7a8fa8;"
-    ></div>
-    <div
-      class="absolute w-[34rem] h-[34rem] rounded-full blur-[120px] opacity-15"
-      style="top:20rem;right:-10rem;background:#8da4b8;"
-    ></div>
-    <div
-      class="absolute inset-0"
-      style="background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:54px 54px;mask-image:radial-gradient(circle at top,black 28%,transparent 82%);"
-    ></div>
-  </div>
 
   <div class="relative z-10 w-[min(calc(100%-2rem),1240px)] mx-auto pb-24">
 
@@ -79,19 +63,19 @@ for (const match of headingMatches) {
       <div class="glass flex items-center justify-between gap-4 px-5 py-4 rounded-full">
         <a class="inline-flex items-center gap-3.5 min-w-0" href="/" aria-label="Shane Kanterman home">
           <span
-            class="inline-flex items-center justify-center w-11 h-11 rounded-full font-extrabold text-sm tracking-widest text-[#04101d] flex-shrink-0"
-            style="background:var(--accent-gradient);"
+            class="inline-flex items-center justify-center w-11 h-11 rounded-full font-extrabold text-sm tracking-widest text-white flex-shrink-0"
+            style="background:#1e293b;"
           >SK</span>
           <span class="flex flex-col min-w-0">
-            <strong class="text-[0.95rem] leading-tight">Shane Kanterman</strong>
-            <span class="text-[0.76rem] leading-tight text-[#6e7f99] max-[600px]:hidden">
+            <strong class="text-[0.95rem] leading-tight text-[#18181b]">Shane Kanterman</strong>
+            <span class="text-[0.76rem] leading-tight text-[#71717a] max-[600px]:hidden">
               Infrastructure and Web Projects
             </span>
           </span>
         </a>
         <a
           href="/#projects"
-          class="inline-flex items-center gap-2 text-[#a0afc4] hover:text-[#f1f4f9] transition-colors duration-[180ms] text-sm font-medium"
+          class="inline-flex items-center gap-2 text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms] text-sm font-medium"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
@@ -107,12 +91,12 @@ for (const match of headingMatches) {
       <div class="max-w-[860px] mx-auto mb-12">
         <!-- Meta row -->
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-7">
-          <span class="text-[#94a3b8] text-[0.78rem] font-bold tracking-[0.16em] uppercase">
+          <span class="text-[#71717a] text-[0.78rem] font-bold tracking-[0.16em] uppercase">
             Case Study
           </span>
-          <span class="w-px h-3.5 bg-[rgba(148,163,184,0.25)]" aria-hidden="true"></span>
-          <span class="text-[#6e7f99] text-[0.82rem]">{formatted}</span>
-          <span class="w-px h-3.5 bg-[rgba(148,163,184,0.25)]" aria-hidden="true"></span>
+          <span class="w-px h-3.5 bg-[rgba(0,0,0,0.12)]" aria-hidden="true"></span>
+          <span class="text-[#71717a] text-[0.82rem]">{formatted}</span>
+          <span class="w-px h-3.5 bg-[rgba(0,0,0,0.12)]" aria-hidden="true"></span>
           <span
             class="inline-flex items-center gap-1.5 text-[0.8rem] font-medium"
             style={`color:${statusColor[status]};`}
@@ -123,24 +107,24 @@ for (const match of headingMatches) {
             ></span>
             {statusLabel[status]}
           </span>
-          <span class="w-px h-3.5 bg-[rgba(148,163,184,0.25)]" aria-hidden="true"></span>
-          <span class="text-[#6e7f99] text-[0.82rem]">~{readingTime} min read</span>
+          <span class="w-px h-3.5 bg-[rgba(0,0,0,0.12)]" aria-hidden="true"></span>
+          <span class="text-[#71717a] text-[0.82rem]">~{readingTime} min read</span>
         </div>
 
         <!-- Title -->
-        <h1 class="text-[clamp(2.2rem,4.2vw,3.4rem)] leading-[1.05] tracking-[-0.04em] font-extrabold mb-6 max-w-[22ch]">
+        <h1 class="text-[clamp(2.2rem,4.2vw,3.4rem)] leading-[1.05] tracking-[-0.02em] font-extrabold mb-6 max-w-[22ch] text-[#18181b]">
           {title}
         </h1>
 
         <!-- Summary -->
-        <p class="text-[#a0afc4] text-[1.1rem] leading-[1.75] mb-8 max-w-[62ch]">
+        <p class="text-[#52525b] text-[1.1rem] leading-[1.75] mb-8 max-w-[62ch]">
           {summary}
         </p>
 
         <!-- Stack tags -->
         <div class="flex flex-wrap gap-2 mb-8">
           {stack.map((item) => (
-            <span class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(148,163,184,0.18)] bg-[rgba(148,163,184,0.07)] text-[#d8e0ec] text-[0.8rem] font-medium">
+            <span class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(0,0,0,0.10)] bg-[rgba(0,0,0,0.04)] text-[#1e293b] text-[0.8rem] font-medium">
               {item}
             </span>
           ))}
@@ -162,7 +146,7 @@ for (const match of headingMatches) {
           </div>
         )}
 
-        <div class="mt-10 border-t border-[rgba(148,163,184,0.12)]"></div>
+        <div class="mt-10 border-t border-[rgba(0,0,0,0.08)]"></div>
       </div>
 
       <!-- Two-column body -->
@@ -171,7 +155,7 @@ for (const match of headingMatches) {
         <!-- Sidebar ToC (desktop) -->
         {tocItems.length > 0 && (
           <aside class="toc-sidebar hidden lg:block w-[200px] flex-shrink-0 sticky top-[8rem] self-start">
-            <p class="text-[0.7rem] font-bold tracking-[0.14em] uppercase text-[#6e7f99] mb-3">
+            <p class="text-[0.7rem] font-bold tracking-[0.14em] uppercase text-[#71717a] mb-3">
               On this page
             </p>
             <nav aria-label="Table of contents">
@@ -180,7 +164,7 @@ for (const match of headingMatches) {
                   <li>
                     <a
                       href={`#${item.slug}`}
-                      class="toc-link block py-1.5 px-2 rounded-md text-[0.82rem] text-[#6e7f99] hover:text-[#f1f4f9] transition-colors duration-[180ms] leading-snug"
+                      class="toc-link block py-1.5 px-2 rounded-md text-[0.82rem] text-[#71717a] hover:text-[#18181b] transition-colors duration-[180ms] leading-snug"
                       data-heading={item.slug}
                     >
                       {item.text}
@@ -195,7 +179,7 @@ for (const match of headingMatches) {
         <!-- Mobile ToC accordion -->
         {tocItems.length > 0 && (
           <details class="lg:hidden mb-8 glass p-0 overflow-hidden w-full">
-            <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-[0.82rem] font-semibold text-[#a0afc4] select-none list-none">
+            <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-[0.82rem] font-semibold text-[#52525b] select-none list-none">
               <span class="flex items-center gap-2">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="3" y1="6" x2="21" y2="6"/>
@@ -208,13 +192,13 @@ for (const match of headingMatches) {
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </summary>
-            <nav class="px-5 pb-4 border-t border-[rgba(148,163,184,0.12)] pt-3" aria-label="Table of contents">
+            <nav class="px-5 pb-4 border-t border-[rgba(0,0,0,0.08)] pt-3" aria-label="Table of contents">
               <ul class="grid gap-1 p-0 list-none">
                 {tocItems.map((item) => (
                   <li>
                     <a
                       href={`#${item.slug}`}
-                      class="block py-1.5 text-[0.85rem] text-[#a0afc4] hover:text-[#f1f4f9] transition-colors duration-[180ms]"
+                      class="block py-1.5 text-[0.85rem] text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms]"
                     >
                       {item.text}
                     </a>
@@ -233,10 +217,10 @@ for (const match of headingMatches) {
       </div>
 
       <!-- Footer nav -->
-      <div class="max-w-[860px] mx-auto mt-20 pt-8 border-t border-[rgba(148,163,184,0.12)]">
+      <div class="max-w-[860px] mx-auto mt-20 pt-8 border-t border-[rgba(0,0,0,0.08)]">
         <a
           href="/#projects"
-          class="inline-flex items-center gap-2 text-[#a0afc4] hover:text-[#f1f4f9] transition-colors duration-[180ms] font-medium"
+          class="inline-flex items-center gap-2 text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms] font-medium"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
