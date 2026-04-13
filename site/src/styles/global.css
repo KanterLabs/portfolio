@@ -1,6 +1,13 @@
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/inter/800.css";
+@import "@fontsource/playfair-display/400.css";
+@import "@fontsource/playfair-display/600.css";
+@import "@fontsource/playfair-display/700.css";
 @import "tailwindcss";
 
-/* ─── Design tokens ─────────────────────────────────────────────────────── */
 @theme {
   --font-family-sans: "Inter", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -17,7 +24,6 @@
   --color-line-strong: rgba(0, 0, 0, 0.14);
 }
 
-/* ─── CSS custom properties ─────────────────────────────────────────────── */
 :root {
   color-scheme: light;
   --panel: #ffffff;
@@ -34,7 +40,6 @@
   --transition: 180ms ease;
 }
 
-/* ─── Base resets ────────────────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -83,7 +88,23 @@ select {
   outline-offset: 3px;
 }
 
-/* ─── Card utility (replaces glass morphism) ─────────────────────────────── */
+.skip-link {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: #1e293b;
+  color: #fff;
+  transform: translateY(-140%);
+  transition: transform var(--transition);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 @utility glass {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -104,12 +125,10 @@ select {
   box-shadow: var(--shadow-hover);
 }
 
-/* ─── Accent text (replaces gradient-text) ───────────────────────────────── */
 @utility gradient-text {
   color: var(--accent-color);
 }
 
-/* ─── Buttons ────────────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -135,7 +154,7 @@ select {
 .btn-primary {
   background: #1e293b;
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(30, 41, 59, 0.20);
+  box-shadow: 0 4px 14px rgba(30, 41, 59, 0.2);
 }
 
 .btn-primary:hover {
@@ -154,8 +173,12 @@ select {
   border-color: #1e293b;
 }
 
-/* ─── Scroll-reveal animation ────────────────────────────────────────────── */
 .observe-animate {
+  opacity: 1;
+  transform: none;
+}
+
+.js .observe-animate {
   opacity: 0;
   transform: translateY(20px);
   transition:
@@ -163,7 +186,7 @@ select {
     transform 0.6s ease;
 }
 
-.observe-animate.visible {
+.js .observe-animate.visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -172,9 +195,8 @@ select {
 .stagger-2 { transition-delay: 0.16s; }
 .stagger-3 { transition-delay: 0.24s; }
 .stagger-4 { transition-delay: 0.32s; }
-.stagger-5 { transition-delay: 0.40s; }
+.stagger-5 { transition-delay: 0.4s; }
 
-/* ─── Header scroll state ────────────────────────────────────────────────── */
 .site-header.is-scrolled .header-inner {
   background: rgba(255, 255, 255, 0.95);
   border-color: var(--line-strong);
@@ -182,14 +204,36 @@ select {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
 }
 
-/* ─── Prose (project write-ups) ─────────────────────────────────────────── */
+.nav-link[aria-current='location'] {
+  color: #18181b;
+}
+
+.no-js .mobile-toggle {
+  display: none !important;
+}
+
+@media (min-width: 781px) {
+  .mobile-nav-panel {
+    display: none !important;
+  }
+}
+
+@media (max-width: 780px) {
+  .js .mobile-nav-panel {
+    display: none;
+  }
+
+  .js .mobile-nav-panel.is-open {
+    display: block;
+  }
+}
+
 .prose {
   color: #374151;
   line-height: 1.82;
   font-size: 1.06rem;
 }
 
-/* ── Headings ── */
 .prose h2 {
   scroll-margin-top: 7rem;
   color: #18181b;
@@ -233,7 +277,6 @@ select {
   margin-bottom: 0.6rem;
 }
 
-/* ── Heading anchor links ── */
 .prose h2 .heading-anchor,
 .prose h3 .heading-anchor {
   display: inline-flex;
@@ -260,7 +303,6 @@ select {
   color: #1e293b;
 }
 
-/* ── Body text ── */
 .prose p {
   margin-top: 0;
   margin-bottom: 1.5rem;
@@ -279,7 +321,6 @@ select {
   color: #374151;
 }
 
-/* ── Links ── */
 .prose a:not(.heading-anchor) {
   color: #1e293b;
   text-decoration: underline;
@@ -293,7 +334,6 @@ select {
   text-decoration-color: rgba(15, 23, 42, 0.6);
 }
 
-/* ── Lists ── */
 .prose ul {
   list-style: none;
   padding-left: 0;
@@ -344,14 +384,12 @@ select {
   min-width: 1.4rem;
 }
 
-/* ── Nested lists ── */
 .prose li > ul,
 .prose li > ol {
   margin-top: 0.5rem;
   margin-bottom: 0;
 }
 
-/* ── Inline code ── */
 .prose :not(pre) > code {
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   font-size: 0.865em;
@@ -362,17 +400,15 @@ select {
   padding: 0.14em 0.42em;
 }
 
-/* ── Code blocks (Shiki) — keep dark for readability ── */
 .prose pre {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
   margin: 2rem 0;
-  border: 1px solid rgba(0, 0, 0, 0.10);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-/* Language label bar */
 .prose pre[data-language]::before {
   content: attr(data-language);
   display: block;
@@ -397,13 +433,11 @@ select {
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
-/* Shiki keeps background on the pre — keep dark */
 .prose pre.astro-code,
 .prose pre.shiki {
   background: rgba(6, 12, 23, 0.95) !important;
 }
 
-/* ── Blockquote ── */
 .prose blockquote {
   border-left: 3px solid rgba(30, 41, 59, 0.2);
   padding: 0.1rem 0 0.1rem 1.25rem;
@@ -416,14 +450,12 @@ select {
   margin-bottom: 0;
 }
 
-/* ── Horizontal rule ── */
 .prose hr {
   border: none;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   margin: 3.5rem 0;
 }
 
-/* ── Tables ── */
 .prose table {
   display: block;
   width: 100%;
@@ -466,18 +498,15 @@ select {
   background: rgba(0, 0, 0, 0.02);
 }
 
-/* ── Figures / DiagramFigure ── */
 .prose figure {
   margin: 2.5rem 0;
 }
 
-/* ── ToC sidebar active link ── */
 .toc-link-active {
   color: #18181b !important;
   background: rgba(0, 0, 0, 0.05);
 }
 
-/* ─── Reduced motion ─────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -491,7 +520,7 @@ select {
     transition-duration: 0.01ms !important;
   }
 
-  .observe-animate {
+  .js .observe-animate {
     opacity: 1;
     transform: none;
   }

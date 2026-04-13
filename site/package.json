@@ -12,7 +12,10 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.6.0",
     "@astrojs/mdx": "^5.0.3",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/playfair-display": "^5.2.8",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.5",
     "rehype-autolink-headings": "^7.1.0",

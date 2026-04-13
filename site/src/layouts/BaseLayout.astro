@@ -4,35 +4,55 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description: string;
+  image?: string;
+  type?: 'website' | 'article';
 }
 
-const { title, description } = Astro.props;
+const {
+  title,
+  description,
+  image = '/og-default.svg',
+  type = 'website',
+} = Astro.props;
+
+const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
+const socialImageUrl = Astro.site ? new URL(image, Astro.site).toString() : image;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="no-js">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#f4f4f5" />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content="Shane Kanterman" />
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    {socialImageUrl && <meta property="og:image" content={socialImageUrl} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {socialImageUrl && <meta name="twitter:image" content={socialImageUrl} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
     <title>{title}</title>
+    <script is:inline>
+      document.documentElement.classList.remove('no-js');
+      document.documentElement.classList.add('js');
+    </script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        if (!('IntersectionObserver' in window)) {
-          document.querySelectorAll<HTMLElement>('.observe-animate').forEach((el) => {
-            el.classList.add('visible');
+        const sections = document.querySelectorAll<HTMLElement>('.observe-animate');
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (sections.length === 0 || prefersReducedMotion || !('IntersectionObserver' in window)) {
+          sections.forEach((section) => {
+            section.classList.add('visible');
           });
           return;
         }
@@ -48,13 +68,14 @@ const { title, description } = Astro.props;
           { threshold: 0.12 },
         );
 
-        document.querySelectorAll<HTMLElement>('.observe-animate').forEach((el) => {
-          observer.observe(el);
+        sections.forEach((section) => {
+          observer.observe(section);
         });
       });
     </script>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <slot />
   </body>
 </html>

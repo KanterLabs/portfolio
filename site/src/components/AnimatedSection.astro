@@ -9,6 +9,6 @@ const { class: className = '', delay = 0, id } = Astro.props;
 const delayClass = delay > 0 ? `stagger-${Math.min(delay, 5)}` : '';
 ---
 
-<section id={id} class={`observe-animate ${delayClass} ${className}`} style="will-change:opacity,transform;">
+<section id={id} class={`observe-animate ${delayClass} ${className}`}>
   <slot />
 </section>

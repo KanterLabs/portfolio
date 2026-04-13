@@ -1,5 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import StackBadge from '../components/StackBadge.astro';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -7,7 +9,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, stack, status, date, links } = project.data;
+const { title, summary, stack, status, date, links, heroImage } = project.data;
 
 const formatted = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -26,17 +28,13 @@ const statusColor: Record<string, string> = {
   archived: '#71717a',
 };
 
-// Reading time from word count
 const wordCount = project.body?.split(/\s+/).filter(Boolean).length ?? 0;
 const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
-// Extract h2 headings from the MDX body for the ToC
-// Matches: ## Heading Text  (with optional trailing whitespace)
 const headingMatches = project.body?.matchAll(/^##\s+(.+)$/gm) ?? [];
 const tocItems: { text: string; slug: string }[] = [];
 for (const match of headingMatches) {
   const text = match[1].trim();
-  // Match the slug that rehype-slug generates
   const slug = text
     .toLowerCase()
     .replace(/[^\w\s-]/g, '')
@@ -47,8 +45,12 @@ for (const match of headingMatches) {
 }
 ---
 
-<BaseLayout title={`${title} | Shane Kanterman`} description={summary}>
-  <!-- Progress bar -->
+<BaseLayout
+  title={`${title} | Shane Kanterman`}
+  description={summary}
+  image={heroImage?.src ?? '/og-default.svg'}
+  type="article"
+>
   <div
     id="progress-bar"
     class="fixed top-0 left-0 h-[2px] z-50 w-0 transition-none"
@@ -57,39 +59,10 @@ for (const match of headingMatches) {
   ></div>
 
   <div class="relative z-10 w-[min(calc(100%-2rem),1240px)] mx-auto pb-24">
+    <SiteHeader backHref="/#projects" backLabel="All projects" />
 
-    <!-- Header -->
-    <header class="sticky top-4 z-20 pt-4">
-      <div class="glass flex items-center justify-between gap-4 px-5 py-4 rounded-full">
-        <a class="inline-flex items-center gap-3.5 min-w-0" href="/" aria-label="Shane Kanterman home">
-          <span
-            class="inline-flex items-center justify-center w-11 h-11 rounded-full font-extrabold text-sm tracking-widest text-white flex-shrink-0"
-            style="background:#1e293b;"
-          >SK</span>
-          <span class="flex flex-col min-w-0">
-            <strong class="text-[0.95rem] leading-tight text-[#18181b]">Shane Kanterman</strong>
-            <span class="text-[0.76rem] leading-tight text-[#71717a] max-[600px]:hidden">
-              Infrastructure and Web Projects
-            </span>
-          </span>
-        </a>
-        <a
-          href="/#projects"
-          class="inline-flex items-center gap-2 text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms] text-sm font-medium"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-          All projects
-        </a>
-      </div>
-    </header>
-
-    <main class="pt-14">
-
-      <!-- Article header (full width) -->
+    <main class="pt-14" id="main-content">
       <div class="max-w-[860px] mx-auto mb-12">
-        <!-- Meta row -->
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-7">
           <span class="text-[#71717a] text-[0.78rem] font-bold tracking-[0.16em] uppercase">
             Case Study
@@ -97,49 +70,37 @@ for (const match of headingMatches) {
           <span class="w-px h-3.5 bg-[rgba(0,0,0,0.12)]" aria-hidden="true"></span>
           <span class="text-[#71717a] text-[0.82rem]">{formatted}</span>
           <span class="w-px h-3.5 bg-[rgba(0,0,0,0.12)]" aria-hidden="true"></span>
-          <span
-            class="inline-flex items-center gap-1.5 text-[0.8rem] font-medium"
-            style={`color:${statusColor[status]};`}
-          >
-            <span
-              class="w-1.5 h-1.5 rounded-full flex-shrink-0"
-              style={`background:${statusColor[status]};`}
-            ></span>
+          <span class="inline-flex items-center gap-1.5 text-[0.8rem] font-medium" style={`color:${statusColor[status]};`}>
+            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style={`background:${statusColor[status]};`}></span>
             {statusLabel[status]}
           </span>
           <span class="w-px h-3.5 bg-[rgba(0,0,0,0.12)]" aria-hidden="true"></span>
           <span class="text-[#71717a] text-[0.82rem]">~{readingTime} min read</span>
         </div>
 
-        <!-- Title -->
         <h1 class="text-[clamp(2.2rem,4.2vw,3.4rem)] leading-[1.05] tracking-[-0.02em] font-extrabold mb-6 max-w-[22ch] text-[#18181b]">
           {title}
         </h1>
 
-        <!-- Summary -->
         <p class="text-[#52525b] text-[1.1rem] leading-[1.75] mb-8 max-w-[62ch]">
           {summary}
         </p>
 
-        <!-- Stack tags -->
         <div class="flex flex-wrap gap-2 mb-8">
           {stack.map((item) => (
-            <span class="inline-flex items-center min-h-8 px-3 py-1.5 rounded-full border border-[rgba(0,0,0,0.10)] bg-[rgba(0,0,0,0.04)] text-[#1e293b] text-[0.8rem] font-medium">
-              {item}
-            </span>
+            <StackBadge label={item} />
           ))}
         </div>
 
-        <!-- External links -->
         {links && links.length > 0 && (
           <div class="flex flex-wrap gap-3">
             {links.map((link) => (
-              <a href={link.href} target="_blank" rel="noopener" class="btn btn-secondary text-sm">
+              <a href={link.href} target="_blank" rel="noopener noreferrer" class="btn btn-secondary text-sm">
                 {link.label}
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
                 </svg>
               </a>
             ))}
@@ -149,10 +110,7 @@ for (const match of headingMatches) {
         <div class="mt-10 border-t border-[rgba(0,0,0,0.08)]"></div>
       </div>
 
-      <!-- Two-column body -->
       <div class="article-body max-w-[860px] mx-auto flex gap-16 items-start">
-
-        <!-- Sidebar ToC (desktop) -->
         {tocItems.length > 0 && (
           <aside class="toc-sidebar hidden lg:block w-[200px] flex-shrink-0 sticky top-[8rem] self-start">
             <p class="text-[0.7rem] font-bold tracking-[0.14em] uppercase text-[#71717a] mb-3">
@@ -176,100 +134,106 @@ for (const match of headingMatches) {
           </aside>
         )}
 
-        <!-- Mobile ToC accordion -->
-        {tocItems.length > 0 && (
-          <details class="lg:hidden mb-8 glass p-0 overflow-hidden w-full">
-            <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-[0.82rem] font-semibold text-[#52525b] select-none list-none">
-              <span class="flex items-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="3" y1="6" x2="21" y2="6"/>
-                  <line x1="3" y1="12" x2="15" y2="12"/>
-                  <line x1="3" y1="18" x2="18" y2="18"/>
+        <div class="min-w-0 flex-1">
+          {tocItems.length > 0 && (
+            <details class="lg:hidden mb-8 glass p-0 overflow-hidden w-full" data-toc-details>
+              <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-[0.82rem] font-semibold text-[#52525b] select-none list-none">
+                <span class="flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="15" y2="12" />
+                    <line x1="3" y1="18" x2="18" y2="18" />
+                  </svg>
+                  On this page
+                </span>
+                <svg class="toc-chevron w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9" />
                 </svg>
-                On this page
-              </span>
-              <svg class="toc-chevron w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </summary>
-            <nav class="px-5 pb-4 border-t border-[rgba(0,0,0,0.08)] pt-3" aria-label="Table of contents">
-              <ul class="grid gap-1 p-0 list-none">
-                {tocItems.map((item) => (
-                  <li>
-                    <a
-                      href={`#${item.slug}`}
-                      class="block py-1.5 text-[0.85rem] text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms]"
-                    >
-                      {item.text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </details>
-        )}
+              </summary>
+              <nav class="px-5 pb-4 border-t border-[rgba(0,0,0,0.08)] pt-3" aria-label="Table of contents">
+                <ul class="grid gap-1 p-0 list-none">
+                  {tocItems.map((item) => (
+                    <li>
+                      <a
+                        href={`#${item.slug}`}
+                        class="block py-1.5 text-[0.85rem] text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms]"
+                      >
+                        {item.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </details>
+          )}
 
-        <!-- Prose content -->
-        <div class="prose min-w-0 flex-1">
-          <slot />
+          <div class="prose min-w-0 flex-1">
+            <slot />
+          </div>
         </div>
-
       </div>
 
-      <!-- Footer nav -->
       <div class="max-w-[860px] mx-auto mt-20 pt-8 border-t border-[rgba(0,0,0,0.08)]">
         <a
           href="/#projects"
           class="inline-flex items-center gap-2 text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms] font-medium"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
+            <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
           Back to all projects
         </a>
       </div>
-
     </main>
   </div>
 
   <script>
-    // ── Reading progress bar ──────────────────────────────────────────────
-    const bar = document.getElementById('progress-bar') as HTMLElement | null;
+    const progressBar = document.getElementById('progress-bar');
+    let progressFrame = 0;
 
-    const updateProgress = (): void => {
-      if (!bar) return;
+    const updateProgress = () => {
+      if (!progressBar) return;
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-      bar.style.width = `${Math.min(pct, 100)}%`;
+      progressBar.style.width = `${Math.min(pct, 100)}%`;
+      progressFrame = 0;
+    };
+
+    const requestProgressUpdate = () => {
+      if (progressFrame !== 0) return;
+      progressFrame = window.requestAnimationFrame(updateProgress);
     };
 
     updateProgress();
-    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('scroll', requestProgressUpdate, { passive: true });
 
-    // ── Active ToC link highlighting ──────────────────────────────────────
-    const tocLinks = document.querySelectorAll<HTMLAnchorElement>('a.toc-link');
+    const tocLinks = Array.from(document.querySelectorAll('a.toc-link'));
 
-    if (tocLinks.length > 0) {
-      const headingEls = Array.from(tocLinks)
+    if (tocLinks.length > 0 && 'IntersectionObserver' in window) {
+      const headingEls = tocLinks
         .map((link) => {
           const id = link.getAttribute('data-heading');
           return id ? document.getElementById(id) : null;
         })
-        .filter((el): el is HTMLElement => el !== null);
+        .filter((el) => el instanceof HTMLElement);
 
-      const setActive = (id: string | null): void => {
+      const setActive = (id) => {
         tocLinks.forEach((link) => {
           const isActive = link.getAttribute('data-heading') === id;
           link.classList.toggle('toc-link-active', isActive);
+          if (isActive) {
+            link.setAttribute('aria-current', 'location');
+          } else {
+            link.removeAttribute('aria-current');
+          }
         });
       };
 
       const observer = new IntersectionObserver(
         (entries) => {
-          // Find the topmost intersecting heading
           const visible = entries
-            .filter((e) => e.isIntersecting)
+            .filter((entry) => entry.isIntersecting)
             .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
 
           if (visible.length > 0) {
@@ -280,15 +244,21 @@ for (const match of headingMatches) {
       );
 
       headingEls.forEach((el) => observer.observe(el));
+      if (headingEls[0]) setActive(headingEls[0].id);
     }
 
-    // ── Mobile ToC: rotate chevron when open ─────────────────────────────
-    const tocDetails = document.querySelector<HTMLDetailsElement>('details');
-    const tocChevron = document.querySelector<SVGElement>('.toc-chevron');
+    const tocDetails = document.querySelector('[data-toc-details]');
+    const tocChevron = document.querySelector('.toc-chevron');
 
-    if (tocDetails && tocChevron) {
+    if (tocDetails instanceof HTMLDetailsElement && tocChevron instanceof SVGElement) {
       tocDetails.addEventListener('toggle', () => {
         tocChevron.style.transform = tocDetails.open ? 'rotate(180deg)' : '';
+      });
+
+      tocDetails.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          tocDetails.open = false;
+        });
       });
     }
   </script>

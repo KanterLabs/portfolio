@@ -1,0 +1,98 @@
+---
+interface NavItem {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  home?: boolean;
+  navItems?: NavItem[];
+  backHref?: string;
+  backLabel?: string;
+}
+
+const {
+  home = false,
+  navItems = [],
+  backHref = '/#projects',
+  backLabel = 'All projects',
+} = Astro.props;
+---
+
+<header class="site-header sticky top-4 z-20 pt-4" id={home ? 'header' : undefined} data-site-header>
+  <div
+    class="header-inner glass flex items-center justify-between gap-4 px-5 py-4 rounded-full transition-[background-color,border-color,padding,box-shadow] duration-[180ms] ease-out"
+  >
+    <a class="inline-flex items-center gap-3.5 min-w-0" href={home ? '#top' : '/'} aria-label="Shane Kanterman home">
+      <span
+        class="inline-flex items-center justify-center w-11 h-11 rounded-full font-extrabold text-sm tracking-widest text-white flex-shrink-0"
+        style="background:#1e293b;"
+      >
+        SK
+      </span>
+      <span class="flex flex-col min-w-0">
+        <strong class="text-[0.95rem] leading-tight text-[#18181b]">Shane Kanterman</strong>
+        <span class="text-[0.76rem] leading-tight text-[#71717a] max-[780px]:hidden">
+          Infrastructure and Web Projects
+        </span>
+      </span>
+    </a>
+
+    {home ? (
+      <>
+        <nav class="flex items-center gap-6 max-[780px]:hidden" aria-label="Primary">
+          {navItems.map((item) => (
+            <a
+              href={item.href}
+              class="nav-link text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms] font-medium"
+              data-nav-link={item.href.replace('#', '')}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+
+        <button
+          class="mobile-toggle hidden max-[780px]:inline-grid place-items-center w-11 h-11 border border-[rgba(0,0,0,0.10)] bg-white rounded-full p-0 cursor-pointer"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+        >
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#18181b] rounded-full transition-transform duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#18181b] rounded-full transition-[transform,opacity] duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#18181b] rounded-full transition-transform duration-[180ms]"></span>
+          <span class="sr-only">Toggle navigation</span>
+        </button>
+      </>
+    ) : (
+      <a
+        href={backHref}
+        class="inline-flex items-center gap-2 text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms] text-sm font-medium"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 5l-7 7 7 7" />
+        </svg>
+        {backLabel}
+      </a>
+    )}
+  </div>
+
+  {home && (
+    <nav
+      class="mobile-nav-panel glass mt-3.5 p-3 rounded-[var(--radius-md)]"
+      id="mobile-nav"
+      aria-label="Mobile navigation"
+      data-mobile-nav
+    >
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          class="nav-link block px-4 py-3.5 rounded-xl text-[#52525b] hover:text-[#18181b] hover:bg-[rgba(0,0,0,0.04)] transition-colors duration-[180ms]"
+          data-nav-link={item.href.replace('#', '')}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  )}
+</header>

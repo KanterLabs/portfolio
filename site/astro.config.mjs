@@ -1,12 +1,15 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
-import rehypeSlug from 'rehype-slug';
+import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypeSlug from 'rehype-slug';
 
-// https://astro.build/config
+const siteUrl = 'https://shanekanterman.dev';
+
 export default defineConfig({
+  site: siteUrl,
   integrations: [
     mdx({
       rehypePlugins: [
@@ -30,6 +33,7 @@ export default defineConfig({
         ],
       ],
     }),
+    sitemap(),
   ],
   markdown: {
     shikiConfig: {
