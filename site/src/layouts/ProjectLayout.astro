@@ -9,7 +9,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, stack, status, date, links, heroImage } = project.data;
+const { title, summary, stack, status, date, links, heroImage, role, scope, keyOutcome } = project.data;
 
 const formatted = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -43,6 +43,36 @@ for (const match of headingMatches) {
     .replace(/^-|-$/g, '');
   tocItems.push({ text, slug });
 }
+
+const projectUrl = Astro.site ? new URL(`/projects/${project.id}/`, Astro.site).toString() : undefined;
+const projectImageUrl = heroImage?.src
+  ? Astro.site
+    ? new URL(heroImage.src, Astro.site).toString()
+    : heroImage.src
+  : Astro.site
+    ? new URL('/og-default.svg', Astro.site).toString()
+    : '/og-default.svg';
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  description: summary,
+  datePublished: date.toISOString(),
+  dateModified: date.toISOString(),
+  image: projectImageUrl,
+  mainEntityOfPage: projectUrl,
+  author: {
+    '@type': 'Person',
+    name: 'Shane Kanterman',
+    url: Astro.site?.toString() ?? 'https://shanekanterman.dev',
+  },
+  publisher: {
+    '@type': 'Person',
+    name: 'Shane Kanterman',
+  },
+  keywords: stack.join(', '),
+};
 ---
 
 <BaseLayout
@@ -50,6 +80,7 @@ for (const match of headingMatches) {
   description={summary}
   image={heroImage?.src ?? '/og-default.svg'}
   type="article"
+  structuredData={structuredData}
 >
   <div
     id="progress-bar"
@@ -90,6 +121,21 @@ for (const match of headingMatches) {
           {stack.map((item) => (
             <StackBadge label={item} />
           ))}
+        </div>
+
+        <div class="project-detail-facts mb-8">
+          <div>
+            <p class="project-proof-label">Role</p>
+            <p class="project-proof-copy">{role}</p>
+          </div>
+          <div>
+            <p class="project-proof-label">Scope</p>
+            <p class="project-proof-copy">{scope}</p>
+          </div>
+          <div>
+            <p class="project-proof-label">Outcome</p>
+            <p class="project-proof-copy">{keyOutcome}</p>
+          </div>
         </div>
 
         {links && links.length > 0 && (

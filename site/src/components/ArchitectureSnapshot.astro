@@ -1,0 +1,39 @@
+<div class="architecture-snapshot">
+  <div class="architecture-tier">
+    <div class="system-node system-node-primary">
+      <span class="system-node-label">Edge</span>
+      <strong>Cloudflare</strong>
+      <span class="system-node-copy">DNS, CDN, TLS, load balancing</span>
+    </div>
+  </div>
+
+  <div class="architecture-connector" aria-hidden="true"></div>
+
+  <div class="architecture-tier architecture-tier-origins">
+    <div class="system-node">
+      <span class="system-node-label">Origin A</span>
+      <strong>GCP VM</strong>
+      <span class="system-node-copy">us-central1-a</span>
+    </div>
+    <div class="system-node">
+      <span class="system-node-label">Origin B</span>
+      <strong>GCP VM</strong>
+      <span class="system-node-copy">us-central1-b</span>
+    </div>
+  </div>
+
+  <div class="architecture-footer">
+    <div>
+      <span class="system-node-label">Serve</span>
+      <strong>Static Astro via Nginx</strong>
+    </div>
+    <div>
+      <span class="system-node-label">Deploy</span>
+      <strong>GitHub Actions</strong>
+    </div>
+    <div>
+      <span class="system-node-label">Health</span>
+      <strong>Cloudflare checks `/healthz`</strong>
+    </div>
+  </div>
+</div>

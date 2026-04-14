@@ -1,6 +1,12 @@
 ---
-title: Multi-Node Portfolio Deployment
+title: Portfolio Infrastructure Deployment
 summary: A static Astro portfolio deployed across two GCP VMs behind Cloudflare's load balancer, with fully automated delivery from GitHub Actions. Built to demonstrate production-grade deployment thinking, not just frontend code.
+highlight: Survives a single-zone failure without changing the application layer.
+impact: Automated deployment to two GCP origins behind Cloudflare health-checked failover.
+constraint: Kept intentionally lean at roughly $12-16 per month while still proving redundancy.
+role: Designer, builder, and operator.
+scope: Static Astro frontend, GCP infrastructure, Nginx, Cloudflare, and CI/CD.
+keyOutcome: A portfolio that demonstrates software delivery with real infrastructure decisions behind it.
 featured: true
 order: 1
 stack:
@@ -13,8 +19,8 @@ stack:
 status: shipped
 date: 2026-04-12
 links:
-  - label: GitHub Repository
-    href: https://github.com/shanekanterman/multi-node-server
+  - label: View portfolio repo
+    href: https://github.com/ShaneKanterman04/portfolio
 ---
 
 import DiagramFigure from '../../components/DiagramFigure.astro';
@@ -188,6 +194,22 @@ No external monitoring tool is needed at this scale.
 **Keeping both VMs in sync** is handled by the pipeline deploying to both in sequence. The gap between deployments is a few seconds; in a higher-traffic setup this would require a blue/green or rolling deployment approach.
 
 **SSH key management** for GitHub Actions required generating a dedicated deploy key rather than using a personal key, and scoping GCP firewall rules to block direct SSH access from outside the deployment runner's IP range.
+
+## Tradeoffs
+
+Every architecture involves decisions between competing approaches. Here are the key ones made here and why.
+
+**Static Astro over a dynamic framework**
+A dynamic server-rendered app would add operational complexity without adding value for a portfolio. Static output means the entire app can be deployed as a directory of files, served from Nginx with no runtime dependencies. Simpler to operate, faster to serve, and easier to reason about under failure.
+
+**Cloudflare over a GCP-native load balancer**
+GCP's own load balancer would have been a natural fit, but Cloudflare consolidates CDN, TLS, DDoS protection, and health-checked failover into a single service at a lower combined cost for this scale. The tradeoff is vendor dependency at the edge — if Cloudflare has an outage, the site goes down regardless of origin health.
+
+**Sequential deployment over blue/green**
+The pipeline deploys to VM 1 and then VM 2 in sequence, with a gap of a few seconds between them. This is acceptable for a low-traffic static site where the worst case is briefly serving a slightly stale build from one origin. At higher traffic or with a more complex application, a blue/green or rolling deployment would be required to avoid inconsistency.
+
+**Two VMs over one**
+One VM is cheaper and simpler. Two VMs in separate zones survive a zonal failure. The cost difference is roughly $6-8/month. For a project meant to demonstrate infrastructure thinking rather than minimal spend, the redundancy is worth the cost.
 
 ## What This Demonstrates
 

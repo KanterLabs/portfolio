@@ -1,11 +1,16 @@
 ---
 import '../styles/global.css';
 
+interface StructuredDataEntry {
+  [key: string]: unknown;
+}
+
 interface Props {
   title: string;
   description: string;
   image?: string;
   type?: 'website' | 'article';
+  structuredData?: StructuredDataEntry | StructuredDataEntry[];
 }
 
 const {
@@ -13,10 +18,17 @@ const {
   description,
   image = '/og-default.svg',
   type = 'website',
+  structuredData,
 } = Astro.props;
 
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
 const socialImageUrl = Astro.site ? new URL(image, Astro.site).toString() : image;
+const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
+const jsonLdItems = structuredData
+  ? Array.isArray(structuredData)
+    ? structuredData
+    : [structuredData]
+  : [];
 ---
 
 <!doctype html>
@@ -40,11 +52,32 @@ const socialImageUrl = Astro.site ? new URL(image, Astro.site).toString() : imag
     {socialImageUrl && <meta name="twitter:image" content={socialImageUrl} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
+    {jsonLdItems.map((entry) => (
+      <script type="application/ld+json" set:html={JSON.stringify(entry)} />
+    ))}
+    {gaMeasurementId && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}></script>
+        <script
+          is:inline
+          define:vars={{ gaMeasurementId }}
+        >
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', gaMeasurementId);
+        </script>
+      </>
+    )}
     <title>{title}</title>
     <script is:inline>
       document.documentElement.classList.remove('no-js');
       document.documentElement.classList.add('js');
     </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <slot />
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const sections = document.querySelectorAll<HTMLElement>('.observe-animate');
@@ -73,9 +106,5 @@ const socialImageUrl = Astro.site ? new URL(image, Astro.site).toString() : imag
         });
       });
     </script>
-  </head>
-  <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
-    <slot />
   </body>
 </html>

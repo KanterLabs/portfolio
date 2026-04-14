@@ -1,17 +1,36 @@
 ---
-title: Self-Hosted Development Server
-summary: A self-hosted Proxmox hypervisor environment running Ubuntu VMs used for remote development, personal backups, and hands-on Linux system administration — built to maintain real infrastructure skills outside of a lab setting.
+title: Self-Hosted Linux Server
+summary: A self-hosted Proxmox server running Ubuntu VMs and LXC containers for remote development, backups, and web app hosting — built to maintain real Linux administration, storage management, and secure remote access skills outside of a lab or cloud environment.
+highlight: Keeps Linux, virtualization, backup, and SSH administration skills in regular practice.
+impact: Provides a real environment for remote development, VM snapshots, and backup validation.
+constraint: Built on spare home hardware, where reliability and recovery have to be engineered carefully.
+role: Homelab owner and administrator.
+scope: Proxmox host, Ubuntu VMs, SSH access, ZFS-backed backups, and day-to-day ops.
+keyOutcome: An always-on practice environment for infrastructure work outside of tutorials or cloud abstractions.
 featured: false
 order: 2
 stack:
   - Proxmox VE
   - Ubuntu Server
   - Linux
+  - LXC Containers
   - SSH
   - ZFS
 status: in-progress
 date: 2025-09-01
 ---
+
+## What This Environment Supports
+
+A self-hosted Proxmox server running on spare home hardware, used for ongoing Linux administration, remote development, backups, and lightweight service hosting.
+
+- **Remote Linux development** — VS Code connects over SSH directly to an Ubuntu Server VM; code runs on Linux, where production systems run
+- **Backups and restore practice** — a dedicated VM manages versioned backups using ZFS, with integrity checks on a schedule
+- **Service hosting** — VMs and LXC containers host lightweight applications before they go anywhere else
+- **VM and container administration** — provisioning, snapshotting, cloning, and rebuilding VMs through Proxmox
+- **Secure remote access** — key-only SSH authentication, non-standard port, firewall rules, and dynamic DNS for external access
+- **Storage management** — ZFS pools, snapshot retention, and disk health monitoring with `smartctl`
+- **Uptime monitoring** — systemd services managed with `journalctl`, resource usage tracked with `htop` and `iostat`
 
 ## Background
 

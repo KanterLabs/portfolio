@@ -7,6 +7,12 @@ const projects = defineCollection({
     z.object({
       title: z.string(),
       summary: z.string(),
+      highlight: z.string(),
+      impact: z.string(),
+      constraint: z.string(),
+      role: z.string(),
+      scope: z.string(),
+      keyOutcome: z.string(),
       featured: z.boolean().default(false),
       order: z.number(),
       stack: z.array(z.string()),

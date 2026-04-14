@@ -1,5 +1,6 @@
 ---
 import AnimatedSection from '../components/AnimatedSection.astro';
+import ArchitectureSnapshot from '../components/ArchitectureSnapshot.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import GlassCard from '../components/GlassCard.astro';
 import ProjectCard from '../components/ProjectCard.astro';
@@ -15,39 +16,48 @@ const supportingProjects = sorted.filter((project) => !project.data.featured);
 
 const navItems = [
   { label: 'About', href: '#about' },
+  { label: 'Architecture', href: '#architecture' },
   { label: 'Projects', href: '#projects' },
   { label: 'Skills', href: '#skills' },
   { label: 'Contact', href: '#contact' },
 ];
 
+const proofStats = [
+  { value: 'Datacenter Technician', label: 'Rack-and-stack, PXE imaging, OS installs at InterServer' },
+  { value: 'PXE deployment', label: 'Network boot imaging and server provisioning' },
+  { value: '2 origin VMs', label: 'Multi-zone deployment on GCP with failover' },
+  { value: '~$12-16/mo', label: 'Cost-conscious cloud infrastructure footprint' },
+];
+
 const capabilityGroups = [
   {
-    name: 'Infrastructure',
-    description: 'Systems work, hosting, and platform fundamentals.',
+    name: 'Deploy and Operate',
+    description: 'Provision Linux systems, serve applications, and keep deployments understandable and reliable.',
     items: ['Linux', 'Nginx', 'Google Cloud', 'Terraform', 'Proxmox', 'PXE Boot'],
   },
   {
-    name: 'Development',
-    description: 'Frontend and scripting tools used to build and ship projects.',
+    name: 'Build and Ship',
+    description: 'Frontend and scripting work tied directly to deployment, automation, and maintainable delivery.',
     items: ['Astro', 'HTML', 'CSS', 'JavaScript', 'Python', 'Git'],
   },
   {
-    name: 'Operations',
-    description: 'Workflow, deployment, and practical day-to-day tooling.',
+    name: 'Troubleshoot and Maintain',
+    description: 'Operational habits shaped by real systems work, from hardware issues to deployment workflows.',
     items: ['GitHub Actions', 'SSH', 'Virtualization', 'Windows', 'Containers'],
   },
 ];
 
-const heroFacts = [
-  'Computer Science student at Southern Connecticut State University',
-  'Hands-on data center internship experience at InterServer',
-  'Portfolio shipped as a static site with cloud infrastructure behind it',
+const systemSummary = [
+  { label: 'Edge', value: 'Cloudflare handles DNS, CDN, TLS, and balancing.' },
+  { label: 'Origins', value: 'Two GCP VMs run Nginx in separate availability zones.' },
+  { label: 'Application', value: 'Astro ships as a static build with low operational overhead.' },
+  { label: 'Delivery', value: 'GitHub Actions builds and deploys to both servers on every push.' },
 ];
 
 const heroMetrics = [
-  { value: '2 VMs', label: 'Cloud deployment' },
-  { value: 'Static Astro', label: 'Fast static frontend' },
-  { value: 'GitHub CI/CD', label: 'Automated delivery' },
+  { value: '2 zones', label: 'Redundant origins' },
+  { value: '60s interval', label: 'Cloudflare health checks' },
+  { value: 'Static Astro', label: 'Low-complexity app layer' },
 ];
 
 const profilePoints = [
@@ -55,11 +65,83 @@ const profilePoints = [
   'Linux administration and troubleshooting background',
   'Self-hosted systems for development, backups, and web app hosting',
 ];
+
+const experienceCards = [
+  {
+    eyebrow: 'InterServer — Secaucus, NJ',
+    title: 'Data Center Technician',
+    body:
+      'Rack-and-stack in a live data center. Installed and configured Linux, Windows, and Proxmox. Performed PXE boot imaging and provisioning. Diagnosed drive failures, RAM errors, and connectivity problems. Assisted with cable management, labeling, and deployment documentation.',
+    period: 'June 2025 – August 2025',
+  },
+  {
+    eyebrow: 'Southern Connecticut State University',
+    title: 'Computer Science Student',
+    body:
+      'Building skills in software engineering, operating systems, and networking. Active member of the university football program.',
+    period: 'Sept. 2023 – May 2027',
+  },
+  {
+    eyebrow: 'How I work',
+    title: 'Infrastructure-first mindset',
+    body:
+      'I prefer simple, reliable systems with clear deployment paths. I care about how software fails, how it is maintained, and how its infrastructure can stay lean without sacrificing reliability.',
+    period: '',
+  },
+];
+
+const certifications = [
+  {
+    name: 'Technical Support Fundamentals',
+    issuer: 'Google / Coursera',
+    date: 'June 2025',
+    credentialId: '5BHVX4W2WMD5',
+  },
+];
+
+const githubUrl = 'https://github.com/ShaneKanterman04';
+const linkedInUrl = 'https://www.linkedin.com/in/shane-kanterman-4511a2234';
+const emailUrl = 'mailto:shanekanterman04@gmail.com';
+const resumeUrl = '/Kanterman_Resume.pdf';
+
+const siteUrl = Astro.site?.toString() ?? 'https://shanekanterman.dev';
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Shane Kanterman',
+    url: siteUrl,
+    description:
+      'Portfolio site for Shane Kanterman featuring infrastructure, Linux, cloud deployment, and web projects.',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Shane Kanterman',
+    url: siteUrl,
+    sameAs: ['https://www.linkedin.com/in/shane-kanterman-4511a2234'],
+    alumniOf: {
+      '@type': 'CollegeOrUniversity',
+      name: 'Southern Connecticut State University',
+    },
+    knowsAbout: [
+      'Linux administration',
+      'Cloud deployment',
+      'Infrastructure',
+      'Web development',
+      'Terraform',
+      'Nginx',
+    ],
+    jobTitle: 'Computer Science Student',
+  },
+];
 ---
 
 <BaseLayout
-  title="Shane Kanterman | Infrastructure and Web Projects"
-  description="Portfolio site for Shane Kanterman, a Computer Science student with hands-on Linux, server deployment, and cloud-hosted web project experience."
+  title="Shane Kanterman | Linux Infrastructure and Web Projects"
+  description="Portfolio site for Shane Kanterman featuring Linux infrastructure, cloud deployment, and web projects built with practical operations experience."
+  structuredData={structuredData}
 >
   <div
     class="relative z-10 w-[min(calc(100%-2rem),1240px)] mx-auto pb-20 max-[780px]:w-[min(calc(100%-2rem),1240px)]"
@@ -68,28 +150,29 @@ const profilePoints = [
 
     <main class="pt-8" id="main-content">
       <section
-        class="grid grid-cols-[minmax(0,1.15fr)_minmax(18rem,24rem)] gap-10 items-start min-h-[calc(100vh-8rem)] pt-6 pb-20 scroll-mt-[10.5rem] max-[960px]:grid-cols-1 max-[960px]:min-h-0 max-[960px]:pt-9 max-[960px]:pb-11"
+        class="hero-surface grid grid-cols-[minmax(0,1.15fr)_minmax(18rem,24rem)] gap-10 items-start min-h-[calc(100vh-8rem)] pt-6 pb-20 scroll-mt-[10.5rem] max-[960px]:grid-cols-1 max-[960px]:min-h-0 max-[960px]:pt-9 max-[960px]:pb-11"
         id="top"
       >
         <div>
           <p class="mb-4 text-[#71717a] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
-            Computer Science Student
+            Computer Science Student + Data Center Experience
           </p>
           <h1
             class="text-[clamp(2.6rem,4.5vw,4.2rem)] leading-[1.06] tracking-[-0.02em] mb-5 max-w-[14ch] font-extrabold overflow-wrap-break-word text-[#18181b]"
           >
-            Building <span class="gradient-text">reliable web systems</span> with a practical
-            infrastructure background.
+            Building software with <span class="gradient-text">infrastructure
+            discipline.</span>
           </h1>
           <p class="text-[#52525b] leading-[1.75] text-[1.04rem] max-w-[48rem]">
-            I build projects that connect frontend delivery with real hosting, deployment, and
-            operational thinking. This portfolio is designed to show both the code and the systems
-            mindset behind it.
+            Computer Science student with hands-on data center experience in server deployment,
+            PXE imaging, OS installation, and hardware troubleshooting. Based between Cranford,
+            NJ and New Haven, CT, I build software with a practical infrastructure mindset shaped
+            by Linux systems, deployment, and operational reliability.
           </p>
 
           <div class="flex flex-wrap gap-4 mt-8 max-[780px]:flex-col max-[780px]:items-stretch">
             <a class="btn btn-primary" href="#projects">
-              View Projects
+              View Case Studies
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M7 17L17 7" />
                 <path d="M9 7h8v8" />
@@ -97,29 +180,55 @@ const profilePoints = [
             </a>
             <a
               class="btn btn-secondary"
-              href="https://www.linkedin.com/in/shane-kanterman-4511a2234"
+              href={resumeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Resume
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+            </a>
+            <a
+              class="btn btn-secondary"
+              href={linkedInUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
               LinkedIn
             </a>
+            <a
+              class="btn btn-secondary"
+              href={githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>
+          </div>
+
+          <div class="proof-strip mt-8" aria-label="Portfolio proof points">
+            {proofStats.map((stat) => (
+              <div class="proof-stat">
+                <strong>{stat.value}</strong>
+                <span>{stat.label}</span>
+              </div>
+            ))}
           </div>
         </div>
 
         <GlassCard class="sticky top-28 flex flex-col gap-8 p-8 max-[960px]:static" hover={false}>
           <div>
             <p class="mb-4 text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
-              Current focus
+              How this site runs
             </p>
             <ul class="grid gap-4 p-0 list-none">
-              {heroFacts.map((fact) => (
-                <li class="relative pl-5 text-[#52525b] leading-[1.6] text-[0.95rem]">
-                  <span
-                    class="absolute left-0 top-[0.72rem] -translate-y-1/2 w-1.5 h-1.5 rounded-full"
-                    style="background:#1e293b;box-shadow:0 0 0 4px rgba(30,41,59,0.08);"
-                    aria-hidden="true"
-                  ></span>
-                  {fact}
+              {systemSummary.map((item) => (
+                <li class="system-summary-row">
+                  <span class="system-summary-label">{item.label}</span>
+                  <span class="system-summary-copy">{item.value}</span>
                 </li>
               ))}
             </ul>
@@ -147,8 +256,8 @@ const profilePoints = [
       >
         <SectionIntro
           eyebrow="About"
-          title="From data center work to software projects."
-          body="My background is rooted in infrastructure, deployment, and systems work. I am growing that into software development by building projects that are designed, shipped, and run like real products."
+          title="From data center operations to software and infrastructure work."
+          body="My background started with physical infrastructure and systems work. That experience shapes how I approach software: I care about how it is deployed, how it fails, how it is maintained, and how simple the system can stay while still being reliable."
         />
 
         <div
@@ -156,21 +265,69 @@ const profilePoints = [
         >
           <GlassCard class="grid gap-5 p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6" hover={true}>
             <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
-              I am a Computer Science student at Southern Connecticut State University with hands-on
-              experience in rack-and-stack, server deployment, PXE boot imaging, Linux
-              administration, and hardware troubleshooting.
+              I am a Computer Science student at Southern Connecticut State University and currently
+              work as a Data Center Technician at InterServer, with hands-on experience in
+              rack-and-stack, server deployment, PXE boot imaging, Linux administration, and
+              hardware troubleshooting.
             </p>
             <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
-              I completed a data center internship at InterServer and continue building my skills
-              through self-hosted systems for remote development, backups, and web app hosting.
+              That infrastructure background shapes how I approach software: I focus on projects
+              that are not just built, but deployed, maintained, and designed to run reliably.
             </p>
           </GlassCard>
 
           <GlassCard class="p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6" hover={true}>
             <p class="mb-4 text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
-              What that looks like
+              Where I am headed
             </p>
-            <ul class="grid gap-4 p-0 list-none">
+            <p class="text-[#52525b] leading-[1.75] text-[1.04rem] mb-4">
+              I am looking for junior software, infrastructure, and platform roles where I can
+              apply this background directly — teams that care about how software runs, not just
+              how it looks.
+            </p>
+            <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
+              Based between Cranford, NJ and New Haven, CT. Open to internship and full-time positions.
+            </p>
+          </GlassCard>
+        </div>
+
+        <div class="grid grid-cols-3 gap-5 mt-5 max-[960px]:grid-cols-1">
+          {experienceCards.map((card) => (
+            <GlassCard class="grid content-start gap-3 p-7 min-w-0 max-[780px]:p-6" hover={true}>
+              <div>
+                <p class="text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+                  {card.eyebrow}
+                </p>
+                {card.period && (
+                  <p class="text-[#a1a1aa] text-[0.76rem] mt-0.5">{card.period}</p>
+                )}
+              </div>
+              <h3 class="text-[1.12rem] leading-[1.3] font-bold text-[#18181b] m-0">{card.title}</h3>
+              <p class="text-[#52525b] leading-[1.7] text-[0.95rem] m-0">{card.body}</p>
+            </GlassCard>
+          ))}
+        </div>
+
+        <div class="grid grid-cols-[auto_1fr] gap-5 mt-5 items-start max-[580px]:grid-cols-1">
+          <GlassCard class="grid content-start gap-3 p-7 min-w-0 max-[780px]:p-6" hover={true}>
+            <p class="text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+              Certifications
+            </p>
+            <div class="grid gap-3">
+              {certifications.map((cert) => (
+                <div class="certification-row">
+                  <strong class="text-[0.97rem] text-[#18181b]">{cert.name}</strong>
+                  <span class="text-[#52525b] text-[0.9rem]">{cert.issuer} &middot; {cert.date}</span>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+
+          <GlassCard class="grid gap-3 p-7 min-w-0 max-[780px]:p-6" hover={true}>
+            <p class="text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+              What that looks like in practice
+            </p>
+            <ul class="grid gap-3 p-0 list-none">
               {profilePoints.map((point) => (
                 <li class="relative pl-5 text-[#52525b] leading-[1.6] text-[0.95rem]">
                   <span
@@ -188,13 +345,59 @@ const profilePoints = [
 
       <AnimatedSection
         class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
+        id="architecture"
+        delay={1}
+      >
+        <SectionIntro
+          eyebrow="Architecture"
+          title="This portfolio is also a deployment case study."
+          body="The application layer is intentionally simple so the infrastructure decisions stay visible: edge routing, redundant origins, automated delivery, and low-cost hosting that still demonstrates production-minded thinking."
+        />
+
+        <div class="grid grid-cols-[minmax(0,1fr)_minmax(18rem,30rem)] gap-5 items-start max-[960px]:grid-cols-1">
+          <GlassCard class="grid gap-5 p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6" hover={true}>
+            <div>
+              <p class="mb-3 text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
+                Why it stands out
+              </p>
+              <p class="text-[#52525b] leading-[1.75] text-[1.04rem] m-0">
+                Most portfolios stop at deployment on a single managed platform. This one shows how
+                a simple application can still be backed by deliberate infrastructure choices,
+                failover planning, and automated delivery.
+              </p>
+            </div>
+
+            <div class="grid gap-3">
+              <div class="proof-inline-row">
+                <span class="project-proof-label">Edge services</span>
+                <span class="project-proof-copy">Cloudflare provides DNS, CDN, TLS, and balancing.</span>
+              </div>
+              <div class="proof-inline-row">
+                <span class="project-proof-label">Origins</span>
+                <span class="project-proof-copy">Two GCP VMs in separate zones reduce single-instance risk.</span>
+              </div>
+              <div class="proof-inline-row">
+                <span class="project-proof-label">Delivery</span>
+                <span class="project-proof-copy">GitHub Actions pushes each build to both servers.</span>
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard class="p-8 max-[780px]:p-6" hover={false}>
+            <ArchitectureSnapshot />
+          </GlassCard>
+        </div>
+      </AnimatedSection>
+
+      <AnimatedSection
+        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
         id="projects"
         delay={1}
       >
         <SectionIntro
           eyebrow="Projects"
-          title="Work that shows how I build and deploy."
-          body="The strongest projects here are the ones that combine implementation with hosting, automation, and operational discipline."
+          title="Case studies with constraints, tradeoffs, and real operating context."
+          body="The most representative work here is not just what I built, but how it was deployed, what constraints shaped it, and what the project proves about the way I work."
           class="mb-11"
         />
 
@@ -216,8 +419,8 @@ const profilePoints = [
       >
         <SectionIntro
           eyebrow="Skills"
-          title="Current tools and areas of focus."
-          body="The goal is not just to know tools, but to use them together to ship dependable work."
+          title="Capabilities tied to actual delivery work."
+          body="The emphasis is on using tools together to build, deploy, troubleshoot, and maintain systems that are understandable in production."
         />
 
         <div class="grid grid-cols-3 gap-5 max-[960px]:grid-cols-2 max-[580px]:grid-cols-1">
@@ -251,27 +454,56 @@ const profilePoints = [
         >
           <div class="max-w-[38rem]">
             <p class="mb-4 text-[#71717a] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
-              Contact
+              Open to roles
             </p>
             <h2
               class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.02em] mb-5 font-extrabold text-[#18181b] max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
             >
-              Open to technical opportunities and connections.
+              Looking for early-career software, infrastructure, and platform opportunities.
             </h2>
-            <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
-              I am currently open to part-time, contract, and junior roles related to
-              infrastructure, deployment, and software development.
+            <p class="text-[#52525b] leading-[1.75] text-[1.04rem] mb-3">
+              Most interested in roles where software delivery overlaps with Linux, deployment,
+              automation, and operational ownership. Based between Cranford, NJ and New Haven,
+              CT, and open to internship and full-time opportunities.
             </p>
+            <p class="text-[#71717a] text-[0.9rem]">shanekanterman04@gmail.com</p>
           </div>
 
-          <div class="max-[780px]:w-full">
+          <div class="contact-link-grid max-[780px]:w-full">
             <a
               class="btn btn-primary max-[780px]:w-full"
-              href="https://www.linkedin.com/in/shane-kanterman-4511a2234"
+              href={resumeUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Connect on LinkedIn
+              Resume
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+            </a>
+            <a
+              class="btn btn-secondary max-[780px]:w-full"
+              href={emailUrl}
+            >
+              Email me
+            </a>
+            <a
+              class="btn btn-secondary max-[780px]:w-full"
+              href={linkedInUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              LinkedIn
+            </a>
+            <a
+              class="btn btn-secondary max-[780px]:w-full"
+              href={githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
             </a>
           </div>
         </GlassCard>
@@ -287,7 +519,7 @@ const profilePoints = [
     const header = document.getElementById('header');
     const mobileToggle = document.querySelector('.mobile-toggle');
     const mobileNav = document.getElementById('mobile-nav');
-    const sectionIds = ['about', 'projects', 'skills', 'contact'];
+    const sectionIds = ['about', 'architecture', 'projects', 'skills', 'contact'];
     const sectionLinks = Array.from(document.querySelectorAll('[data-nav-link]'));
     const mobileBreakpoint = window.matchMedia('(min-width: 781px)');
 

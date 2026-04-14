@@ -20,11 +20,22 @@ EOF
 
 cat >/etc/nginx/sites-available/default <<'EOF'
 server {
+    listen 80;
+    listen [::]:80;
+    server_name www.shanekanterman.dev;
+
+    return 301 https://shanekanterman.dev$request_uri;
+}
+
+server {
     listen 80 default_server;
     listen [::]:80 default_server;
+    server_name shanekanterman.dev;
 
     root /var/www/html;
     index index.html;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
 
     location = /healthz {
         add_header Content-Type text/plain;

@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GlassCard from '../components/GlassCard.astro';
+
+const siteUrl = Astro.site?.toString() ?? 'https://shanekanterman.dev';
+const pageUrl = new URL('/404/', siteUrl).toString();
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Page Not Found',
+  description: 'Custom 404 page for Shane Kanterman portfolio site.',
+  url: pageUrl,
+};
+---
+
+<BaseLayout
+  title="Page Not Found | Shane Kanterman"
+  description="The page you requested could not be found. Browse infrastructure and web project case studies instead."
+  structuredData={structuredData}
+>
+  <main class="min-h-screen px-4 py-10 flex items-center justify-center" id="main-content">
+    <GlassCard class="w-full max-w-[42rem] p-8 md:p-10 text-center" hover={false}>
+      <p class="mb-4 text-[#71717a] text-[0.82rem] font-bold tracking-[0.16em] uppercase">404</p>
+      <h1 class="text-[clamp(2.2rem,5vw,3.5rem)] leading-[1.05] tracking-[-0.02em] mb-5 font-extrabold text-[#18181b]">
+        Page not found.
+      </h1>
+      <p class="text-[#52525b] leading-[1.75] text-[1.04rem] mb-8 max-w-[34rem] mx-auto">
+        The page you requested is not here. You can return to the portfolio homepage, review project case studies, or connect on LinkedIn.
+      </p>
+      <div class="flex flex-wrap gap-4 justify-center max-[640px]:flex-col">
+        <a class="btn btn-primary" href="/">Go home</a>
+        <a class="btn btn-secondary" href="/#projects">View projects</a>
+        <a class="btn btn-secondary" href="https://www.linkedin.com/in/shane-kanterman-4511a2234" target="_blank" rel="noopener noreferrer">
+          LinkedIn
+        </a>
+      </div>
+    </GlassCard>
+  </main>
+</BaseLayout>
