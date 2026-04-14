@@ -10,6 +10,9 @@ const siteUrl = 'https://shanekanterman.dev';
 
 export default defineConfig({
   site: siteUrl,
+  devToolbar: {
+    enabled: process.env.PLAYWRIGHT !== 'true',
+  },
   integrations: [
     mdx({
       rehypePlugins: [

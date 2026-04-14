@@ -12,3 +12,6 @@
 
 # Build output
 **/dist/
+
+# Playwright MCP output
+.playwright-mcp/
