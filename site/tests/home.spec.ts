@@ -46,6 +46,9 @@ test.describe('homepage', () => {
       'href',
       'mailto:shanekanterman04@gmail.com',
     );
+
+    await expect(page.getByLabel('Site footer')).toContainText('Build');
+    await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
   });
 
   test('mobile menu works and layout does not overflow', async ({ page, isMobile }) => {
@@ -65,5 +68,6 @@ test.describe('homepage', () => {
       'projects',
     );
     await expectNoHorizontalOverflow(page);
+    await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
   });
 });

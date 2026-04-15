@@ -400,6 +400,23 @@ select {
   gap: 0.2rem;
 }
 
+.site-footer {
+  padding: 4.5rem 1rem 1.5rem;
+  text-align: center;
+  color: #a1a1aa;
+  font-size: 0.88rem;
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+.site-footer-build {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #71717a;
+}
+
 .observe-animate {
   opacity: 1;
   transform: none;
@@ -525,6 +542,11 @@ select {
   /* Reduce system summary row spacing */
   .system-summary-row {
     padding-bottom: 0.75rem;
+  }
+
+  .site-footer {
+    padding-top: 3rem;
+    padding-bottom: 1.25rem;
   }
 }
 

@@ -39,6 +39,7 @@ test.describe('case studies', () => {
       'href',
       'https://github.com/ShaneKanterman04/portfolio',
     );
+    await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
   });
 
   test('back to all projects returns to homepage projects anchor', async ({ page }) => {
