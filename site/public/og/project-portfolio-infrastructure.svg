@@ -24,7 +24,10 @@
   <text x="195" y="163" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="#1d4ed8">Case Study</text>
   <text x="90" y="260" font-family="Georgia, Times New Roman, serif" font-size="62" font-weight="700" fill="#18181b">Portfolio Infrastructure</text>
   <text x="90" y="330" font-family="Georgia, Times New Roman, serif" font-size="62" font-weight="700" fill="#1e293b">Deployment</text>
-  <text x="90" y="405" font-family="Inter, Arial, sans-serif" font-size="27" fill="#52525b">Static Astro portfolio deployed to two GCP VMs behind Cloudflare with automated delivery from GitHub Actions.</text>
+  <text x="90" y="405" font-family="Inter, Arial, sans-serif" font-size="25" fill="#52525b">
+    <tspan x="90">Static Astro portfolio deployed to two GCP VMs</tspan>
+    <tspan x="90" dy="36">behind Cloudflare with automated GitHub Actions delivery.</tspan>
+  </text>
 
   <g>
     <rect x="90" y="462" width="1020" height="1" fill="#e4e4e7" />

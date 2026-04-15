@@ -24,20 +24,23 @@
   <text x="156" y="215" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="48" font-weight="800" fill="#ffffff">SK</text>
 
   <text x="264" y="188" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700" fill="#18181b">Shane Kanterman</text>
-  <text x="90" y="350" font-family="Georgia, Times New Roman, serif" font-size="62" font-weight="700" fill="#18181b">Linux Infrastructure and</text>
-  <text x="90" y="420" font-family="Georgia, Times New Roman, serif" font-size="62" font-weight="700" fill="#1e293b">Web Projects</text>
-  <text x="90" y="487" font-family="Inter, Arial, sans-serif" font-size="26" fill="#52525b">Cloud deployment, PXE imaging, server operations, and case studies built with practical infrastructure experience.</text>
+  <text x="90" y="340" font-family="Georgia, Times New Roman, serif" font-size="58" font-weight="700" fill="#18181b">Linux Infrastructure and</text>
+  <text x="90" y="406" font-family="Georgia, Times New Roman, serif" font-size="58" font-weight="700" fill="#1e293b">Web Projects</text>
+  <text x="90" y="468" font-family="Inter, Arial, sans-serif" font-size="24" fill="#52525b">
+    <tspan x="90">Cloud deployment, PXE imaging, server operations,</tspan>
+    <tspan x="90" dy="34">and case studies built with practical infrastructure experience.</tspan>
+  </text>
 
   <g font-family="Inter, Arial, sans-serif" font-size="21" font-weight="600" fill="#334155">
-    <rect x="90" y="520" width="136" height="40" rx="20" fill="#eff6ff" />
-    <text x="158" y="546" text-anchor="middle">Cloudflare</text>
-    <rect x="238" y="520" width="84" height="40" rx="20" fill="#eff6ff" />
-    <text x="280" y="546" text-anchor="middle">GCP</text>
-    <rect x="334" y="520" width="172" height="40" rx="20" fill="#eff6ff" />
-    <text x="420" y="546" text-anchor="middle">GitHub Actions</text>
-    <rect x="518" y="520" width="82" height="40" rx="20" fill="#eff6ff" />
-    <text x="559" y="546" text-anchor="middle">PXE</text>
-    <rect x="612" y="520" width="178" height="40" rx="20" fill="#eff6ff" />
-    <text x="701" y="546" text-anchor="middle">Data Center Ops</text>
+    <rect x="90" y="526" width="136" height="38" rx="19" fill="#eff6ff" />
+    <text x="158" y="551" text-anchor="middle">Cloudflare</text>
+    <rect x="238" y="526" width="84" height="38" rx="19" fill="#eff6ff" />
+    <text x="280" y="551" text-anchor="middle">GCP</text>
+    <rect x="334" y="526" width="172" height="38" rx="19" fill="#eff6ff" />
+    <text x="420" y="551" text-anchor="middle">GitHub Actions</text>
+    <rect x="518" y="526" width="82" height="38" rx="19" fill="#eff6ff" />
+    <text x="559" y="551" text-anchor="middle">PXE</text>
+    <rect x="612" y="526" width="178" height="38" rx="19" fill="#eff6ff" />
+    <text x="701" y="551" text-anchor="middle">Data Center Ops</text>
   </g>
 </svg>

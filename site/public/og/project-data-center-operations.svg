@@ -24,7 +24,10 @@
   <text x="195" y="163" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="#1d4ed8">Case Study</text>
   <text x="90" y="250" font-family="Georgia, Times New Roman, serif" font-size="58" font-weight="700" fill="#18181b">InterServer Data</text>
   <text x="90" y="318" font-family="Georgia, Times New Roman, serif" font-size="58" font-weight="700" fill="#1e293b">Center Operations</text>
-  <text x="90" y="395" font-family="Inter, Arial, sans-serif" font-size="27" fill="#52525b">Rack-and-stack, PXE imaging, server deployment, and hardware troubleshooting in a live production data center.</text>
+  <text x="90" y="395" font-family="Inter, Arial, sans-serif" font-size="25" fill="#52525b">
+    <tspan x="90">Rack-and-stack, PXE imaging, server deployment,</tspan>
+    <tspan x="90" dy="36">and hardware troubleshooting in a production data center.</tspan>
+  </text>
 
   <g>
     <rect x="90" y="462" width="1020" height="1" fill="#e4e4e7" />
