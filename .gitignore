@@ -15,3 +15,6 @@
 
 # Playwright MCP output
 .playwright-mcp/
+
+# Local OpenCode config
+opencode.json
