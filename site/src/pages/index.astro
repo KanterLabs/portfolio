@@ -71,7 +71,7 @@ const experienceCards = [
     eyebrow: 'InterServer — Secaucus, NJ',
     title: 'Data Center Technician',
     body:
-      'Rack-and-stack in a live data center. Installed and configured Linux, Windows, and Proxmox. Performed PXE boot imaging and provisioning. Diagnosed drive failures, RAM errors, and connectivity problems. Assisted with cable management, labeling, and deployment documentation.',
+      'Live data center work: rack-and-stack, OS installs (Linux, Windows, Proxmox), PXE imaging, hardware diagnostics, and deployment documentation.',
     period: 'June 2025 – August 2025',
   },
   {
@@ -150,7 +150,7 @@ const structuredData = [
 
     <main class="pt-8" id="main-content">
       <section
-        class="hero-surface grid grid-cols-[minmax(0,1.15fr)_minmax(18rem,24rem)] gap-10 items-start min-h-[calc(100vh-8rem)] pt-6 pb-20 scroll-mt-[10.5rem] max-[960px]:grid-cols-1 max-[960px]:min-h-0 max-[960px]:pt-9 max-[960px]:pb-11"
+        class="hero-surface grid grid-cols-[minmax(0,1.15fr)_minmax(18rem,24rem)] gap-10 items-start min-h-[calc(100vh-8rem)] pt-6 pb-20 scroll-mt-[10.5rem] max-[960px]:grid-cols-1 max-[960px]:min-h-0 max-[960px]:pt-7 max-[960px]:pb-8 max-[780px]:pt-5 max-[780px]:pb-6"
         id="top"
       >
         <div>
@@ -165,9 +165,8 @@ const structuredData = [
           </h1>
           <p class="text-[#52525b] leading-[1.75] text-[1.04rem] max-w-[48rem]">
             Computer Science student with hands-on data center experience in server deployment,
-            PXE imaging, OS installation, and hardware troubleshooting. Based between Cranford,
-            NJ and New Haven, CT, I build software with a practical infrastructure mindset shaped
-            by Linux systems, deployment, and operational reliability.
+            PXE imaging, and hardware troubleshooting. Based between Cranford, NJ and New Haven,
+            CT — building software with an infrastructure mindset.
           </p>
 
           <div class="flex flex-wrap gap-4 mt-8 max-[780px]:flex-col max-[780px]:items-stretch">
@@ -209,7 +208,7 @@ const structuredData = [
             </a>
           </div>
 
-          <div class="proof-strip mt-8" aria-label="Portfolio proof points">
+          <div class="proof-strip mt-6 max-[780px]:mt-5" aria-label="Portfolio proof points">
             {proofStats.map((stat) => (
               <div class="proof-stat">
                 <strong>{stat.value}</strong>
@@ -250,14 +249,14 @@ const structuredData = [
       </section>
 
       <AnimatedSection
-        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
+        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6 max-[780px]:pt-14 max-[780px]:pb-4"
         id="about"
         delay={1}
       >
         <SectionIntro
           eyebrow="About"
           title="From data center operations to software and infrastructure work."
-          body="My background started with physical infrastructure and systems work. That experience shapes how I approach software: I care about how it is deployed, how it fails, how it is maintained, and how simple the system can stay while still being reliable."
+          body="My background started with physical systems work. That shapes how I approach software: deploy it well, keep it simple, and make it maintainable."
         />
 
         <div
@@ -265,14 +264,13 @@ const structuredData = [
         >
           <GlassCard class="grid gap-5 p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6" hover={true}>
             <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
-              I am a Computer Science student at Southern Connecticut State University and currently
-              work as a Data Center Technician at InterServer, with hands-on experience in
-              rack-and-stack, server deployment, PXE boot imaging, Linux administration, and
-              hardware troubleshooting.
+              CS student at SCSU and Data Center Technician at InterServer. Hands-on experience in
+              rack-and-stack, PXE boot imaging, Linux administration, and hardware troubleshooting
+              in a live production environment.
             </p>
             <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
-              That infrastructure background shapes how I approach software: I focus on projects
-              that are not just built, but deployed, maintained, and designed to run reliably.
+              That background shapes how I approach software: not just building, but deploying,
+              maintaining, and designing for reliability.
             </p>
           </GlassCard>
 
@@ -280,13 +278,12 @@ const structuredData = [
             <p class="mb-4 text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
               Where I am headed
             </p>
-            <p class="text-[#52525b] leading-[1.75] text-[1.04rem] mb-4">
-              I am looking for junior software, infrastructure, and platform roles where I can
-              apply this background directly — teams that care about how software runs, not just
-              how it looks.
+            <p class="text-[#52525b] leading-[1.75] text-[1.04rem] mb-3">
+              Looking for junior software, infrastructure, and platform roles — teams that care
+              about how software runs, not just how it looks.
             </p>
-            <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">
-              Based between Cranford, NJ and New Haven, CT. Open to internship and full-time positions.
+            <p class="text-[#52525b] leading-[1.6] text-[0.96rem]">
+              Cranford, NJ and New Haven, CT. Open to internship and full-time.
             </p>
           </GlassCard>
         </div>
@@ -344,14 +341,14 @@ const structuredData = [
       </AnimatedSection>
 
       <AnimatedSection
-        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
+        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6 max-[780px]:pt-14 max-[780px]:pb-4"
         id="architecture"
         delay={1}
       >
         <SectionIntro
           eyebrow="Architecture"
           title="This portfolio is also a deployment case study."
-          body="The application layer is intentionally simple so the infrastructure decisions stay visible: edge routing, redundant origins, automated delivery, and low-cost hosting that still demonstrates production-minded thinking."
+          body="Simple application layer, deliberate infrastructure: edge routing, redundant origins, automated delivery, low-cost hosting."
         />
 
         <div class="grid grid-cols-[minmax(0,1fr)_minmax(18rem,30rem)] gap-5 items-start max-[960px]:grid-cols-1">
@@ -361,9 +358,8 @@ const structuredData = [
                 Why it stands out
               </p>
               <p class="text-[#52525b] leading-[1.75] text-[1.04rem] m-0">
-                Most portfolios stop at deployment on a single managed platform. This one shows how
-                a simple application can still be backed by deliberate infrastructure choices,
-                failover planning, and automated delivery.
+                Most portfolios deploy to one managed platform. This one has redundant origins,
+                health-checked failover, and automated delivery behind a simple static site.
               </p>
             </div>
 
@@ -390,7 +386,7 @@ const structuredData = [
       </AnimatedSection>
 
       <AnimatedSection
-        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
+        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6 max-[780px]:pt-14 max-[780px]:pb-4"
         id="projects"
         delay={1}
       >
@@ -413,7 +409,7 @@ const structuredData = [
       </AnimatedSection>
 
       <AnimatedSection
-        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
+        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6 max-[780px]:pt-14 max-[780px]:pb-4"
         id="skills"
         delay={1}
       >
@@ -444,7 +440,7 @@ const structuredData = [
       </AnimatedSection>
 
       <AnimatedSection
-        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6"
+        class="observe-animate pt-28 pb-8 scroll-mt-[10.5rem] max-[960px]:pt-[5.25rem] max-[960px]:pb-6 max-[780px]:pt-14 max-[780px]:pb-4"
         id="contact"
         delay={1}
       >
@@ -463,10 +459,9 @@ const structuredData = [
             </h2>
             <p class="text-[#52525b] leading-[1.75] text-[1.04rem] mb-3">
               Most interested in roles where software delivery overlaps with Linux, deployment,
-              automation, and operational ownership. Based between Cranford, NJ and New Haven,
-              CT, and open to internship and full-time opportunities.
+              and operational ownership. Open to internship and full-time opportunities.
             </p>
-            <p class="text-[#71717a] text-[0.9rem]">shanekanterman04@gmail.com</p>
+            <p class="text-[#71717a] text-[0.88rem]">shanekanterman04@gmail.com &middot; Cranford, NJ / New Haven, CT</p>
           </div>
 
           <div class="contact-link-grid max-[780px]:w-full">

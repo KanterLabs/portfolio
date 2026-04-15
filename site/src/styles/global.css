@@ -461,6 +461,71 @@ select {
   .architecture-tier-origins {
     grid-template-columns: 1fr;
   }
+
+  /* Tighter section rhythm on mobile */
+  .proof-strip {
+    gap: 0.65rem;
+    margin-top: 1.5rem;
+  }
+
+  .proof-stat {
+    padding: 0.75rem 0.9rem;
+    gap: 0.2rem;
+  }
+
+  .proof-stat strong {
+    font-size: 0.92rem;
+  }
+
+  .proof-stat span {
+    font-size: 0.82rem;
+  }
+
+  /* Tighter proof and fact cards */
+  .project-proof-grid {
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+
+  .project-proof-grid > div,
+  .project-detail-facts > div,
+  .proof-inline-row {
+    padding: 0.75rem 0.85rem;
+    gap: 0.25rem;
+  }
+
+  .project-detail-facts {
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+  }
+
+  /* Compact architecture on mobile */
+  .architecture-snapshot {
+    gap: 0.75rem;
+  }
+
+  .system-node {
+    padding: 0.8rem;
+  }
+
+  .architecture-connector {
+    height: 1.75rem;
+  }
+
+  .architecture-footer {
+    gap: 0.6rem;
+    padding-top: 0.75rem;
+  }
+
+  /* Tighter contact buttons */
+  .contact-link-grid {
+    gap: 0.65rem;
+  }
+
+  /* Reduce system summary row spacing */
+  .system-summary-row {
+    padding-bottom: 0.75rem;
+  }
 }
 
 .prose {

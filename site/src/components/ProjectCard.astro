@@ -17,7 +17,7 @@ const statusLabel: Record<(typeof project.data.status), string> = {
 };
 ---
 
-<GlassCard class="p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-6" hover={true}>
+<GlassCard class="p-8 overflow-wrap-break-word min-w-0 max-[780px]:p-5" hover={true}>
   <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
     <div class="flex flex-wrap items-center gap-2.5">
       <p class="text-[#71717a] text-[0.78rem] font-bold tracking-[0.14em] uppercase">
@@ -35,7 +35,7 @@ const statusLabel: Record<(typeof project.data.status), string> = {
   <h3 class="text-[1.28rem] leading-[1.25] tracking-[-0.01em] font-bold mb-3 text-[#18181b]">
     {project.data.title}
   </h3>
-  <p class="text-[#52525b] leading-[1.75] text-[1.04rem]">{project.data.summary}</p>
+  <p class="text-[#52525b] leading-[1.7] text-[1rem] max-[780px]:text-[0.96rem]">{project.data.summary}</p>
 
   <div class={`project-proof-grid ${featured ? 'project-proof-grid-featured' : ''}`}>
     <div>
@@ -52,7 +52,7 @@ const statusLabel: Record<(typeof project.data.status), string> = {
     </div>
   </div>
 
-  <div class="mt-6">
+  <div class="mt-5">
     <a
       href={`/projects/${project.id}`}
       class="inline-flex items-center gap-2 text-[#1e293b] hover:text-[#0f172a] transition-colors duration-[180ms] font-medium"

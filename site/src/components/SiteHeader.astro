@@ -79,7 +79,7 @@ const {
 
   {home && (
     <nav
-      class="mobile-nav-panel glass mt-3.5 p-3 rounded-[var(--radius-md)]"
+      class="mobile-nav-panel glass mt-2.5 p-1.5 rounded-[var(--radius-md)]"
       id="mobile-nav"
       aria-label="Mobile navigation"
       data-mobile-nav
@@ -87,7 +87,7 @@ const {
       {navItems.map((item) => (
         <a
           href={item.href}
-          class="nav-link block px-4 py-3.5 rounded-xl text-[#52525b] hover:text-[#18181b] hover:bg-[rgba(0,0,0,0.04)] transition-colors duration-[180ms]"
+          class="nav-link block px-4 py-2.5 rounded-xl text-[#52525b] hover:text-[#18181b] hover:bg-[rgba(0,0,0,0.04)] transition-colors duration-[180ms] text-[0.95rem]"
           data-nav-link={item.href.replace('#', '')}
         >
           {item.label}
