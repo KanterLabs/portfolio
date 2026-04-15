@@ -1,12 +1,12 @@
 ---
 title: InterServer Data Center Operations
-summary: Hands-on experience as a Data Center Technician at InterServer performing rack-and-stack, PXE boot imaging, server deployment, hardware troubleshooting, and maintaining operational reliability in a production data center environment.
-highlight: Practical production data center work that makes infrastructure decisions concrete.
-impact: Supported repeatable server deployment, imaging, and hardware troubleshooting in a live environment.
-constraint: Work had to be accurate under production conditions where mistakes affect real systems.
+summary: Hands-on production experience as a Data Center Technician at InterServer performing rack-and-stack, PXE imaging, server deployment, hardware troubleshooting, and infrastructure support in a live data center.
+highlight: Production data center work that made infrastructure responsibilities concrete.
+impact: Supported repeatable server deployment, imaging, and hardware troubleshooting in an environment serving real customer systems.
+constraint: The work had to be accurate under production conditions where mistakes affect live infrastructure.
 role: Data Center Technician at InterServer.
 scope: Rack-and-stack, PXE imaging, hardware diagnostics, RAID, and out-of-band management.
-keyOutcome: Built the operational habits and physical-layer understanding behind later software and infrastructure projects.
+keyOutcome: Built the operational habits and physical-layer understanding behind later software and infrastructure work.
 featured: false
 order: 3
 stack:
@@ -21,95 +21,60 @@ date: 2025-05-01
 socialImage: /og/project-data-center-operations.png
 ---
 
-## What I Actually Did
-
-As a **Data Center Technician at InterServer** from June to August 2025, I worked in a live production data center supporting server deployment, OS configuration, hardware troubleshooting, and infrastructure operations across the full hardware lifecycle.
-
-- Completed rack-and-stack of servers and networking equipment in a production environment
-- Installed and configured operating systems including Linux, Windows, and Proxmox on new hardware
-- Performed PXE boot deployments, imaging, and provisioning at scale
-- Diagnosed hardware issues including failed drives, RAM errors, and network connectivity problems
-- Assisted with cable management, labeling, and documentation across deployment projects
-
-This was not lab work or simulation. Every task was done in an environment where adjacent equipment was serving live customer traffic, with real consequences for mistakes.
-
 ## Overview
 
-This is not a software project — it is a record of practical, physical infrastructure work done as a **Data Center Technician** at **InterServer**, a web hosting and colocation provider. The experience covers the full lifecycle of server hardware in a production data center: receiving equipment, deploying it, configuring it, and keeping it running.
+This was not a software project. It was hands-on production infrastructure work at **InterServer** from June through August 2025.
 
-The skills built here are the foundation for understanding what "infrastructure" actually means at the physical layer — the layer that cloud providers abstract away but still depend on.
+The role covered server deployment, OS installation, PXE-based imaging, hardware troubleshooting, cable management, and general operational support inside a live data center. That experience matters because it changed infrastructure from something abstract into something physical, procedural, and operationally sensitive.
 
-## What the Work Involved
+## What I Did
 
-### Rack-and-Stack
+My day-to-day work included:
 
-New servers arrive as hardware in boxes. Rack-and-stack is the process of installing them into server racks in the correct position, running and managing cables, and making sure everything is physically secure and correctly labeled.
+- racking and cabling servers and networking equipment
+- installing and configuring Linux, Windows, and Proxmox on new hardware
+- running PXE-based imaging and deployment workflows
+- checking hardware inventory and preparing systems for deployment
+- troubleshooting failed drives, memory issues, NIC problems, and boot failures
+- helping maintain labeling, cable organization, and deployment documentation
 
-This sounds simple but involves attention to detail at scale:
+The work happened in an environment where nearby systems were already serving customers. That made accuracy, communication, and sequencing matter.
 
-- Cable management affects airflow, which affects operating temperatures
-- Incorrect rack unit placement can block access to other equipment
-- Label discipline matters — unlabeled cables become problems at 2am during an outage
+## PXE and Deployment Work
 
-Working in a live data center means doing this without affecting adjacent equipment that may be serving production traffic.
+One of the most useful parts of the job was seeing how repeatable provisioning works at scale.
 
-### PXE Boot Imaging
+Instead of installing every operating system manually, servers could boot from the network, pull a standard image, and complete installation through automated configuration. That required understanding how DHCP, network booting, imaging infrastructure, and post-install configuration fit together.
 
-Rather than manually installing an OS on each server, the data center uses **PXE (Preboot eXecution Environment)** to network-boot new machines and deploy a standard OS image over the network.
+The value was not just speed. It was consistency. Imaging workflows reduce drift, make setup repeatable, and help teams bring hardware online without reinventing the process each time.
 
-The workflow:
+## Hardware Troubleshooting
 
-1. Server boots from NIC rather than local disk
-2. DHCP server assigns an IP and points to the PXE boot server
-3. PXE server delivers a bootloader and OS image over TFTP/HTTP
-4. The OS installs automatically using a preseed or kickstart configuration
-5. Post-install scripts configure hostname, networking, SSH keys, and monitoring agents
+The troubleshooting side of the role was equally important. Production hardware fails in ways that do not look like software bugs.
 
-This process scales to imaging dozens of servers without touching each one individually. Understanding it requires knowing how DHCP, TFTP, HTTP, and DNS interact in a network boot sequence — not just running a script.
+Common cases included:
 
-### Server Deployment
+- failed drives and RAID rebuilds
+- memory errors surfaced through hardware logs and diagnostics
+- NIC and cabling problems
+- boot and POST failures during initial deployment
 
-After imaging, servers are handed off for deployment into their intended role. This involved:
+That work built a useful discipline: gather evidence, form a hypothesis, test it, and document what changed. The tools are different from application debugging, but the mindset transfers directly.
 
-- Verifying hardware inventory (CPU, RAM, disk count and size) against the order
-- Running burn-in tests to catch hardware defects before the server goes into production
-- Configuring RAID arrays where required
-- Setting up IPMI/iDRAC remote access for out-of-band management
-- Handing off to network team for IP assignment and routing
+## Working in Production
 
-### Hardware Troubleshooting
+The biggest lesson was not technical complexity. It was operational discipline.
 
-Production hardware fails. The work included diagnosing and resolving:
+In a data center, small mistakes can affect live systems. Work has to be deliberate, communicated clearly, and documented well enough for someone else to understand what happened later. That means thinking about change control, sequencing, rollback risk, and whether a task can be done safely before starting it.
 
-**Drive failures** — identifying failed drives from RAID controller alerts or SMART errors, hot-swapping replacement drives, and verifying the array rebuilt correctly.
+Those habits carried directly into how I think about software and infrastructure projects now.
 
-**Memory errors** — using IPMI event logs and `mcelog` to identify ECC memory errors, isolating the faulty DIMM, and replacing it without taking the system down where possible.
+## What It Shows
 
-**NIC issues** — diagnosing link-down events, checking cabling and SFP modules, testing with known-good hardware to isolate whether the fault was in the cable, switch port, or NIC.
+This experience gave me the foundation behind the software and infrastructure work elsewhere in the portfolio.
 
-**POST failures** — servers that would not boot required stepping through the BIOS POST sequence, checking error codes, and isolating the cause (failed component, wrong hardware configuration, or firmware issue).
-
-The process in all cases is the same: gather information, form a hypothesis, test it, and either confirm or rule it out. The physical layer does not have stack traces — you work with indicator lights, log files, and hardware specs.
-
-## Operating in a Production Environment
-
-A data center is not a lab. Mistakes have real consequences: a misconfigured network switch can take down customer-facing services. Working in this environment builds habits that matter in any infrastructure role:
-
-**Change control** — knowing what you are about to do, communicating it to others, and having a rollback plan before making changes to live systems.
-
-**Documentation** — recording what was done, when, and why. If something breaks two weeks later, someone needs to know what changed.
-
-**Situational awareness** — understanding which systems are production-critical and which can tolerate downtime, so work can be sequenced correctly.
-
-**Clear communication** — data center work is often done with other people nearby doing their own work. Clear, direct communication about what is happening and what help is needed is a core skill.
-
-## What This Demonstrates
-
-Data center operations experience is the foundation that makes infrastructure thinking concrete rather than abstract. The skills it covers:
-
-- **Server hardware** — understanding CPU, RAM, storage, and NIC specifications and how they relate to workload requirements
-- **Linux at the physical layer** — installing, configuring, and troubleshooting Linux on bare metal rather than in a VM or container
-- **PXE and network booting** — understanding the DHCP/TFTP/HTTP chain that makes automated OS deployment work
-- **RAID and storage** — managing hardware RAID arrays, understanding redundancy levels, handling drive replacement
-- **Out-of-band management** — using IPMI/iDRAC for remote hardware access and diagnostics
-- **Operational discipline** — change control, documentation, and communication practices that make infrastructure teams function reliably
+- **physical infrastructure understanding**: what deployment looks like before anything reaches the cloud abstraction layer
+- **Linux on real hardware**: installation, configuration, and troubleshooting outside a VM-only environment
+- **network-boot and provisioning fundamentals**: how repeatable server setup works in practice
+- **hardware diagnosis**: reading symptoms, isolating faults, and verifying fixes
+- **production habits**: documentation, care around live systems, and clear communication under operational constraints

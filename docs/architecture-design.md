@@ -1,309 +1,122 @@
-# Portfolio Cloud Architecture Design
+# Portfolio Architecture Design
 
-## Project Overview
+## Overview
 
-This project hosts a personal portfolio website using a
-**high-availability cloud architecture** while keeping operational costs
-under **\~\$20/month**.
+This repository hosts a personal portfolio site with a deliberately simple application layer and a more interesting delivery model behind it.
 
-The design uses:
+The frontend is a static Astro site. It is served from two Google Cloud VM origins running Nginx, with Cloudflare in front for DNS, CDN, TLS, and load balancing. Deployment is handled by GitHub Actions.
 
--   **Cloudflare** for DNS, CDN, TLS, and load balancing
--   **Google Cloud Compute Engine** for origin servers
--   **GitHub Actions** for CI/CD
--   **Astro + Nginx** for a lightweight static web stack
+The architecture is small on purpose. The goal is not to maximize services, but to show judgment around deployment, redundancy, and operational clarity.
 
-The architecture demonstrates real-world concepts including:
+## System Diagram
 
--   edge networking
--   multi-zone compute
--   automated deployment
--   health monitoring
--   cost-controlled infrastructure
-
-------------------------------------------------------------------------
-
-# Architecture Overview
-
-``` text
+```text
 Internet
    |
-Cloudflare DNS
+Cloudflare DNS + CDN
    |
-Cloudflare CDN + Load Balancer
-   |
-Origin Pool
-   |                       |
-GCP VM 1                   GCP VM 2
-us-central1-a              us-central1-b
-   |                       |
-Nginx                      Nginx
-   |                       |
-Astro Static Site          Astro Static Site
+Cloudflare Load Balancer
+   |---------------------------|
+   |                           |
+GCP VM 1                    GCP VM 2
+us-central1-a               us-central1-b
+Nginx                       Nginx
+   |                           |
+Static Astro build         Static Astro build
 ```
 
-------------------------------------------------------------------------
+## Main Components
 
-# Technology Stack
+### Edge layer
 
-  Category         Technology
-  ---------------- -----------------------------
-  Frontend         Astro static site generator
-  Web server       Nginx
-  VM OS            Debian 12
-  Edge platform    Cloudflare
-  Cloud provider   Google Cloud Platform
-  Compute          Compute Engine `e2-micro`
-  Deployment       GitHub Actions
-  Monitoring       Google Cloud Monitoring
+Cloudflare is the public entry point. It handles:
 
-------------------------------------------------------------------------
+- DNS
+- CDN behavior for static assets
+- TLS at the edge
+- load balancing across the two origin servers
+- origin health checks
 
-# Infrastructure Components
+### Origin layer
 
-## Domain / DNS
+The origin tier consists of two Debian 12 Compute Engine VMs in separate `us-central1` zones.
 
-  Component   Service          Purpose
-  ----------- ---------------- -----------------------
-  DNS         Cloudflare DNS   Public domain routing
-  Domain      `yourname.dev`   Portfolio domain
+- VM type: `e2-micro`
+- Web server: Nginx
+- Content directory: `/var/www/html`
+- Health endpoint: `/healthz`
 
-Cloudflare acts as the global entry point for all traffic.
+Using two small instances keeps costs low while still making failover and origin management part of the design.
 
-------------------------------------------------------------------------
+### Application layer
 
-## Edge Layer
+The application itself is a static Astro site. That choice keeps the runtime simple:
 
-  -----------------------------------------------------------------------
-  Component               Service                 Purpose
-  ----------------------- ----------------------- -----------------------
-  CDN                     Cloudflare CDN          Cache static assets
-                                                  globally
+- no application server to manage
+- no database to operate
+- straightforward deployment as static files
+- easy replication across multiple nodes
 
-  TLS                     Cloudflare Universal    HTTPS encryption
-                          SSL                     
+## Provisioning and Delivery
 
-  DDoS protection         Cloudflare Edge         Basic protection
+### Infrastructure
 
-  Load balancing          Cloudflare Load         Failover between origin
-                          Balancer                servers
+Infrastructure is defined under `infrastructure/terraform/`.
 
-  Health checks           Cloudflare Health       Detect origin failures
-                          Checks                  
-  -----------------------------------------------------------------------
+That directory includes:
 
-Cloudflare reduces latency and offloads requests from the origin
-servers.
+- `main.tf` for the network, firewall rules, and VM resources
+- `variables.tf` for project and environment inputs
+- `outputs.tf` for origin IP outputs
+- `startup-script.sh` for basic origin bootstrapping
 
-------------------------------------------------------------------------
+### Deployment workflow
 
-## Origin Compute Layer
+Deployment is handled by `.github/workflows/deploy.yml`.
 
-  Component             Configuration
-  --------------------- ----------------------------------
-  Cloud provider        Google Cloud Platform
-  VM type               `e2-micro`
-  Operating system      Debian 12
-  Number of instances   2
-  Region                `us-central1`
-  Zones                 `us-central1-a`, `us-central1-b`
+On pushes to `main`, the workflow:
 
-### Purpose
+1. checks out the repository
+2. sets up Node.js
+3. installs site dependencies
+4. builds the Astro site from `site/`
+5. archives the generated output
+6. copies the artifact to both origin VMs
+7. reloads Nginx on each host
 
--   provide high availability
--   tolerate zonal outages
--   host the portfolio application
+## Design Goals
 
-------------------------------------------------------------------------
+The architecture is meant to show a few specific engineering concerns clearly.
 
-## Web Server Layer
+| Goal | How the repo addresses it |
+|---|---|
+| Simplicity | Static Astro output and Nginx serving |
+| Redundancy | Two origin VMs in separate zones |
+| Delivery | GitHub Actions build and deploy workflow |
+| Edge handling | Cloudflare DNS, CDN, TLS, and balancing |
+| Cost control | Small VM footprint and a lightweight app layer |
 
-  Component           Configuration
-  ------------------- -----------------
-  Server              Nginx
-  Content directory   `/var/www/html`
-  Site type           Static
+## Cost Profile
 
-### Responsibilities
+Estimated monthly cost stays low because the runtime is static and the compute layer is intentionally small.
 
--   serve the static site
--   expose health endpoint `/healthz`
+| Resource | Estimated Monthly Cost |
+|---|---|
+| Cloudflare Load Balancer | ~$5 |
+| Second `e2-micro` VM | ~$6-8 |
+| Persistent disks | ~$1 |
+| Network traffic | ~$0-2 |
+| **Estimated total** | **~$12-16/month** |
 
-Example health endpoint response:
+## Why This Matters
 
-``` text
-HTTP 200 OK
-```
+The portfolio is useful as a frontend project, but the stronger signal is in how it is delivered.
 
-------------------------------------------------------------------------
+This repository ties together:
 
-## Application Layer
+- application work
+- infrastructure provisioning
+- deployment automation
+- documentation that explains the tradeoffs
 
-  Component        Technology
-  ---------------- --------------------
-  Site generator   Astro
-  Output           Static HTML/CSS/JS
-  Backend          None
-
-### Reasons for a static architecture
-
--   minimal CPU usage
--   easy replication across nodes
--   simple deployment
--   strong performance
-
-------------------------------------------------------------------------
-
-# CI/CD Pipeline
-
-Deployment is automated through **GitHub Actions**.
-
-## Deployment Workflow
-
-1.  Developer pushes code to `main`
-2.  GitHub Actions builds the Astro static site
-3.  Build artifacts are produced
-4.  Pipeline deploys artifacts to both origin servers
-5.  Nginx reloads configuration
-6.  Cloudflare health checks verify origin availability
-
-------------------------------------------------------------------------
-
-# Instance Configuration
-
-Each VM is configured using a startup script.
-
-## Startup tasks
-
--   update system packages
--   install nginx
--   create web directory
--   deploy latest site build
--   enable nginx service
-
-Example structure:
-
-``` text
-/var/www/html
-├── index.html
-├── css/
-├── js/
-└── assets/
-```
-
-------------------------------------------------------------------------
-
-# Monitoring and Observability
-
-  Feature         Service
-  --------------- --------------------------
-  VM metrics      Google Cloud Monitoring
-  Uptime checks   Google Cloud Monitoring
-  Origin health   Cloudflare Health Checks
-  Logs            Nginx access/error logs
-
-Monitoring tracks:
-
--   CPU utilization
--   uptime status
--   VM health
-
-------------------------------------------------------------------------
-
-# Cost Estimate
-
-  Resource                   Estimated Monthly Cost
-  -------------------------- ------------------------
-  Cloudflare Load Balancer   \~\$5
-  Second `e2-micro` VM       \~\$6--8
-  Persistent disks           \~\$1
-  Network traffic            \~\$0--2
-  **Estimated total**        **\~\$12--16/month**
-
-------------------------------------------------------------------------
-
-# Security
-
-Security features include:
-
--   Cloudflare TLS termination
--   HTTPS enforcement
--   DDoS protection via Cloudflare
--   optional firewall rules on GCP
-
-------------------------------------------------------------------------
-
-# Key Design Goals
-
-  Goal                     Implementation
-  ------------------------ -----------------
-  High availability        two origin VMs
-  Edge performance         Cloudflare CDN
-  Cost control             micro instances
-  Automation               GitHub Actions
-  Reproducibility          startup scripts
-  Operational visibility   monitoring
-
-------------------------------------------------------------------------
-
-# Skills Demonstrated
-
-This project demonstrates:
-
--   cloud infrastructure design
--   high availability architecture
--   CDN and edge networking
--   DevOps CI/CD pipelines
--   monitoring and observability
--   cost-aware infrastructure planning
-
-------------------------------------------------------------------------
-
-# Future Improvements
-
-Potential upgrades:
-
--   Infrastructure as Code with Terraform
--   canary deployments
--   Web Application Firewall rules
--   Cloudflare caching rules
--   centralized logging
-
-------------------------------------------------------------------------
-
-# Repository Structure
-
-``` text
-portfolio-site/
-├── site/
-│   ├── src/
-│   ├── public/
-│   └── astro.config.mjs
-│
-├── infrastructure/
-│   ├── startup-script.sh
-│   └── nginx.conf
-│
-├── .github/
-│   └── workflows/
-│       └── deploy.yml
-│
-└── docs/
-    └── architecture.md
-```
-
-------------------------------------------------------------------------
-
-# Summary
-
-This portfolio platform provides:
-
--   a real public website
--   multi-zone origin infrastructure
--   global edge routing
--   automated deployment
-
-while maintaining a predictable low monthly cost.
-
-The architecture mirrors real-world SaaS deployment patterns while
-remaining simple enough to operate as a personal project.
+That combination is the main point of the design.

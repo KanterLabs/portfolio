@@ -1,59 +1,66 @@
 # GCP + Cloudflare Setup Checklist
 
+Reference checklist for reproducing the portfolio deployment.
+
 ## 1. Accounts and prerequisites
+
 - [ ] Buy or choose a domain
 - [ ] Create a Google Cloud project
 - [ ] Enable billing
 - [ ] Create a Cloudflare account
 - [ ] Move DNS for the domain to Cloudflare
-- [ ] Create a GitHub repository for the site
+- [ ] Create the GitHub repository
 
-## 2. Google Cloud
-- [ ] Enable Compute Engine API
+## 2. Prepare Google Cloud
+
+- [ ] Enable the Compute Engine API
 - [ ] Choose region `us-central1`
-- [ ] Create two Debian 12 `e2-micro` VMs in:
-  - [ ] `us-central1-a`
-  - [ ] `us-central1-b`
-- [ ] Open firewall rules for ports 80 and 443
-- [ ] Restrict port 22 to your IP if possible
-- [ ] Install Nginx
-- [ ] Configure `/healthz` to return HTTP 200
+- [ ] Decide which admin IP ranges should be allowed to SSH to the origin VMs
+- [ ] Set Terraform variables for project ID, region, zones, machine type, and admin CIDRs
+- [ ] Run Terraform from `infrastructure/terraform/`
+- [ ] Record the output IP addresses for both origin servers
 
-## 3. Cloudflare
-- [ ] Add your domain to Cloudflare
-- [ ] Verify nameservers at registrar
-- [ ] Create proxied DNS records for the portfolio hostname
-- [ ] Enable Universal SSL
-- [ ] Set SSL mode to **Full (strict)**
-- [ ] Create a Load Balancer
-- [ ] Create one origin pool with both GCP VM public IPs
-- [ ] Configure health checks to `http://<origin>/healthz`
+## 3. Verify origin bootstrap
 
-## 4. Site and deployment
-- [ ] Create Astro site
-- [ ] Confirm `npm run build` works locally
-- [ ] Serve build output from `/var/www/html`
-- [ ] Add GitHub Actions workflow
+- [ ] Confirm both Debian 12 VMs are running
+- [ ] Confirm Nginx is installed and active on each VM
+- [ ] Confirm `/var/www/html` exists on each VM
+- [ ] Confirm `/healthz` returns HTTP 200 on each origin
+
+## 4. Configure Cloudflare
+
+- [ ] Add the domain to Cloudflare
+- [ ] Verify nameservers at the registrar
+- [ ] Create proxied DNS records for the site hostname
+- [ ] Configure SSL/TLS mode to match the actual origin setup
+- [ ] Create a load balancer
+- [ ] Create an origin pool containing both VM public IPs
+- [ ] Configure health checks against `http://<origin>/healthz` unless origin HTTPS is explicitly configured
+
+## 5. Configure deployment
+
 - [ ] Add repository secrets:
-  - [ ] `ORIGIN1_HOST`
-  - [ ] `ORIGIN2_HOST`
-  - [ ] `ORIGIN_USER`
-  - [ ] `ORIGIN_SSH_KEY`
-- [ ] Push to `main`
-- [ ] Verify deployment completed on both VMs
+- [ ] `ORIGIN1_HOST`
+- [ ] `ORIGIN2_HOST`
+- [ ] `ORIGIN_USER`
+- [ ] `ORIGIN_SSH_KEY`
+- [ ] Confirm `npm run build` succeeds in `site/`
+- [ ] Push to `main` or trigger the workflow manually
+- [ ] Verify the workflow deploys to both origins successfully
 
-## 5. Validation
+## 6. Validate the public site
+
 - [ ] Visit the site over HTTPS
-- [ ] Confirm Cloudflare proxy is active
-- [ ] Confirm `/healthz` is reachable from Cloudflare
-- [ ] Stop one origin temporarily
-- [ ] Confirm the site still serves traffic
-- [ ] Restart the stopped origin
-- [ ] Confirm it returns to healthy status
+- [ ] Confirm Cloudflare proxying is active
+- [ ] Confirm both origins report healthy in Cloudflare
+- [ ] Temporarily remove or stop one origin
+- [ ] Confirm traffic continues to serve from the remaining origin
+- [ ] Restore the stopped origin and confirm it returns to healthy status
 
-## 6. Portfolio proof points
-- [ ] Screenshot Cloudflare load balancer pool
+## 7. Capture proof for the case study
+
+- [ ] Screenshot the Cloudflare load balancer pool
 - [ ] Screenshot both VMs in GCP
-- [ ] Screenshot GitHub Actions deployment success
-- [ ] Screenshot site live on your domain
-- [ ] Write a project page describing architecture, cost, and failover test
+- [ ] Screenshot a successful GitHub Actions deployment
+- [ ] Screenshot the live site on the production domain
+- [ ] Update the project writeup with any deployment changes worth documenting

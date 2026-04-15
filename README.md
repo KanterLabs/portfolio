@@ -1,6 +1,6 @@
 # Multi-Node Server
 
-Portfolio project with a static Astro frontend, infrastructure-as-code for cloud deployment, and supporting architecture documentation.
+Portfolio repository for a static Astro site, the infrastructure used to deploy it, and the supporting documentation behind the architecture.
 
 ## Repository Structure
 
@@ -15,28 +15,26 @@ multi-node-server/
 │   └── setup-checklist.md
 ├── infrastructure/
 │   └── terraform/
-├── site/
-│   ├── public/
-│   ├── src/
-│   ├── astro.config.mjs
-│   ├── package.json
-│   └── tsconfig.json
-└── README.md
+└── site/
+    ├── public/
+    ├── src/
+    ├── astro.config.mjs
+    ├── package.json
+    └── tsconfig.json
 ```
 
-## Directories
+## What Is Here
 
-- `site/`: Astro frontend and project case-study content
-- `infrastructure/terraform/`: Google Cloud infrastructure definitions and startup scripts
-- `docs/`: architecture notes, diagrams, and setup checklists
-- `.github/workflows/`: CI/CD deployment workflow
+- `site/`: the Astro portfolio site and case-study content
+- `infrastructure/terraform/`: Terraform configuration and startup script for the origin VMs
+- `docs/`: architecture notes and setup reference material
+- `.github/workflows/deploy.yml`: build and deployment workflow for the site
 
 ## Local Development
 
-Run the frontend from the `site/` directory:
+From `site/`:
 
 ```sh
-cd site
 npm ci
 npm run dev
 ```
@@ -44,10 +42,21 @@ npm run dev
 Build locally:
 
 ```sh
-cd site
 npm run build
 ```
 
-## Deployment
+## Deployment Summary
 
-The GitHub Actions workflow in `.github/workflows/deploy.yml` builds the Astro app from `site/`, archives the generated `dist/` output, and deploys it to both origin VMs.
+The site is built from `site/` and deployed to two Google Cloud VM origins. Cloudflare sits in front for DNS, CDN, TLS, and load balancing.
+
+The GitHub Actions workflow:
+
+1. installs dependencies
+2. builds the Astro site
+3. archives the generated `dist/` output
+4. copies the build artifact to both origins
+5. reloads Nginx on each server
+
+## Why This Repo Exists
+
+The site is intentionally simple at the application layer. The main point of the repository is to show how the site is deployed, how the infrastructure is organized, and how the written case studies connect software work to operations and delivery.
