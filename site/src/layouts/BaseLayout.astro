@@ -24,7 +24,6 @@ const {
 
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
 const socialImageUrl = Astro.site ? new URL(image, Astro.site).toString() : image;
-const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
 const siteBuildVersion = getSiteBuildVersion();
 const jsonLdItems = structuredData
   ? Array.isArray(structuredData)
@@ -57,20 +56,6 @@ const jsonLdItems = structuredData
     {jsonLdItems.map((entry) => (
       <script type="application/ld+json" set:html={JSON.stringify(entry)} />
     ))}
-    {gaMeasurementId && (
-      <>
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}></script>
-        <script
-          is:inline
-          define:vars={{ gaMeasurementId }}
-        >
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', gaMeasurementId);
-        </script>
-      </>
-    )}
     <title>{title}</title>
     <script is:inline>
       document.documentElement.classList.remove('no-js');

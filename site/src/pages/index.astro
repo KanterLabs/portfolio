@@ -113,14 +113,15 @@ const structuredData = [
     name: 'Shane Kanterman',
     url: siteUrl,
     description:
-      'Portfolio site for Shane Kanterman featuring infrastructure, Linux, cloud deployment, and web projects.',
+      'Portfolio site for Shane Kanterman featuring Linux infrastructure, cloud deployment, server deployment, and web projects.',
   },
   {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: 'Shane Kanterman',
     url: siteUrl,
-    sameAs: ['https://www.linkedin.com/in/shane-kanterman-4511a2234'],
+    sameAs: [linkedInUrl, githubUrl],
+    email: 'mailto:shanekanterman04@gmail.com',
     alumniOf: {
       '@type': 'CollegeOrUniversity',
       name: 'Southern Connecticut State University',
@@ -128,6 +129,8 @@ const structuredData = [
     knowsAbout: [
       'Linux administration',
       'Cloud deployment',
+      'Server deployment',
+      'Data center operations',
       'Infrastructure',
       'Web development',
       'Terraform',
@@ -155,18 +158,19 @@ const structuredData = [
       >
         <div>
           <p class="mb-4 text-[#71717a] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
-            Computer Science Student + Data Center Experience
+            Computer Science Student + Data Center Technician
           </p>
           <h1
             class="text-[clamp(2.6rem,4.5vw,4.2rem)] leading-[1.06] tracking-[-0.02em] mb-5 max-w-[14ch] font-extrabold overflow-wrap-break-word text-[#18181b]"
           >
-            Building software with <span class="gradient-text">infrastructure
-            discipline.</span>
+            Building <span class="gradient-text">Linux infrastructure
+            and web projects</span> with deployment
+            discipline.
           </h1>
           <p class="text-[#52525b] leading-[1.75] text-[1.04rem] max-w-[48rem]">
-            Computer Science student with hands-on data center experience in server deployment,
-            PXE imaging, and hardware troubleshooting. Based between Cranford, NJ and New Haven,
-            CT — building software with an infrastructure mindset.
+            Computer Science student with hands-on data center operations experience in server
+            deployment, PXE imaging, Linux infrastructure, and cloud deployment. Based between
+            Cranford, NJ and New Haven, CT — building software with an infrastructure mindset.
           </p>
 
           <div class="flex flex-wrap gap-4 mt-8 max-[780px]:flex-col max-[780px]:items-stretch">
@@ -255,8 +259,8 @@ const structuredData = [
       >
         <SectionIntro
           eyebrow="About"
-          title="From data center operations to software and infrastructure work."
-          body="My background started with physical systems work. That shapes how I approach software: deploy it well, keep it simple, and make it maintainable."
+          title="From data center operations to Linux infrastructure and software delivery."
+          body="My background started with physical systems work. That shapes how I approach web projects and cloud deployment: deploy them well, keep them simple, and make them maintainable."
         />
 
         <div
@@ -328,8 +332,7 @@ const structuredData = [
               {profilePoints.map((point) => (
                 <li class="relative pl-5 text-[#52525b] leading-[1.6] text-[0.95rem]">
                   <span
-                    class="absolute left-0 top-[0.72rem] -translate-y-1/2 w-1.5 h-1.5 rounded-full"
-                    style="background:#1e293b;box-shadow:0 0 0 4px rgba(30,41,59,0.08);"
+                    class="profile-point-dot absolute left-0 top-[0.72rem] -translate-y-1/2 w-1.5 h-1.5 rounded-full"
                     aria-hidden="true"
                   ></span>
                   {point}
@@ -347,8 +350,8 @@ const structuredData = [
       >
         <SectionIntro
           eyebrow="Architecture"
-          title="This portfolio is also a deployment case study."
-          body="Simple application layer, deliberate infrastructure: edge routing, redundant origins, automated delivery, low-cost hosting."
+          title="This portfolio is also a cloud deployment case study."
+          body="Simple application layer, deliberate Linux infrastructure: edge routing, redundant origins, automated delivery, and low-cost hosting."
         />
 
         <div class="grid grid-cols-[minmax(0,1fr)_minmax(18rem,30rem)] gap-5 items-start max-[960px]:grid-cols-1">
@@ -392,8 +395,8 @@ const structuredData = [
       >
         <SectionIntro
           eyebrow="Projects"
-          title="Case studies with constraints, tradeoffs, and real operating context."
-          body="The most representative work here is not just what I built, but how it was deployed, what constraints shaped it, and what the project proves about the way I work."
+          title="Web projects and infrastructure case studies with real operating context."
+          body="The most representative work here is not just what I built, but how it was deployed, what constraints shaped it, and what each project proves about my approach to server deployment and operations."
           class="mb-11"
         />
 
@@ -415,8 +418,8 @@ const structuredData = [
       >
         <SectionIntro
           eyebrow="Skills"
-          title="Capabilities tied to actual delivery work."
-          body="The emphasis is on using tools together to build, deploy, troubleshoot, and maintain systems that are understandable in production."
+          title="Capabilities tied to Linux infrastructure and delivery work."
+          body="The emphasis is on using tools together to build, deploy, troubleshoot, and maintain web projects and systems that stay understandable in production."
         />
 
         <div class="grid grid-cols-3 gap-5 max-[960px]:grid-cols-2 max-[580px]:grid-cols-1">

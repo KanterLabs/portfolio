@@ -395,6 +395,40 @@ select {
   min-width: min(100%, 15rem);
 }
 
+.site-header-mark,
+.project-progress-bar,
+.profile-point-dot {
+  background: #1e293b;
+}
+
+.profile-point-dot {
+  box-shadow: 0 0 0 4px rgba(30, 41, 59, 0.08);
+}
+
+.project-status-shipped {
+  color: #16a34a;
+}
+
+.project-status-shipped .project-status-dot {
+  background: #16a34a;
+}
+
+.project-status-progress {
+  color: #d97706;
+}
+
+.project-status-progress .project-status-dot {
+  background: #d97706;
+}
+
+.project-status-archived {
+  color: #71717a;
+}
+
+.project-status-archived .project-status-dot {
+  background: #71717a;
+}
+
 .certification-row {
   display: grid;
   gap: 0.2rem;

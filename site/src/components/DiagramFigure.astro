@@ -35,8 +35,7 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
     />
     <!-- Zoom hint overlay -->
     <span
-      class="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[0.72rem] font-medium text-[#d8e0ec] opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
-      style="background:rgba(10,18,32,0.78);backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,0.2);"
+      class="diagram-zoom-hint absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[0.72rem] font-medium text-[#d8e0ec] opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
       aria-hidden="true"
     >
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -101,6 +100,12 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
   .diagram-trigger:focus-visible {
     outline: 2px solid #94a3b8;
     outline-offset: 3px;
+  }
+
+  .diagram-zoom-hint {
+    background: rgba(10, 18, 32, 0.78);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
   }
 
   /* ── Dialog backdrop + box ── */

@@ -22,10 +22,10 @@ const statusLabel: Record<string, string> = {
   archived: 'Archived',
 };
 
-const statusColor: Record<string, string> = {
-  shipped: '#16a34a',
-  'in-progress': '#d97706',
-  archived: '#71717a',
+const statusClass: Record<string, string> = {
+  shipped: 'project-status-shipped',
+  'in-progress': 'project-status-progress',
+  archived: 'project-status-archived',
 };
 
 const wordCount = project.body?.split(/\s+/).filter(Boolean).length ?? 0;
@@ -84,8 +84,7 @@ const structuredData = {
 >
   <div
     id="progress-bar"
-    class="fixed top-0 left-0 h-[2px] z-50 w-0 transition-none"
-    style="background:#1e293b;"
+    class="project-progress-bar fixed top-0 left-0 h-[2px] z-50 w-0 transition-none"
     aria-hidden="true"
   ></div>
 
@@ -101,8 +100,8 @@ const structuredData = {
           <span class="w-px h-3.5 bg-[rgba(0,0,0,0.12)]" aria-hidden="true"></span>
           <span class="text-[#71717a] text-[0.82rem]">{formatted}</span>
           <span class="w-px h-3.5 bg-[rgba(0,0,0,0.12)]" aria-hidden="true"></span>
-          <span class="inline-flex items-center gap-1.5 text-[0.8rem] font-medium" style={`color:${statusColor[status]};`}>
-            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style={`background:${statusColor[status]};`}></span>
+          <span class:list={['inline-flex items-center gap-1.5 text-[0.8rem] font-medium', statusClass[status]]}>
+            <span class="project-status-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
             {statusLabel[status]}
           </span>
           <span class="w-px h-3.5 bg-[rgba(0,0,0,0.12)]" aria-hidden="true"></span>

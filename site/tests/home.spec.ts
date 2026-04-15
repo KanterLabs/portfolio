@@ -9,7 +9,7 @@ test.describe('homepage', () => {
     const primaryNav = page.locator('nav[aria-label="Primary"]');
 
     await expect(page).toHaveTitle('Shane Kanterman | Linux Infrastructure and Web Projects');
-    await expect(page.getByRole('heading', { name: 'Building software with infrastructure discipline.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Building Linux infrastructure and web projects with deployment discipline.' })).toBeVisible();
 
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'About' }).click(), 'about');
     await page.goto('/');
@@ -45,6 +45,11 @@ test.describe('homepage', () => {
     await expect(page.getByRole('link', { name: 'Email me' })).toHaveAttribute(
       'href',
       'mailto:shanekanterman04@gmail.com',
+    );
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://shanekanterman.dev/');
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      'content',
+      'Portfolio site for Shane Kanterman featuring Linux infrastructure, cloud deployment, and web projects built with practical operations experience.',
     );
 
     await expect(page.getByLabel('Site footer')).toContainText('Build');
