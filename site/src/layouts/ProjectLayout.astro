@@ -9,7 +9,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, stack, status, date, links, heroImage, role, scope, keyOutcome } = project.data;
+const { title, summary, stack, status, date, links, heroImage, socialImage, role, scope, keyOutcome } = project.data;
 
 const formatted = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -45,13 +45,12 @@ for (const match of headingMatches) {
 }
 
 const projectUrl = Astro.site ? new URL(`/projects/${project.id}/`, Astro.site).toString() : undefined;
-const projectImageUrl = heroImage?.src
+const projectImagePath = socialImage ?? heroImage?.src ?? '/og/portfolio-preview.png';
+const projectImageUrl = projectImagePath
   ? Astro.site
-    ? new URL(heroImage.src, Astro.site).toString()
-    : heroImage.src
-  : Astro.site
-    ? new URL('/og-default.svg', Astro.site).toString()
-    : '/og-default.svg';
+    ? new URL(projectImagePath, Astro.site).toString()
+    : projectImagePath
+  : undefined;
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -78,7 +77,8 @@ const structuredData = {
 <BaseLayout
   title={`${title} | Shane Kanterman`}
   description={summary}
-  image={heroImage?.src ?? '/og-default.svg'}
+  image={projectImagePath}
+  imageAlt={`${title} project preview`}
   type="article"
   structuredData={structuredData}
 >

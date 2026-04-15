@@ -19,6 +19,7 @@ const projects = defineCollection({
       status: z.enum(['shipped', 'in-progress', 'archived']),
       date: z.coerce.date(),
       heroImage: image().optional(),
+      socialImage: z.string().optional(),
       links: z
         .array(
           z.object({
