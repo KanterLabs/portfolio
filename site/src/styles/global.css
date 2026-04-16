@@ -275,12 +275,48 @@ select {
 }
 
 .architecture-connector {
+  --connector-color: rgba(15, 23, 42, 0.14);
+  position: relative;
   width: min(78%, 18rem);
-  height: 2.75rem;
+  height: 2.9rem;
   margin: -0.1rem auto 0;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  border-top: none;
-  border-radius: 0 0 18px 18px;
+}
+
+.architecture-connector-trunk,
+.architecture-connector-rail,
+.architecture-connector-branch {
+  position: absolute;
+  display: block;
+  background: var(--connector-color);
+}
+
+.architecture-connector-trunk {
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 1rem;
+  transform: translateX(-50%);
+}
+
+.architecture-connector-rail {
+  top: 1rem;
+  left: 15%;
+  width: 70%;
+  height: 1px;
+}
+
+.architecture-connector-branch {
+  top: 1rem;
+  width: 1px;
+  height: 1.9rem;
+}
+
+.architecture-connector-branch-left {
+  left: 15%;
+}
+
+.architecture-connector-branch-right {
+  right: 15%;
 }
 
 .architecture-footer {
@@ -560,7 +596,21 @@ select {
   }
 
   .architecture-connector {
-    height: 1.75rem;
+    width: 1px;
+    height: 1rem;
+    margin: 0 auto;
+  }
+
+  .architecture-connector-rail,
+  .architecture-connector-branch {
+    display: none;
+  }
+
+  .architecture-connector-trunk {
+    top: 0;
+    left: 0;
+    transform: none;
+    height: 1rem;
   }
 
   .architecture-footer {
