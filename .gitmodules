@@ -1,0 +1,3 @@
+[submodule "divstack"]
+	path = divstack
+	url = https://github.com/ShaneKanterman04/DivStack
