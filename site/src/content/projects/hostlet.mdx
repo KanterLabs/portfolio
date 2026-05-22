@@ -1,0 +1,165 @@
+---
+title: Hostlet Self-Hosted Deployment Panel
+summary: A Rust and Next.js-backed deployment control panel for shipping GitHub projects to Docker on a self-hosted machine, with live logs, rollback, encrypted app settings, Cloudflare public URLs, and opt-in auto-redeploy.
+highlight: Turns a homelab server into a practical GitHub-to-Docker deployment platform.
+impact: Consolidates app deployment, logs, rollback, public URL management, and backup commands into one self-hosted workflow.
+constraint: Scoped deliberately as a local-machine MVP so reliability, cleanup, and security could be handled before remote agent support.
+role: Product designer, full-stack builder, and release operator.
+scope: Rust API and agent, Next.js dashboard work, PostgreSQL, Docker, Caddy, Cloudflare Tunnel, GitHub OAuth, webhooks, and release packaging.
+keyOutcome: Shipped a repackaged v0.1.0 technical beta with aligned source tag, release assets, docs, checksum, and production Compose path.
+featured: false
+order: 2
+stack:
+  - Rust
+  - Axum
+  - Docker
+  - Next.js
+  - PostgreSQL
+  - Cloudflare
+  - GitHub OAuth
+  - Caddy
+status: shipped
+date: 2026-05-22
+socialImage: /og/project-hostlet.svg
+links:
+  - label: View Hostlet repo
+    href: https://github.com/ShaneKanterman04/Hostlet
+  - label: View v0.1.0 release
+    href: https://github.com/ShaneKanterman04/Hostlet/releases/tag/v0.1.0
+---
+
+import Callout from '../../components/Callout.astro';
+
+## Overview
+
+Hostlet is a self-hosted deployment control panel built around a simple goal: take a GitHub project, deploy it to Docker on a machine I own, and manage the operational pieces from one place.
+
+The first release is intentionally not a broad platform. `v0.1.0` is a single-owner, local-machine beta. The web UI, API, database, local deployment agent, Caddy router, and deployed app containers all run on the same host. That narrower scope made the important engineering work clearer: authentication, job signing, deployment logs, app cleanup, rollback, encrypted configuration, release packaging, and honest documentation of what is still out of scope.
+
+## Why I Built It
+
+I wanted the experience of a small deployment platform without handing the entire workflow to a managed service.
+
+Most of my projects already live in GitHub and end up running on Linux somewhere. Hostlet connects those pieces directly:
+
+- sign in with GitHub Device Flow
+- choose a repository and branch
+- configure build and runtime settings
+- deploy to Docker through a local agent
+- watch deployment logs in the dashboard
+- publish a public URL only when the app should be public
+
+The value is not just convenience. It forced me to design the boundary between a control plane and a privileged deployment worker, then package that into a release a technical user could actually run.
+
+## System Shape
+
+Hostlet is split into four main parts:
+
+| Component | Responsibility |
+|---|---|
+| Web dashboard | First-run setup, GitHub connection, app creation, app settings, deploys, logs, rollback, public URL controls |
+| Rust API | Auth, sessions, app state, encrypted secrets, webhooks, deployment records, Cloudflare DNS, agent communication |
+| Local agent | Git checkout, Docker builds, container starts, health checks, Caddy route updates, resource samples |
+| Compose stack | PostgreSQL, API, web UI, local agent, Caddy, and optional cloudflared |
+
+The API does not mount the Docker socket. Docker access stays with the local agent, which authenticates to the API and only runs jobs signed by the control plane.
+
+```text
+Browser
+  |
+  v
+Hostlet Web UI
+  |
+  v
+Rust API + PostgreSQL
+  |
+  | signed jobs + authenticated events
+  v
+Local Rust Agent
+  |
+  v
+Docker containers + Caddy routes
+```
+
+<Callout type="note">
+  The important design choice was keeping the MVP local-only. Remote VPS agents are useful later, but they would have expanded the trust, install, recovery, and networking problems before the core deploy path was solid.
+</Callout>
+
+## Deployment Flow
+
+When a user clicks **Deploy latest**, the API creates a deployment record, decrypts the app configuration, signs a job payload, and sends it to the connected local agent.
+
+The agent then:
+
+1. fetches the selected GitHub repo and branch
+2. builds from the repo Dockerfile or generates a Node Dockerfile when possible
+3. starts a new container with reduced privileges and optional resource limits
+4. runs a health check against the configured path
+5. updates the Caddy route only after the new container is healthy
+6. reports status, logs, image, container, and route metadata back to the API
+
+That sequencing matters. A failed build or failed health check should not replace the previous working app. Hostlet preserves failed containers for inspection and leaves routing pointed at the last successful deployment.
+
+## Product Details
+
+The dashboard covers the operations I wanted in the first usable release:
+
+- app settings for domain, health path, root directory, install/build/start commands, container port, CPU, and memory
+- encrypted environment variables with key-only display and explicit replacement
+- live deployment logs over WebSocket
+- stored deployment logs for later debugging
+- rollback to a previous successful deployment
+- local Docker resource stats
+- backup and restore commands
+- app deletion that asks the agent to clean managed containers, images, Caddy routes, app data, public DNS, resource snapshots, and database records
+
+The goal was not a decorative dashboard. It needed to expose the state a person operating a deployment actually needs to see.
+
+## GitHub and Webhooks
+
+Hostlet uses GitHub Device Flow for login and repository access, which avoids callback URLs and client secrets for LAN-based installs.
+
+Auto-redeploy is opt-in per app. When enabled, Hostlet creates or updates the GitHub webhook for that repository if the connected token has the right permissions. Push events are verified with the webhook secret, deduplicated by GitHub delivery ID, matched to the configured repo and branch, and deployed by exact commit SHA.
+
+That branch-and-commit matching was important. A webhook should not become a generic "something changed, deploy whatever HEAD is now" trigger.
+
+## Public URLs
+
+Apps are private by default.
+
+If Cloudflare is configured, Hostlet can publish an app URL by creating a proxied CNAME/Tunnel record under the configured base domain. It stores ownership in `app_public_dns_records` and refuses to claim unrelated Cloudflare records.
+
+That ownership tracking is a small feature, but it reflects the kind of operational caution the project needed. A deployment tool should not casually mutate DNS records it does not own.
+
+## Release Work
+
+The updated `v0.1.0` package included more than code changes. I repackaged the release so the GitHub release asset, checksum, tag, source archive, and docs all point to the same version of the project.
+
+Release validation included:
+
+- Rust formatting, clippy, and workspace tests
+- web typechecking and production build
+- development and production Compose config rendering
+- release binary build and checksum generation
+- GitHub release asset replacement
+- tag update so `v0.1.0` dereferences to the current source commit
+
+That last step matters because a release is not only the binary. The source tag, docs, release notes, and checksum all need to tell the same story.
+
+## Tradeoffs
+
+The biggest tradeoff was choosing what not to ship yet.
+
+Hostlet `v0.1.0` does not claim to be a production-hardened platform. It does not include remote VPS agents, durable job queues, RBAC, audit logs, release signing, SBOMs, image scanning, or broad runtime presets beyond Dockerfile and Node support.
+
+Those gaps are documented directly in the repo because the scope is part of the engineering story. A useful MVP is not the same thing as pretending every hard problem is solved.
+
+## What It Shows
+
+Hostlet shows the kind of engineering work I want to keep doing: building practical tools where software delivery, Linux operations, security boundaries, and product clarity overlap.
+
+- **Systems thinking**: separating API state from privileged Docker execution
+- **Deployment discipline**: health checks, rollback, logs, and app cleanup
+- **Security awareness**: encrypted tokens/env vars, signed jobs, webhook verification, and scoped DNS management
+- **Product judgment**: local-only MVP scope instead of overextending into remote agents too early
+- **Release ownership**: docs, checks, artifacts, checksums, and tags aligned before calling the package shipped

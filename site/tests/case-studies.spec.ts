@@ -12,6 +12,11 @@ const caseStudies = [
     heading: 'Self-Hosted Linux Server',
   },
   {
+    path: '/projects/hostlet',
+    title: 'Hostlet Self-Hosted Deployment Panel | Shane Kanterman',
+    heading: 'Hostlet Self-Hosted Deployment Panel',
+  },
+  {
     path: '/projects/data-center-operations',
     title: 'InterServer Data Center Operations | Shane Kanterman',
     heading: 'InterServer Data Center Operations',
