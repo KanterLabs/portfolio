@@ -1,181 +1,102 @@
-name: Deploy Portfolio
+name: Build, test, and deploy portfolio
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      rollback_sha:
+        description: "Retained 40-character release SHA to activate instead of deploying"
+        required: false
+        type: string
 
 concurrency:
-  group: deploy-portfolio-${{ github.ref }}
-  cancel-in-progress: true
+  group: portfolio-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: site
-
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: "22.12.0"
-          cache: "npm"
+          node-version: "22.22.1"
+          cache: npm
           cache-dependency-path: site/package-lock.json
-
       - name: Install dependencies
         run: npm ci
-
-      - name: Build Astro site
-        run: npm run build
-
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Run browser tests
+        run: npm run test:e2e
       - name: Archive build output
         run: tar -czf ../site-dist.tar.gz -C dist .
-
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: site-dist
           path: site-dist.tar.gz
           if-no-files-found: error
 
-  deploy-origin-1:
+  deploy:
+    # Enable after the one-time Tailscale WIF client is configured in the
+    # production environment. Builds and browser tests remain mandatory now.
+    if: github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true'
+    needs: build-and-test
     runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 8
-    outputs:
-      deploy_result: ${{ steps.origin-result.outputs.deploy_result }}
-
+    timeout-minutes: 10
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@v4
+        if: inputs.rollback_sha == ''
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: site-dist
-
-      - name: Copy artifact to origin 1
-        id: copy
-        continue-on-error: true
-        timeout-minutes: 3
-        uses: appleboy/scp-action@v0.1.7
+      - name: Join the private deployment network
+        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
         with:
-          host: ${{ secrets.ORIGIN1_HOST }}
-          username: ${{ secrets.ORIGIN_USER }}
-          key: ${{ secrets.ORIGIN_SSH_KEY }}
-          source: "site-dist.tar.gz"
-          target: "/tmp"
-
-      - name: Deploy on origin 1
-        id: deploy
-        if: steps.copy.outcome == 'success'
-        continue-on-error: true
-        timeout-minutes: 3
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.ORIGIN1_HOST }}
-          username: ${{ secrets.ORIGIN_USER }}
-          key: ${{ secrets.ORIGIN_SSH_KEY }}
-          script: |
-            sudo mkdir -p /var/www/html
-            sudo tar -xzf /tmp/site-dist.tar.gz -C /var/www/html
-            sudo chown -R debian:debian /var/www/html
-            sudo nginx -t
-            sudo systemctl reload nginx
-
-      - name: Record origin 1 result
-        id: origin-result
-        if: always()
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:portfolio-ci
+      - name: Configure deployment SSH identity
+        env:
+          DEPLOY_KEY: ${{ secrets.PORTFOLIO_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.PORTFOLIO_DEPLOY_KNOWN_HOSTS }}
         run: |
-          if [ "${{ steps.copy.outcome }}" = "success" ] && [ "${{ steps.deploy.outcome }}" = "success" ]; then
-            echo "deploy_result=success" >> "$GITHUB_OUTPUT"
-          else
-            echo "deploy_result=failure" >> "$GITHUB_OUTPUT"
-            echo "::warning::origin 1 did not deploy successfully. copy=${{ steps.copy.outcome }}, deploy=${{ steps.deploy.outcome }}"
-          fi
-
-  deploy-origin-2:
-    runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 8
-    outputs:
-      deploy_result: ${{ steps.origin-result.outputs.deploy_result }}
-
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: site-dist
-
-      - name: Copy artifact to origin 2
-        id: copy
-        continue-on-error: true
-        timeout-minutes: 3
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.ORIGIN2_HOST }}
-          username: ${{ secrets.ORIGIN_USER }}
-          key: ${{ secrets.ORIGIN_SSH_KEY }}
-          source: "site-dist.tar.gz"
-          target: "/tmp"
-
-      - name: Deploy on origin 2
-        id: deploy
-        if: steps.copy.outcome == 'success'
-        continue-on-error: true
-        timeout-minutes: 3
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.ORIGIN2_HOST }}
-          username: ${{ secrets.ORIGIN_USER }}
-          key: ${{ secrets.ORIGIN_SSH_KEY }}
-          script: |
-            sudo mkdir -p /var/www/html
-            sudo tar -xzf /tmp/site-dist.tar.gz -C /var/www/html
-            sudo chown -R debian:debian /var/www/html
-            sudo nginx -t
-            sudo systemctl reload nginx
-
-      - name: Record origin 2 result
-        id: origin-result
-        if: always()
+          install -m 0700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/portfolio
+          chmod 0600 ~/.ssh/portfolio
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 0644 ~/.ssh/known_hosts
+      - name: Confirm private origin reachability
+        run: tailscale ping --timeout=10s 10.40.0.32
+      - name: Deploy release
+        if: inputs.rollback_sha == ''
+        env:
+          RELEASE_SHA: ${{ github.sha }}
         run: |
-          if [ "${{ steps.copy.outcome }}" = "success" ] && [ "${{ steps.deploy.outcome }}" = "success" ]; then
-            echo "deploy_result=success" >> "$GITHUB_OUTPUT"
-          else
-            echo "deploy_result=failure" >> "$GITHUB_OUTPUT"
-            echo "::warning::origin 2 did not deploy successfully. copy=${{ steps.copy.outcome }}, deploy=${{ steps.deploy.outcome }}"
-          fi
-
-  deploy-summary:
-    runs-on: ubuntu-latest
-    needs:
-      - deploy-origin-1
-      - deploy-origin-2
-    if: always()
-
-    steps:
-      - name: Summarize origin deployment results
+          ssh -i ~/.ssh/portfolio portfolio-deploy@10.40.0.32 "deploy $RELEASE_SHA" < site-dist.tar.gz
+      - name: Roll back to retained release
+        if: inputs.rollback_sha != ''
+        env:
+          ROLLBACK_SHA: ${{ inputs.rollback_sha }}
         run: |
-          cat <<'SUMMARY' >> "$GITHUB_STEP_SUMMARY"
-          ## Deployment summary
-
-          | Origin | Result |
-          | --- | --- |
-          | origin 1 | `${{ needs.deploy-origin-1.outputs.deploy_result }}` |
-          | origin 2 | `${{ needs.deploy-origin-2.outputs.deploy_result }}` |
-          SUMMARY
-
-          if [ "${{ needs.deploy-origin-1.outputs.deploy_result }}" != "success" ] && [ "${{ needs.deploy-origin-2.outputs.deploy_result }}" != "success" ]; then
-            echo "No origin deployed successfully." >&2
+          printf '%s' "$ROLLBACK_SHA" | grep -Eq '^[0-9a-f]{40}$' || {
+            echo "rollback_sha must be exactly 40 lowercase hexadecimal characters" >&2
             exit 1
-          fi
-
-          if [ "${{ needs.deploy-origin-1.outputs.deploy_result }}" != "success" ] || [ "${{ needs.deploy-origin-2.outputs.deploy_result }}" != "success" ]; then
-            echo "::warning::Partial deployment: at least one origin updated, but one origin failed."
-          fi
+          }
+          ssh -i ~/.ssh/portfolio portfolio-deploy@10.40.0.32 "rollback $ROLLBACK_SHA"

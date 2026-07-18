@@ -1,23 +1,24 @@
 ---
 title: Portfolio Infrastructure Deployment
-summary: A static Astro portfolio deployed across two GCP VMs behind Cloudflare load balancing, with automated delivery from GitHub Actions. Built to show software delivery, not just frontend implementation.
-highlight: Keeps the application simple while making the infrastructure decisions visible.
-impact: Automated deployment to two GCP origins behind Cloudflare health-checked failover.
-constraint: Designed to stay low-cost while still showing redundancy, deployment automation, and basic operational discipline.
+summary: A static Astro portfolio served from a private Kantercloud LXC through a shared Caddy edge, with Full (strict) Cloudflare TLS and atomic delivery from GitHub Actions.
+highlight: Separates public ingress from a minimal private workload container.
+impact: Replaced a stale single-active-origin GCP design with private routing, verified origin TLS, and fast release rollback.
+constraint: Keep the runtime small and inexpensive without putting Tailscale or Docker inside the workload.
 role: Designer, builder, and operator.
-scope: Static Astro frontend, GCP infrastructure, Nginx, Cloudflare, and CI/CD.
-keyOutcome: A portfolio that doubles as a concrete infrastructure case study.
+scope: Astro, Debian LXC, Nginx, Caddy, Cloudflare, Tailscale, Proxmox, and CI/CD.
+keyOutcome: A portfolio whose live deployment matches the infrastructure story it tells.
 featured: true
 order: 1
 stack:
   - Astro
   - Nginx
-  - GCP Compute Engine
-  - Terraform
+  - Caddy
+  - Proxmox LXC
   - Cloudflare
+  - Tailscale
   - GitHub Actions
 status: shipped
-date: 2026-04-12
+date: 2026-07-18
 socialImage: /og/project-portfolio-infrastructure.png
 links:
   - label: View portfolio repo
@@ -29,139 +30,81 @@ import Callout from '../../components/Callout.astro';
 
 ## Overview
 
-This project started with a simple question: if the application is intentionally lightweight, what can the deployment still say about how I work?
+The portfolio is intentionally static. The operational work is in making that small application deploy safely, remain private behind a shared edge, and recover without rebuilding a server by hand.
 
-The answer was to keep the frontend static and put the engineering effort into how it is delivered. The site runs behind Cloudflare, serves from two GCP origin VMs in separate zones, and deploys through GitHub Actions. The stack is small, but the responsibilities are the same ones that show up on larger systems: networking, failover, delivery, and keeping the setup understandable.
+The current production path is **Cloudflare → kanter-edge → private portfolio LXC**. Cloudflare provides the public network and validates the origin certificate. Caddy owns public ingress on the shared edge VM. Nginx serves the generated Astro files from a dedicated unprivileged container.
 
-## Architecture
+## Current Architecture
 
-Traffic enters through **Cloudflare**, which handles DNS, CDN, TLS, and load balancing. Requests are routed to one of two **GCP Compute Engine `e2-micro` VMs** in separate zones. Each VM runs **Nginx** and serves the static Astro build from `/var/www/html`.
-
-```
+```text
 Internet
    |
-Cloudflare DNS + CDN
+Cloudflare DNS, CDN, Full (strict) TLS
    |
-Cloudflare Load Balancer
-   |---------------------------|
-   |                           |
-GCP VM 1                    GCP VM 2
-us-central1-a               us-central1-b
-Nginx                       Nginx
+kanter-edge VM · Caddy
+   |
+Private Kantercloud network
+   |
+Unprivileged Debian LXC · Nginx · Astro files
 ```
 
 <DiagramFigure
   src="/diagrams/architecture-diagram.svg"
-  alt="Multi-node architecture: Cloudflare load balancer routing to two GCP VMs running Nginx"
-  caption="Cloudflare distributes traffic across two origin VMs in separate GCP zones."
+  alt="Cloudflare routing through the Kantercloud Caddy edge to a private portfolio LXC"
+  caption="Public ingress, edge routing, and the static origin are separate responsibilities."
   wide={true}
 />
 
 ## Why This Shape
 
-Most portfolio sites stop at a managed frontend host. That is a reasonable choice, but it hides the parts of engineering work I wanted to emphasize: deployment, origin management, and failure handling.
+The edge VM already owns the server's public ports and certificate lifecycle. Putting the portfolio there would mix ingress and workload state. Giving the portfolio LXC its own Tailscale node would duplicate network identity and administration.
 
-Two small VMs in separate zones make the tradeoff visible. The site can tolerate losing one instance or one zone, and the application itself does not need to change to get that behavior.
+The resulting boundary is small and explicit:
 
-## Infrastructure Setup
+- the Proxmox host routes public 80/443 only to `kanter-edge`
+- Caddy proxies the portfolio hostname over the private guest network
+- the LXC accepts HTTP only from approved infrastructure addresses
+- deployment reaches private SSH through the existing subnet router
+- the LXC runs no Docker daemon and no Tailscale daemon
 
-Provisioning is defined in Terraform and creates:
+## Atomic Delivery
 
-- a VPC network and firewall rules
-- two Debian 12 VM instances
-- startup-script-based web server setup
-- public IPs for both origins
+GitHub Actions builds and tests the Astro site on a hosted runner. The deployment job joins the tailnet as a short-lived tagged node and sends a compressed release through a restricted SSH key.
 
-Each origin runs a minimal Nginx configuration with a `/healthz` endpoint for load-balancer checks and serves the static site directly from disk.
+The remote account cannot open a shell. It can only request `deploy <sha>` or `rollback <sha>`. The deploy command validates the archive, extracts it to a temporary directory, moves it into a commit-addressed release, and swaps the `current` symlink atomically. If local HTTP validation fails, the previous symlink is restored.
 
-```nginx
-server {
-    listen 80;
+Five releases stay on disk, so a rollback does not depend on GitHub, npm, or a rebuild.
 
-    root /var/www/html;
-    index index.html;
+## TLS and Health
 
-    location /healthz {
-        return 200 'OK';
-        add_header Content-Type text/plain;
-    }
+Cloudflare uses **Full (strict)** origin mode and requires TLS 1.2 or newer from visitors. Caddy obtains and renews publicly trusted certificates for the apex and `www` hostnames. The `www` hostname redirects to the canonical apex URL.
 
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
+Nginx exposes `/healthz` with an exact `ok` response. Cloudflare checks the route through the edge, while Homebase checks both the public site and the private origin. That separates an origin failure from a DNS, TLS, or edge-routing failure.
 
-## Delivery Workflow
+## Recovery
 
-Deployment is handled by **GitHub Actions** on every push to `main`.
+The deployment has three recovery layers:
 
-The workflow:
-
-1. checks out the repo
-2. installs Node dependencies
-3. builds the Astro site from `site/`
-4. archives the generated output
-5. copies the artifact to both origin VMs
-6. reloads Nginx after deployment
-
-This keeps the application layer simple. There is no runtime process manager, database, or app server to operate for this project. The focus stays on reproducible delivery and infrastructure choices.
-
-## Cloudflare's Role
-
-Cloudflare handles several jobs that would otherwise require more infrastructure:
-
-| Feature | Value to this project |
+| Failure | Recovery |
 |---|---|
-| DNS | Public entry point for the domain |
-| CDN | Better static asset delivery |
-| TLS | HTTPS at the edge |
-| Load balancing | Health-checked failover across origins |
-| Basic protection | Reduces direct exposure of the origin layer |
+| Bad site release | Activate a retained commit SHA |
+| Broken container | Restore the nightly Proxmox snapshot |
+| Migration regression | Temporarily re-enable the retained GCP origin |
 
 <Callout type="note">
-  The point of using Cloudflare here was not feature volume. It was to keep the origin layer small while still showing how traffic, failover, and public delivery are handled.
+  The rollback GCP origin is temporary. It remains disabled during the soak window and can be removed once the Kantercloud deployment has a clean operating history.
 </Callout>
 
-## Cost and Tradeoffs
+## Architecture Evolution
 
-The whole setup stays in a low monthly range because the application is static and the compute layer is deliberately small.
+The first version used two GCP `e2-micro` origins behind a paid Cloudflare Load Balancer. That design was useful for learning Terraform, multi-zone origins, and health checks. Over time the second origin became disabled, leaving the published redundancy claim out of step with reality.
 
-| Resource | Estimated Monthly Cost |
-|---|---|
-| GCP e2-micro VM 1 | Free tier or low cost |
-| GCP e2-micro VM 2 | ~$6-8 |
-| Persistent disks | ~$1 |
-| Cloudflare Load Balancer | ~$5 |
-| Network egress | ~$0-2 |
-| **Total** | **~$12-16/month** |
-
-The main tradeoffs were straightforward:
-
-- **Static Astro over a dynamic app** to keep operations simple and failure modes easy to reason about
-- **Cloudflare over a cloud-native load balancer** to combine CDN, TLS, and failover in one edge layer
-- **Two small VMs over one** to show redundancy without turning the project into an expensive architecture exercise
-
-## Challenges
-
-The hardest parts were around integration, not application code.
-
-- aligning Cloudflare behavior with origin firewall and health-check expectations
-- keeping the deployment flow simple without hiding what is actually happening
-- choosing an architecture that was meaningful enough to discuss without adding complexity that did not serve the project
+The migration kept the useful parts—static output, Nginx, Cloudflare, automated delivery—and replaced nominal redundancy with controls that are exercised directly: private origin access, atomic releases, verified TLS, explicit health checks, and snapshot recovery.
 
 ## What It Shows
 
-This project shows the kind of work I want to keep doing: connecting application delivery to infrastructure decisions.
-
-- **Deployment thinking**: build once, ship predictably, keep the runtime simple
-- **Infrastructure fundamentals**: networking, origins, health checks, and web serving
-- **Operational judgment**: choosing the smallest setup that still demonstrates the right engineering concerns
-- **Cost awareness**: using just enough infrastructure to make the design decisions real
-
-## Next Improvements
-
-- make deployments more atomic to avoid stale assets on origin
-- tighten origin security defaults and deployment access
-- add more explicit monitoring and verification around releases
-- document the final production setup more precisely alongside the Terraform and workflow
+- **Linux operations:** a hardened Debian service with narrow firewall rules
+- **Network design:** public edge and private workload roles kept separate
+- **Delivery engineering:** build once, validate, atomically activate, and retain rollback state
+- **Operational honesty:** documentation and visible site claims match the running system
+- **Cost judgment:** reuse existing reliable infrastructure instead of paying for an idle load-balancer design

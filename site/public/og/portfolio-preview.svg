@@ -35,7 +35,7 @@
     <rect x="90" y="526" width="136" height="38" rx="19" fill="#eff6ff" />
     <text x="158" y="551" text-anchor="middle">Cloudflare</text>
     <rect x="238" y="526" width="84" height="38" rx="19" fill="#eff6ff" />
-    <text x="280" y="551" text-anchor="middle">GCP</text>
+    <text x="280" y="551" text-anchor="middle">LXC</text>
     <rect x="334" y="526" width="172" height="38" rx="19" fill="#eff6ff" />
     <text x="420" y="551" text-anchor="middle">GitHub Actions</text>
     <rect x="518" y="526" width="82" height="38" rx="19" fill="#eff6ff" />

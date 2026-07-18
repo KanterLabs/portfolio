@@ -1,64 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860">
   <defs>
     <style>
-      .title { font: 700 30px Arial, sans-serif; fill: #1f2937; }
-      .subtitle { font: 500 16px Arial, sans-serif; fill: #4b5563; }
-      .label { font: 600 18px Arial, sans-serif; fill: #111827; }
-      .small { font: 14px Arial, sans-serif; fill: #374151; }
-      .box { rx: 18; ry: 18; stroke: #334155; stroke-width: 2; fill: #f8fafc; }
-      .edge { fill: #eef6ff; }
-      .cloud { fill: #fef3c7; }
-      .gcp { fill: #ecfeff; }
-      .note { fill: #f3f4f6; }
-      .line { stroke: #475569; stroke-width: 3; fill: none; }
-      .dash { stroke: #64748b; stroke-width: 2.5; stroke-dasharray: 10 8; fill: none; }
+      .title{font:700 30px Arial,sans-serif;fill:#1f2937}.subtitle{font:500 16px Arial,sans-serif;fill:#4b5563}.label{font:600 18px Arial,sans-serif;fill:#111827}.small{font:14px Arial,sans-serif;fill:#374151}.box{rx:18;ry:18;stroke:#334155;stroke-width:2;fill:#f8fafc}.cloud{fill:#fef3c7}.edge{fill:#eef6ff}.origin{fill:#ecfeff}.note{fill:#f3f4f6}.line{stroke:#475569;stroke-width:3;fill:none}.dash{stroke:#64748b;stroke-width:2.5;stroke-dasharray:10 8;fill:none}
     </style>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,6 L8,3 z" fill="#475569"/>
-    </marker>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#475569"/></marker>
   </defs>
-
   <text x="700" y="48" text-anchor="middle" class="title">Portfolio Platform Architecture</text>
-  <text x="700" y="76" text-anchor="middle" class="subtitle">Cloudflare edge + Google Cloud multi-zone origins + GitHub Actions CI/CD</text>
-
+  <text x="700" y="76" text-anchor="middle" class="subtitle">Cloudflare edge + Kantercloud reverse proxy + isolated private LXC</text>
   <rect x="560" y="110" width="280" height="72" class="box note"/>
   <text x="700" y="145" text-anchor="middle" class="label">Internet / Visitors</text>
-  <text x="700" y="168" text-anchor="middle" class="small">Users reach portfolio through your domain</text>
-
-  <rect x="470" y="235" width="460" height="130" class="box cloud"/>
-  <text x="700" y="270" text-anchor="middle" class="label">Cloudflare Edge</text>
-  <text x="700" y="298" text-anchor="middle" class="small">DNS • CDN caching • TLS • DDoS protection • Load Balancer • Health Checks</text>
-  <text x="700" y="322" text-anchor="middle" class="small">Routes traffic only to healthy origins</text>
-
-  <rect x="165" y="430" width="1070" height="280" class="box gcp"/>
-  <text x="700" y="465" text-anchor="middle" class="label">Google Cloud Origin Layer</text>
-  <text x="700" y="490" text-anchor="middle" class="small">Two Compute Engine e2-micro VMs in separate zones serving the same static Astro site through Nginx</text>
-
-  <rect x="250" y="535" width="360" height="130" class="box"/>
-  <text x="430" y="568" text-anchor="middle" class="label">VM 1 — us-central1-a</text>
-  <text x="430" y="596" text-anchor="middle" class="small">Debian 12</text>
-  <text x="430" y="620" text-anchor="middle" class="small">Nginx → /var/www/html</text>
-  <text x="430" y="644" text-anchor="middle" class="small">/healthz endpoint</text>
-
-  <rect x="790" y="535" width="360" height="130" class="box"/>
-  <text x="970" y="568" text-anchor="middle" class="label">VM 2 — us-central1-b</text>
-  <text x="970" y="596" text-anchor="middle" class="small">Debian 12</text>
-  <text x="970" y="620" text-anchor="middle" class="small">Nginx → /var/www/html</text>
-  <text x="970" y="644" text-anchor="middle" class="small">/healthz endpoint</text>
-
-  <rect x="560" y="760" width="280" height="70" class="box edge"/>
-  <text x="700" y="790" text-anchor="middle" class="label">GitHub Actions</text>
-  <text x="700" y="815" text-anchor="middle" class="small">Build Astro site and deploy to both origins</text>
-
-  <path d="M700 182 L700 235" class="line" marker-end="url(#arrow)"/>
-  <path d="M700 365 L700 430" class="line" marker-end="url(#arrow)"/>
-  <path d="M700 505 L430 535" class="line" marker-end="url(#arrow)"/>
-  <path d="M700 505 L970 535" class="line" marker-end="url(#arrow)"/>
-  <path d="M700 760 L430 665" class="dash" marker-end="url(#arrow)"/>
-  <path d="M700 760 L970 665" class="dash" marker-end="url(#arrow)"/>
-
-  <rect x="1130" y="115" width="180" height="92" class="box note"/>
-  <text x="1220" y="145" text-anchor="middle" class="label">Cost control</text>
-  <text x="1220" y="170" text-anchor="middle" class="small">2 fixed VMs</text>
-  <text x="1220" y="192" text-anchor="middle" class="small">No autoscale by default</text>
+  <text x="700" y="168" text-anchor="middle" class="small">shanekanterman.dev</text>
+  <rect x="470" y="225" width="460" height="120" class="box cloud"/>
+  <text x="700" y="260" text-anchor="middle" class="label">Cloudflare Edge</text>
+  <text x="700" y="288" text-anchor="middle" class="small">DNS • CDN • DDoS protection • Full (strict) TLS</text>
+  <text x="700" y="315" text-anchor="middle" class="small">Health check: /healthz</text>
+  <rect x="390" y="405" width="620" height="135" class="box edge"/>
+  <text x="700" y="440" text-anchor="middle" class="label">kanter-edge — 10.40.0.2</text>
+  <text x="700" y="468" text-anchor="middle" class="small">Caddy terminates origin TLS and applies security headers</text>
+  <text x="700" y="495" text-anchor="middle" class="small">Public services use domains; private services may use Tailscale</text>
+  <rect x="390" y="605" width="620" height="145" class="box origin"/>
+  <text x="700" y="640" text-anchor="middle" class="label">Portfolio LXC 202 — 10.40.0.32</text>
+  <text x="700" y="668" text-anchor="middle" class="small">Debian 13 • Nginx • static Astro output</text>
+  <text x="700" y="695" text-anchor="middle" class="small">Unprivileged container • deny-by-default firewall • no Tailscale</text>
+  <text x="700" y="722" text-anchor="middle" class="small">Atomic releases with five-release rollback</text>
+  <rect x="1080" y="610" width="250" height="130" class="box note"/>
+  <text x="1205" y="645" text-anchor="middle" class="label">GitHub Actions</text>
+  <text x="1205" y="673" text-anchor="middle" class="small">Build + browser tests</text>
+  <text x="1205" y="700" text-anchor="middle" class="small">Ephemeral Tailscale access</text>
+  <text x="1205" y="727" text-anchor="middle" class="small">Forced-command SSH deploy</text>
+  <path d="M700 182 L700 225" class="line" marker-end="url(#arrow)"/>
+  <path d="M700 345 L700 405" class="line" marker-end="url(#arrow)"/>
+  <path d="M700 540 L700 605" class="line" marker-end="url(#arrow)"/>
+  <path d="M1080 675 L1010 675" class="dash" marker-end="url(#arrow)"/>
 </svg>
