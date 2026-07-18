@@ -1,122 +1,52 @@
 # Portfolio Architecture Design
 
-## Overview
+## Current topology
 
-This repository hosts a personal portfolio site with a deliberately simple application layer and a more interesting delivery model behind it.
-
-The frontend is a static Astro site. It is served from two Google Cloud VM origins running Nginx, with Cloudflare in front for DNS, CDN, TLS, and load balancing. Deployment is handled by GitHub Actions.
-
-The architecture is small on purpose. The goal is not to maximize services, but to show judgment around deployment, redundancy, and operational clarity.
-
-## System Diagram
+The portfolio is a static Astro site hosted on Kantercloud. Public traffic and application workload are intentionally separated:
 
 ```text
 Internet
    |
-Cloudflare DNS + CDN
+Cloudflare DNS, CDN, and Full (strict) TLS
    |
-Cloudflare Load Balancer
-   |---------------------------|
-   |                           |
-GCP VM 1                    GCP VM 2
-us-central1-a               us-central1-b
-Nginx                       Nginx
-   |                           |
-Static Astro build         Static Astro build
+kanter-edge VM — Caddy on the public edge
+   |
+Private Kantercloud network
+   |
+portfolio LXC — Nginx serving static Astro releases
 ```
 
-## Main Components
+Cloudflare remains the public entry point. The shared edge VM owns public ports 80 and 443, certificates, redirects, compression, and security headers. The portfolio LXC has no public address and accepts HTTP only from approved infrastructure addresses.
 
-### Edge layer
+## Workload isolation
 
-Cloudflare is the public entry point. It handles:
+The origin is an unprivileged Debian LXC sized for a static workload. Nginx serves `/srv/portfolio/current`, which is a symlink to a commit-addressed release. The container runs neither Docker nor Tailscale; remote administration and deployment reach it through the existing Kantercloud subnet router.
 
-- DNS
-- CDN behavior for static assets
-- TLS at the edge
-- load balancing across the two origin servers
-- origin health checks
+The origin exposes `/healthz` for infrastructure checks. Its deny-by-default firewall permits:
 
-### Origin layer
+- SSH from the Kantercloud subnet router
+- HTTP from `kanter-edge`, Homebase, and the Proxmox host
+- established traffic, loopback, and required ICMP
 
-The origin tier consists of two Debian 12 Compute Engine VMs in separate `us-central1` zones.
+## Delivery
 
-- VM type: `e2-micro`
-- Web server: Nginx
-- Content directory: `/var/www/html`
-- Health endpoint: `/healthz`
+Pull requests build and run the browser test suite on GitHub-hosted runners. A successful push to `main` creates the same artifact, joins the tailnet with an ephemeral workload identity, and sends the archive through a forced-command SSH key.
 
-Using two small instances keeps costs low while still making failover and origin management part of the design.
+The deploy command validates the commit SHA and archive, extracts into a temporary directory, switches the `current` symlink atomically, verifies local HTTP, and retains five releases. A failed health check restores the previous symlink. A manual rollback selects any retained commit SHA.
 
-### Application layer
+## TLS and public routing
 
-The application itself is a static Astro site. That choice keeps the runtime simple:
+Cloudflare uses Full (strict) mode to verify the certificate Caddy obtains for `shanekanterman.dev`. The zone requires TLS 1.2 or newer from visitors. `www.shanekanterman.dev` redirects to the canonical apex hostname.
 
-- no application server to manage
-- no database to operate
-- straightforward deployment as static files
-- easy replication across multiple nodes
+The previous Cloudflare Load Balancer is temporarily retained as a rollback switch. Its GCP origin is disabled, and the underlying proxied A record already targets Kantercloud. After the rollback window, the single-origin load balancer can be removed without changing the public address.
 
-## Provisioning and Delivery
+## Recovery
 
-### Infrastructure
+- Application rollback: activate one of the five retained release SHAs.
+- Container recovery: restore the nightly Proxmox snapshot or rebuild from the tracked configuration.
+- Edge recovery: validate and reload the tracked Caddy route; do not run Tailscale inside the workload LXC.
+- Temporary infrastructure rollback: re-enable the retained GCP origin and return Cloudflare origin mode to Flexible because that legacy origin does not serve HTTPS.
 
-Infrastructure is defined under `infrastructure/terraform/`.
+## Architecture evolution
 
-That directory includes:
-
-- `main.tf` for the network, firewall rules, and VM resources
-- `variables.tf` for project and environment inputs
-- `outputs.tf` for origin IP outputs
-- `startup-script.sh` for basic origin bootstrapping
-
-### Deployment workflow
-
-Deployment is handled by `.github/workflows/deploy.yml`.
-
-On pushes to `main`, the workflow:
-
-1. checks out the repository
-2. sets up Node.js
-3. installs site dependencies
-4. builds the Astro site from `site/`
-5. archives the generated output
-6. copies the artifact to both origin VMs
-7. reloads Nginx on each host
-
-## Design Goals
-
-The architecture is meant to show a few specific engineering concerns clearly.
-
-| Goal | How the repo addresses it |
-|---|---|
-| Simplicity | Static Astro output and Nginx serving |
-| Redundancy | Two origin VMs in separate zones |
-| Delivery | GitHub Actions build and deploy workflow |
-| Edge handling | Cloudflare DNS, CDN, TLS, and balancing |
-| Cost control | Small VM footprint and a lightweight app layer |
-
-## Cost Profile
-
-Estimated monthly cost stays low because the runtime is static and the compute layer is intentionally small.
-
-| Resource | Estimated Monthly Cost |
-|---|---|
-| Cloudflare Load Balancer | ~$5 |
-| Second `e2-micro` VM | ~$6-8 |
-| Persistent disks | ~$1 |
-| Network traffic | ~$0-2 |
-| **Estimated total** | **~$12-16/month** |
-
-## Why This Matters
-
-The portfolio is useful as a frontend project, but the stronger signal is in how it is delivered.
-
-This repository ties together:
-
-- application work
-- infrastructure provisioning
-- deployment automation
-- documentation that explains the tradeoffs
-
-That combination is the main point of the design.
+The first production version used two GCP `e2-micro` origins and a Cloudflare Load Balancer. By the end of its life only one origin remained enabled. The Kantercloud migration trades nominal multi-zone redundancy for an honest, lower-cost design with clearer isolation, atomic delivery, private origin access, verified origin TLS, and local recovery.

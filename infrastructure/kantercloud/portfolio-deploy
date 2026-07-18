@@ -1,0 +1,97 @@
+#!/bin/sh
+set -eu
+
+root=/srv/portfolio
+releases="$root/releases"
+incoming="$root/incoming"
+command=${SSH_ORIGINAL_COMMAND:-}
+
+fail() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+valid_sha() {
+    printf '%s' "$1" | grep -Eq '^[0-9a-f]{40}$'
+}
+
+activate() {
+    release=$1
+    previous=$(readlink -f "$root/current" 2>/dev/null || true)
+
+    ln -s "$release" "$root/current.next"
+    mv -Tf "$root/current.next" "$root/current"
+
+    if ! curl --fail --silent --show-error --max-time 5 http://127.0.0.1/ >/dev/null; then
+        if [ -n "$previous" ] && [ -d "$previous" ]; then
+            ln -s "$previous" "$root/current.previous"
+            mv -Tf "$root/current.previous" "$root/current"
+        fi
+        fail "release failed local HTTP validation"
+    fi
+}
+
+prune_releases() {
+    find "$releases" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' \
+        | sort -nr \
+        | sed -n '6,$p' \
+        | cut -d' ' -f2- \
+        | while IFS= read -r old_release; do
+            case "$old_release" in
+                "$releases"/[0-9a-f][0-9a-f]*) rm -rf -- "$old_release" ;;
+                *) fail "refusing to prune unexpected path" ;;
+            esac
+        done
+}
+
+exec 9>"$root/deploy.lock"
+flock 9
+
+case "$command" in
+    "deploy "*)
+        sha=${command#deploy }
+        valid_sha "$sha" || fail "invalid release SHA"
+        archive="$incoming/$sha.tar.gz"
+        temporary="$releases/.$sha.tmp"
+        release="$releases/$sha"
+
+        umask 022
+        rm -f -- "$archive"
+        rm -rf -- "$temporary"
+        mkdir -p "$temporary"
+        trap 'rm -f -- "$archive"; rm -rf -- "$temporary"' EXIT HUP INT TERM
+        dd of="$archive" bs=1M status=none
+
+        tar -tzf "$archive" | while IFS= read -r member; do
+            case "$member" in
+                /*|../*|*/../*|*/..) fail "unsafe archive path" ;;
+            esac
+        done
+
+        tar -xzf "$archive" -C "$temporary" --no-same-owner --no-same-permissions
+        [ -f "$temporary/index.html" ] || fail "release is missing index.html"
+        find "$temporary" -type d -exec chmod 0755 {} +
+        find "$temporary" -type f -exec chmod 0644 {} +
+
+        if [ -d "$release" ]; then
+            rm -rf -- "$temporary"
+        else
+            mv "$temporary" "$release"
+        fi
+        rm -f -- "$archive"
+        activate "$release"
+        prune_releases
+        printf 'deployed %s\n' "$sha"
+        ;;
+    "rollback "*)
+        sha=${command#rollback }
+        valid_sha "$sha" || fail "invalid release SHA"
+        release="$releases/$sha"
+        [ -d "$release" ] || fail "release is not retained"
+        activate "$release"
+        printf 'rolled back to %s\n' "$sha"
+        ;;
+    *)
+        fail "allowed commands: deploy <sha> or rollback <sha>"
+        ;;
+esac

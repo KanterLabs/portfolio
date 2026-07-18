@@ -1,66 +1,34 @@
-# GCP + Cloudflare Setup Checklist
+# Kantercloud Portfolio Operations Checklist
 
-Reference checklist for reproducing the portfolio deployment.
+## Build and release
 
-## 1. Accounts and prerequisites
+- [ ] `npm ci`, `npm run build`, and Playwright pass
+- [ ] Tailscale workload identity is configured before setting the production `DEPLOY_ENABLED` variable to `true`
+- [ ] the release archive contains `index.html`, project pages, sitemap, resume, and hashed assets
+- [ ] the deploy identity can run only `deploy <sha>` or `rollback <sha>`
+- [ ] `/srv/portfolio/current` points at the intended commit
+- [ ] local `/` and `/healthz` return HTTP 200
 
-- [ ] Buy or choose a domain
-- [ ] Create a Google Cloud project
-- [ ] Enable billing
-- [ ] Create a Cloudflare account
-- [ ] Move DNS for the domain to Cloudflare
-- [ ] Create the GitHub repository
+## Origin and edge
 
-## 2. Prepare Google Cloud
+- [ ] the LXC is unprivileged, starts on boot, and runs Nginx, SSH, and nftables
+- [ ] no Tailscale or Docker service exists in the LXC
+- [ ] Nginx and Caddy configuration validation succeeds before reload
+- [ ] edge-to-origin HTTP works over the private network
+- [ ] direct edge HTTPS presents a valid certificate for the requested hostname
 
-- [ ] Enable the Compute Engine API
-- [ ] Choose region `us-central1`
-- [ ] Decide which admin IP ranges should be allowed to SSH to the origin VMs
-- [ ] Set Terraform variables for project ID, region, zones, machine type, and admin CIDRs
-- [ ] Run Terraform from `infrastructure/terraform/`
-- [ ] Record the output IP addresses for both origin servers
+## Public validation
 
-## 3. Verify origin bootstrap
+- [ ] Cloudflare SSL mode is Full (strict) and minimum TLS is 1.2
+- [ ] apex HTTP redirects to HTTPS
+- [ ] `www` redirects to the apex hostname
+- [ ] homepage, case studies, 404, sitemap, robots, resume, and assets load
+- [ ] Homebase reports both public portfolio and private origin healthy
 
-- [ ] Confirm both Debian 12 VMs are running
-- [ ] Confirm Nginx is installed and active on each VM
-- [ ] Confirm `/var/www/html` exists on each VM
-- [ ] Confirm `/healthz` returns HTTP 200 on each origin
+## Recovery
 
-## 4. Configure Cloudflare
-
-- [ ] Add the domain to Cloudflare
-- [ ] Verify nameservers at the registrar
-- [ ] Create proxied DNS records for the site hostname
-- [ ] Configure SSL/TLS mode to match the actual origin setup
-- [ ] Create a load balancer
-- [ ] Create an origin pool containing both VM public IPs
-- [ ] Configure health checks against `http://<origin>/healthz` unless origin HTTPS is explicitly configured
-
-## 5. Configure deployment
-
-- [ ] Add repository secrets:
-- [ ] `ORIGIN1_HOST`
-- [ ] `ORIGIN2_HOST`
-- [ ] `ORIGIN_USER`
-- [ ] `ORIGIN_SSH_KEY`
-- [ ] Confirm `npm run build` succeeds in `site/`
-- [ ] Push to `main` or trigger the workflow manually
-- [ ] Verify the workflow deploys to both origins successfully
-
-## 6. Validate the public site
-
-- [ ] Visit the site over HTTPS
-- [ ] Confirm Cloudflare proxying is active
-- [ ] Confirm both origins report healthy in Cloudflare
-- [ ] Temporarily remove or stop one origin
-- [ ] Confirm traffic continues to serve from the remaining origin
-- [ ] Restore the stopped origin and confirm it returns to healthy status
-
-## 7. Capture proof for the case study
-
-- [ ] Screenshot the Cloudflare load balancer pool
-- [ ] Screenshot both VMs in GCP
-- [ ] Screenshot a successful GitHub Actions deployment
-- [ ] Screenshot the live site on the production domain
-- [ ] Update the project writeup with any deployment changes worth documenting
+- [ ] a known retained SHA can be activated and reversed
+- [ ] the nightly Proxmox job includes the portfolio LXC
+- [ ] a fresh snapshot archive completes without errors
+- [ ] the LXC recovers after reboot without manual service starts
+- [ ] the disabled GCP origin remains documented until the rollback window closes

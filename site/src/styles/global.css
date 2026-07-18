@@ -282,6 +282,16 @@ select {
   margin: -0.1rem auto 0;
 }
 
+.architecture-connector-simple {
+  width: 1px;
+  height: 1.75rem;
+  margin: 0 auto;
+}
+
+.architecture-connector-simple .architecture-connector-trunk {
+  height: 1.75rem;
+}
+
 .architecture-connector-trunk,
 .architecture-connector-rail,
 .architecture-connector-branch {

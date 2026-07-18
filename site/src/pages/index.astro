@@ -25,15 +25,15 @@ const navItems = [
 const proofStats = [
   { value: 'Datacenter Technician', label: 'Rack-and-stack, PXE imaging, OS installs at InterServer' },
   { value: 'PXE deployment', label: 'Network boot imaging and server provisioning' },
-  { value: '2 origin VMs', label: 'Multi-zone deployment on GCP with failover' },
-  { value: '~$12-16/mo', label: 'Cost-conscious cloud infrastructure footprint' },
+  { value: 'Private LXC', label: 'Isolated static origin behind a shared edge VM' },
+  { value: 'Atomic releases', label: 'Commit-addressed deploys with fast rollback' },
 ];
 
 const capabilityGroups = [
   {
     name: 'Deploy and Operate',
     description: 'Provision Linux systems, serve applications, and keep deployments understandable and reliable.',
-    items: ['Linux', 'Nginx', 'Google Cloud', 'Terraform', 'Proxmox', 'PXE Boot'],
+    items: ['Linux', 'Nginx', 'Cloudflare', 'Proxmox', 'Tailscale', 'PXE Boot'],
   },
   {
     name: 'Build and Ship',
@@ -48,16 +48,16 @@ const capabilityGroups = [
 ];
 
 const systemSummary = [
-  { label: 'Edge', value: 'Cloudflare handles DNS, CDN, TLS, and balancing.' },
-  { label: 'Origins', value: 'Two GCP VMs run Nginx in separate availability zones.' },
+  { label: 'Edge', value: 'Cloudflare and Caddy handle DNS, TLS, and public routing.' },
+  { label: 'Origin', value: 'An unprivileged Kantercloud LXC serves static files privately.' },
   { label: 'Application', value: 'Astro ships as a static build with low operational overhead.' },
-  { label: 'Delivery', value: 'GitHub Actions builds and deploys to both servers on every push.' },
+  { label: 'Delivery', value: 'GitHub Actions ships atomic releases over ephemeral Tailscale access.' },
 ];
 
 const heroMetrics = [
-  { value: '2 zones', label: 'Redundant origins' },
-  { value: '60s interval', label: 'Cloudflare health checks' },
-  { value: 'Static Astro', label: 'Low-complexity app layer' },
+  { value: 'Full strict', label: 'Verified origin TLS' },
+  { value: '5 releases', label: 'Fast retained rollback' },
+  { value: 'Static Astro', label: 'Low-complexity runtime' },
 ];
 
 const profilePoints = [
@@ -160,7 +160,7 @@ const structuredData = [
       >
         <div>
           <p class="mb-4 text-[#71717a] text-[0.82rem] font-bold tracking-[0.16em] uppercase">
-            Computer Science Student + Data Center TechnicianF
+            Computer Science Student + Data Center Technician
           </p>
           <h1
             class="text-[clamp(2.6rem,4.5vw,4.2rem)] leading-[1.06] tracking-[-0.02em] mb-5 max-w-[14ch] font-extrabold overflow-wrap-break-word text-[#18181b]"
@@ -352,7 +352,7 @@ const structuredData = [
         <SectionIntro
           eyebrow="Architecture"
           title="A portfolio site backed by real deployment decisions."
-          body="The application layer is intentionally simple. The interesting work is in the deployment model: edge routing, redundant origins, automated delivery, and a low-cost footprint."
+          body="The application layer is intentionally simple. The interesting work is in private origin isolation, shared edge routing, verified TLS, atomic delivery, and recovery."
         />
 
         <div class="grid grid-cols-[minmax(0,1fr)_minmax(18rem,30rem)] gap-5 items-start max-[960px]:grid-cols-1">
@@ -362,23 +362,23 @@ const structuredData = [
                 Why it stands out
               </p>
               <p class="text-[#52525b] leading-[1.75] text-[1.04rem] m-0">
-                Instead of stopping at a static frontend, this site is deployed across two origin
-                VMs with health-checked failover and automated delivery.
+                Instead of stopping at a static frontend, this site separates public ingress from
+                a private origin and deploys commit-addressed releases with automated rollback.
               </p>
             </div>
 
             <div class="grid gap-3">
               <div class="proof-inline-row">
                 <span class="project-proof-label">Edge services</span>
-                <span class="project-proof-copy">Cloudflare provides DNS, CDN, TLS, and balancing.</span>
+                <span class="project-proof-copy">Cloudflare and Caddy provide DNS, TLS, headers, and routing.</span>
               </div>
               <div class="proof-inline-row">
-                <span class="project-proof-label">Origins</span>
-                <span class="project-proof-copy">Two GCP VMs in separate zones reduce single-instance risk.</span>
+                <span class="project-proof-label">Origin</span>
+                <span class="project-proof-copy">A private unprivileged LXC keeps the workload off the edge VM.</span>
               </div>
               <div class="proof-inline-row">
                 <span class="project-proof-label">Delivery</span>
-                <span class="project-proof-copy">GitHub Actions pushes each build to both servers.</span>
+                <span class="project-proof-copy">GitHub Actions validates and atomically activates each release.</span>
               </div>
             </div>
           </GlassCard>

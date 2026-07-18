@@ -19,4 +19,4 @@
   <text x="108" y="312" font-family="Georgia, 'Times New Roman', serif" font-size="64" font-weight="700" fill="#18181b">Infrastructure and</text>
   <text x="108" y="384" font-family="Georgia, 'Times New Roman', serif" font-size="64" font-weight="700" fill="#1e293b">web projects</text>
   <text x="108" y="462" font-family="Inter, Arial, sans-serif" font-size="28" fill="#52525b">Static Astro frontend, cloud deployment, and project case studies.</text>
-  <text x="108" y="516" font-family="Inter, Arial, sans-serif" font-size="22" fill="#71717a">Linux • Terraform • GCP • Nginx • CI/CD</text>
+  <text x="108" y="516" font-family="Inter, Arial, sans-serif" font-size="22" fill="#71717a">Linux • Proxmox • Cloudflare • Nginx • CI/CD</text>

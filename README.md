@@ -1,62 +1,35 @@
-# Multi-Node Server
+# Shane Kanterman Portfolio
 
-Portfolio repository for a static Astro site, the infrastructure used to deploy it, and the supporting documentation behind the architecture.
+Static Astro portfolio plus the deployment configuration and documentation for its Kantercloud production environment.
 
 ## Repository Structure
 
-```text
-multi-node-server/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml
-├── docs/
-│   ├── architecture-design.md
-│   ├── architecture-diagram.svg
-│   └── setup-checklist.md
-├── infrastructure/
-│   └── terraform/
-└── site/
-    ├── public/
-    ├── src/
-    ├── astro.config.mjs
-    ├── package.json
-    └── tsconfig.json
-```
-
-## What Is Here
-
-- `site/`: the Astro portfolio site and case-study content
-- `infrastructure/terraform/`: Terraform configuration and startup script for the origin VMs
-- `docs/`: architecture notes and setup reference material
-- `.github/workflows/deploy.yml`: build and deployment workflow for the site
+- `site/`: Astro application, case studies, tests, and public assets
+- `infrastructure/kantercloud/`: Nginx, firewall, SSH, and atomic-release configuration
+- `infrastructure/archive/gcp/`: retired two-origin GCP design retained as migration history
+- `docs/`: current architecture and recovery checklist
+- `.github/workflows/deploy.yml`: validation and private production deployment
 
 ## Local Development
 
-From `site/`:
-
 ```sh
+cd site
 npm ci
 npm run dev
 ```
 
-Build locally:
+Build and test:
 
 ```sh
 npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
-## Deployment Summary
+## Production
 
-The site is built from `site/` and deployed to two Google Cloud VM origins. Cloudflare sits in front for DNS, CDN, TLS, and load balancing.
+Cloudflare terminates public traffic and connects to the shared `kanter-edge` Caddy VM with Full (strict) TLS. Caddy proxies the portfolio over Kantercloud's private network to a dedicated unprivileged Debian LXC running Nginx. The LXC does not run Tailscale or Docker.
 
-The GitHub Actions workflow:
+GitHub-hosted Actions runners build and test the site. The production job is prepared to join the tailnet as a short-lived tagged node and send a release archive to a restricted deploy account; it remains disabled until the one-time Tailscale workload-identity client is authorized. Releases are stored by commit SHA and activated with an atomic symlink swap.
 
-1. installs dependencies
-2. builds the Astro site
-3. archives the generated `dist/` output
-4. copies the build artifact to both origins
-5. reloads Nginx on each server
-
-## Why This Repo Exists
-
-The site is intentionally simple at the application layer. The main point of the repository is to show how the site is deployed, how the infrastructure is organized, and how the written case studies connect software work to operations and delivery.
+See `docs/architecture-design.md` and `docs/setup-checklist.md` for the topology, validation order, and rollback procedure.
