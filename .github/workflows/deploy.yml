@@ -50,40 +50,43 @@ jobs:
           if-no-files-found: error
 
   deploy:
-    # Enable after the one-time Tailscale WIF client is configured in the
-    # production environment. Builds and browser tests remain mandatory now.
+    # DEPLOY_ENABLED is repository-scoped so GitHub can evaluate it before the
+    # production environment is attached to the runner.
     if: github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true'
     needs: build-and-test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, portfolio-deploy]
     timeout-minutes: 10
-    environment: production
+    environment:
+      name: production
+      url: https://shanekanterman.dev
     permissions:
       contents: read
-      id-token: write
     steps:
+      - name: Check out deployment configuration
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Download build artifact
         if: inputs.rollback_sha == ''
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: site-dist
-      - name: Join the private deployment network
-        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          audience: ${{ secrets.TS_AUDIENCE }}
-          tags: tag:portfolio-ci
       - name: Configure deployment SSH identity
-        env:
-          DEPLOY_KEY: ${{ secrets.PORTFOLIO_DEPLOY_SSH_KEY }}
-          KNOWN_HOSTS: ${{ secrets.PORTFOLIO_DEPLOY_KNOWN_HOSTS }}
         run: |
+          set -euo pipefail
+          source ~/.config/infisical/machine.env
+          infisical_token=$(infisical login --method=universal-auth \
+            --client-id="$INFISICAL_CLIENT_ID" \
+            --client-secret="$INFISICAL_CLIENT_SECRET" \
+            --domain="$INFISICAL_DOMAIN" --plain --silent)
+          deploy_key=$(INFISICAL_TOKEN="$infisical_token" \
+            infisical secrets get PORTFOLIO_DEPLOY_SSH_KEY \
+            --projectId="$INFISICAL_PROJECT" --env=prod \
+            --domain="$INFISICAL_DOMAIN" --plain --silent)
           install -m 0700 -d ~/.ssh
-          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/portfolio
+          printf '%s\n' "$deploy_key" > ~/.ssh/portfolio
           chmod 0600 ~/.ssh/portfolio
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 0644 ~/.ssh/known_hosts
-      - name: Confirm private origin reachability
-        run: tailscale ping --timeout=10s 10.40.0.32
+          install -m 0644 infrastructure/kantercloud/portfolio-known-hosts \
+            ~/.ssh/known_hosts
+          unset deploy_key infisical_token
       - name: Deploy release
         if: inputs.rollback_sha == ''
         env:
@@ -100,3 +103,12 @@ jobs:
             exit 1
           }
           ssh -i ~/.ssh/portfolio portfolio-deploy@10.40.0.32 "rollback $ROLLBACK_SHA"
+      - name: Verify public health
+        run: |
+          response=$(curl --fail --silent --show-error \
+            --retry 5 --retry-delay 2 --retry-all-errors \
+            https://shanekanterman.dev/healthz)
+          [ "$response" = "ok" ]
+      - name: Remove deployment SSH identity
+        if: always()
+        run: rm -f ~/.ssh/portfolio
