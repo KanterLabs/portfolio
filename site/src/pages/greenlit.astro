@@ -4,29 +4,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 const interestUrl = 'mailto:shanekanterman04@gmail.com?subject=Greenlit%20launch%20updates';
 const principles = [
   {
-    number: '01',
-    title: 'Trust the result',
-    body: 'Greenlit is built around workflow fidelity—not a best-effort approximation. The goal is simple: green locally means green on GitHub.',
+    number: '01 / MOVE FAST',
+    title: 'Fix CI before you push.',
+    body: 'Run the workflow on your machine, see the failure immediately, and keep moving while the context is still fresh.',
   },
   {
-    number: '02',
-    title: 'Start with one command',
-    body: 'Run the workflows already in your repository. No Greenlit config file, image selection, or hosted control plane required.',
+    number: '02 / STAY FOCUSED',
+    title: 'Kill the push-and-wait loop.',
+    body: 'No more commit, tab switch, queue, logs, repeat. Greenlit brings the feedback loop back to your terminal.',
   },
   {
-    number: '03',
-    title: 'Contain untrusted code',
-    body: 'Actions run away from your working tree and host Docker socket, with a throwaway writable layer and host-LAN isolation.',
+    number: '03 / SHIP SURE',
+    title: 'Push with confidence.',
+    body: 'Test the workflow you plan to ship and turn every push into confirmation—not another debugging attempt.',
   },
 ];
 
 const capabilities = [
-  'GitHub expression contexts',
-  'Matrix jobs and dependencies',
-  'JavaScript, composite, and Docker actions',
-  'Services, artifacts, and cache emulation',
-  'Local secrets and repository variables',
-  'Step-level logs and local-only metrics',
+  'Run existing workflow files',
+  'See failures as they happen',
+  'Keep your code on your machine',
+  'Re-run without another push',
+  'Use one memorable command',
+  'Get clear, readable output',
 ];
 
 const structuredData = {
@@ -59,7 +59,7 @@ const structuredData = {
       </a>
       <nav aria-label="Page navigation">
         <a href="#why">Why Greenlit</a>
-        <a href="#roadmap">Roadmap</a>
+        <a href="#experience">Experience</a>
         <a class="nav-portfolio" href="/">Shane's portfolio <span aria-hidden="true">↗</span></a>
       </nav>
     </header>
@@ -67,15 +67,15 @@ const structuredData = {
     <main id="main-content">
       <section class="hero" aria-labelledby="greenlit-title">
         <div class="hero-copy">
-          <p class="status"><span></span> In active development</p>
-          <h1 id="greenlit-title">Your CI should not need a <em>commit</em> to tell you it is broken.</h1>
+          <p class="status"><span></span> A faster way to ship is coming</p>
+          <h1 id="greenlit-title">Know your CI is <em>green</em> before GitHub does.</h1>
           <p class="hero-lede">
-            Greenlit runs your GitHub Actions workflows locally—fast, contained, and with results
-            designed to match GitHub. Stop pushing just to debug CI.
+            Run GitHub Actions from your terminal. Catch failures in seconds, skip the queue, and
+            push code that is already ready to ship.
           </p>
           <div class="hero-actions">
             <a class="greenlit-button primary" href={interestUrl}>
-              Get launch updates
+              Get early access
               <span aria-hidden="true">→</span>
             </a>
             <a class="greenlit-button secondary" href="#why">See how it works <span aria-hidden="true">↓</span></a>
@@ -116,14 +116,21 @@ const structuredData = {
           <li><span>3</span> Read logs</li><li class="arrow">→</li>
           <li><span>4</span> Repeat</li>
         </ol>
-        <strong>Greenlit moves that loop to your machine.</strong>
+        <strong>Greenlit turns the whole loop into one command.</strong>
       </section>
+
+      <div class="signal-marquee" aria-hidden="true">
+        <div>
+          <span>RUN LOCAL</span><i>◆</i><span>FIX FAST</span><i>◆</i><span>SKIP THE QUEUE</span><i>◆</i><span>SHIP GREEN</span><i>◆</i>
+          <span>RUN LOCAL</span><i>◆</i><span>FIX FAST</span><i>◆</i><span>SKIP THE QUEUE</span><i>◆</i><span>SHIP GREEN</span><i>◆</i>
+        </div>
+      </div>
 
       <section class="principles section-pad" id="why">
         <div class="section-heading">
-          <p class="eyebrow">Designed for confidence</p>
-          <h2>Local speed without local guesswork.</h2>
-          <p>Greenlit treats fidelity, containment, and a zero-config start as product requirements—not optional modes.</p>
+          <p class="eyebrow">Break the CI waiting habit</p>
+          <h2>Stay in flow from first test to final push.</h2>
+          <p>Greenlit replaces slow remote trial-and-error with a tight local feedback loop built for how developers actually work.</p>
         </div>
         <div class="principle-grid">
           {principles.map((principle) => (
@@ -136,36 +143,35 @@ const structuredData = {
         </div>
       </section>
 
-      <section class="details section-pad" id="roadmap">
+      <section class="details section-pad" id="experience">
         <div class="capability-panel">
-          <p class="eyebrow">Built around real workflows</p>
-          <h2>The parts of Actions your pipeline actually depends on.</h2>
+          <p class="eyebrow">Your workflow. Your machine.</p>
+          <h2>From YAML to answers—with less waiting.</h2>
           <ul>
             {capabilities.map((capability) => <li><span>✓</span>{capability}</li>)}
           </ul>
         </div>
         <div class="roadmap-panel">
           <div class="roadmap-top">
-            <p class="eyebrow">Build status</p>
-            <span>Phase 1 of 6</span>
+            <p class="eyebrow">One habit command</p>
+            <span>COMING SOON</span>
           </div>
-          <h2>Engine first. Evidence before launch.</h2>
+          <div class="command-burst"><span>$</span> litci run</div>
+          <h2>Type it. Run it. Trust it.</h2>
           <p>
-            Greenlit is currently building the workflow parser, expression evaluator, job planner,
-            and metrics foundation. Execution, actions, environment parity, speed, and a public
-            parity dashboard follow in measured phases.
+            No new workflow language. No maze of flags. Greenlit meets your project where it is
+            and puts the answer where you are already looking: your terminal.
           </p>
-          <div class="progress" aria-label="Phase 1 of 6"><span></span></div>
-          <div class="phase-labels"><span>Engine core</span><span>Parity + launch</span></div>
-          <a href={interestUrl}>Get Greenlit launch updates <span aria-hidden="true">→</span></a>
+          <div class="experience-pills"><span>Zero-config start</span><span>Fast feedback</span><span>Built for focus</span></div>
+          <a href={interestUrl}>Join the early access list <span aria-hidden="true">→</span></a>
         </div>
       </section>
 
       <section class="closing section-pad">
-        <p class="eyebrow">The goal</p>
-        <h2>Green here.<br/><span>Green on GitHub.</span></h2>
-        <p>One command. Your existing workflows. A result you can act on before you push.</p>
-        <a class="greenlit-button primary" href={interestUrl}>Get launch updates <span aria-hidden="true">→</span></a>
+        <p class="eyebrow">Your next push starts here</p>
+        <h2>Less waiting.<br/><span>More shipping.</span></h2>
+        <p>Be first in line when Greenlit opens early access.</p>
+        <a class="greenlit-button primary" href={interestUrl}>Get early access <span aria-hidden="true">→</span></a>
       </section>
     </main>
   </div>
@@ -177,7 +183,7 @@ const structuredData = {
   :global(.site-footer) { background: #050c09; border-color: rgba(157,255,190,.1); color: #6f8879; }
   :global(.site-footer-build) { color: #52655a; }
   :global(.skip-link) { background: #a5ffbe; color: #07110d; }
-  .greenlit-shell { --green: #a5ffbe; --green-strong: #62ed8d; --ink: #edf8f1; --muted: #91a99a; --line: rgba(173,255,200,.13); overflow: hidden; background: radial-gradient(circle at 70% 12%, rgba(55,198,102,.12), transparent 28%), #07110d; }
+  .greenlit-shell { --green: #a5ffbe; --green-strong: #62ed8d; --ink: #edf8f1; --muted: #91a99a; --line: rgba(173,255,200,.13); overflow: hidden; background: radial-gradient(circle at 75% 8%, rgba(44,255,112,.2), transparent 24%), radial-gradient(circle at 12% 28%, rgba(76,108,255,.08), transparent 20%), #07110d; }
   .greenlit-nav { width: min(calc(100% - 3rem), 1180px); margin: 0 auto; min-height: 84px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
   .brand { display: inline-flex; align-items: center; gap: .75rem; font-size: 1.05rem; font-weight: 800; letter-spacing: -.02em; }
   .brand-mark { width: 30px; height: 30px; border: 1px solid rgba(165,255,190,.35); border-radius: 9px; display: grid; place-items: center; background: rgba(165,255,190,.07); }
@@ -189,7 +195,7 @@ const structuredData = {
   .status { display: inline-flex; align-items: center; gap: .6rem; margin: 0 0 1.5rem; color: var(--green); font: 700 .72rem/1 var(--font-family-sans); letter-spacing: .14em; text-transform: uppercase; }
   .status span { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 14px var(--green); }
   .hero h1 { max-width: 760px; margin: 0; color: var(--ink); font-family: var(--font-family-sans); font-size: clamp(3.1rem, 6vw, 5.8rem); font-weight: 750; line-height: .98; letter-spacing: -.065em; }
-  .hero h1 em { color: var(--green); font-style: normal; }
+  .hero h1 em { color: var(--green); font-style: normal; text-shadow: 0 0 45px rgba(106,255,150,.25); }
   .hero-lede { max-width: 620px; margin: 2rem 0 0; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.14rem); line-height: 1.75; }
   .hero-actions { display: flex; flex-wrap: wrap; gap: .85rem; margin-top: 2.1rem; }
   .greenlit-button { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: .7rem; padding: .75rem 1.25rem; border-radius: 9px; border: 1px solid transparent; font-weight: 750; font-size: .91rem; transition: transform 160ms ease, background 160ms ease, border-color 160ms ease; }
@@ -200,7 +206,7 @@ const structuredData = {
   .platform-note { margin: 1.15rem 0 0; color: #60766a; font-size: .76rem; }
   .terminal-wrap { position: relative; }
   .terminal-glow { position: absolute; inset: 15% 4%; background: rgba(77,232,124,.2); filter: blur(80px); }
-  .terminal { position: relative; overflow: hidden; border: 1px solid rgba(166,255,194,.2); border-radius: 16px; background: rgba(5,12,9,.92); box-shadow: 0 35px 90px rgba(0,0,0,.5); transform: perspective(1200px) rotateY(-3deg) rotateX(1deg); }
+  .terminal { position: relative; overflow: hidden; border: 1px solid rgba(166,255,194,.28); border-radius: 16px; background: rgba(5,12,9,.92); box-shadow: 0 35px 90px rgba(0,0,0,.5), 0 0 70px rgba(56,242,113,.07); transform: perspective(1200px) rotateY(-3deg) rotateX(1deg); animation: terminal-float 5s ease-in-out infinite; }
   .terminal-bar { min-height: 48px; padding: 0 1rem; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; color: #62766a; border-bottom: 1px solid var(--line); font: 600 .68rem/1 var(--font-family-sans); }
   .terminal-dots { display: flex; gap: 6px; }
   .terminal-dots span { width: 8px; height: 8px; border-radius: 50%; background: #27372e; }
@@ -228,15 +234,20 @@ const structuredData = {
   .problem-strip li span { display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 50%; color: var(--green); font-size: .63rem; }
   .problem-strip .arrow { color: #405247; }
   .problem-strip strong { max-width: 245px; color: var(--ink); font-size: .9rem; line-height: 1.45; text-align: right; }
+  .signal-marquee { overflow: hidden; padding: 1rem 0; border-bottom: 1px solid var(--line); color: #07110d; background: var(--green); transform: rotate(-1deg) scale(1.01); }
+  .signal-marquee div { width: max-content; display: flex; align-items: center; gap: 2rem; animation: marquee 22s linear infinite; }
+  .signal-marquee span { font-size: .78rem; font-weight: 900; letter-spacing: .13em; }
+  .signal-marquee i { font-style: normal; font-size: .6rem; }
   .section-pad { width: min(calc(100% - 3rem), 1180px); margin: 0 auto; padding: 8rem 0; }
   .section-heading { max-width: 710px; }
   .eyebrow { margin: 0 0 1.2rem; }
   .section-heading h2, .details h2, .closing h2 { margin: 0; color: var(--ink); font-family: var(--font-family-sans); font-size: clamp(2.3rem, 4.5vw, 4rem); line-height: 1.05; letter-spacing: -.05em; }
   .section-heading > p:last-child { max-width: 610px; margin: 1.4rem 0 0; color: var(--muted); line-height: 1.75; }
   .principle-grid { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 4rem; border-block: 1px solid var(--line); }
-  .principle-grid article { padding: 2.3rem 2.3rem 2.3rem 0; }
+  .principle-grid article { position: relative; padding: 2.3rem 2.3rem 2.3rem 0; transition: background 180ms ease, transform 180ms ease; }
+  .principle-grid article:hover { transform: translateY(-6px); background: linear-gradient(180deg, rgba(165,255,190,.04), transparent); }
   .principle-grid article + article { padding-left: 2.3rem; border-left: 1px solid var(--line); }
-  .principle-number { color: var(--green); font: 700 .68rem/1 ui-monospace, monospace; }
+  .principle-number { color: var(--green); font: 700 .62rem/1 ui-monospace, monospace; letter-spacing: .08em; }
   .principle-grid h3 { margin: 3rem 0 .9rem; color: var(--ink); font-family: var(--font-family-sans); font-size: 1.15rem; }
   .principle-grid p { margin: 0; color: var(--muted); line-height: 1.7; font-size: .9rem; }
   .details { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; padding: 0; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--line); }
@@ -248,13 +259,17 @@ const structuredData = {
   .roadmap-top { display: flex; align-items: center; justify-content: space-between; }
   .roadmap-top > span { color: var(--green); font-size: .7rem; font-weight: 700; }
   .roadmap-panel > p:not(.eyebrow) { margin: 1.3rem 0 0; color: var(--muted); font-size: .88rem; line-height: 1.75; }
-  .progress { height: 4px; margin-top: 2.4rem; overflow: hidden; border-radius: 999px; background: #1b2a21; }
-  .progress span { display: block; width: 16.666%; height: 100%; background: var(--green); box-shadow: 0 0 12px var(--green); }
-  .phase-labels { display: flex; justify-content: space-between; margin-top: .65rem; color: #63786b; font-size: .65rem; }
+  .command-burst { display: inline-flex; gap: .7rem; margin: 1.2rem 0 1.8rem; padding: .85rem 1.1rem; border: 1px solid rgba(165,255,190,.24); border-radius: 10px; color: var(--ink); background: #050d09; box-shadow: 0 0 35px rgba(72,255,126,.08); font: 700 1rem/1 ui-monospace, monospace; }
+  .command-burst span { color: var(--green); }
+  .experience-pills { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 2rem; }
+  .experience-pills span { padding: .55rem .7rem; border: 1px solid var(--line); border-radius: 999px; color: #a9bdb0; background: rgba(255,255,255,.02); font-size: .66rem; font-weight: 700; }
   .roadmap-panel > a { display: inline-flex; gap: .5rem; margin-top: 2.3rem; color: var(--green); font-size: .82rem; font-weight: 700; }
   .closing { text-align: center; padding-block: 11rem; }
   .closing h2 span { color: var(--green); }
   .closing > p:not(.eyebrow) { margin: 1.5rem auto 2.2rem; color: var(--muted); }
+  @keyframes terminal-float { 0%, 100% { transform: perspective(1200px) rotateY(-3deg) rotateX(1deg) translateY(0); } 50% { transform: perspective(1200px) rotateY(-1deg) rotateX(0deg) translateY(-9px); } }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .terminal, .signal-marquee div { animation: none; } }
   @media (max-width: 900px) {
     .hero { grid-template-columns: 1fr; padding-top: 4rem; }
     .terminal-wrap { max-width: 620px; }

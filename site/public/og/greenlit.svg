@@ -9,9 +9,9 @@
     <circle cx="27" cy="27" r="9" fill="#a5ffbe"/>
     <text x="72" y="39" fill="#edf8f1" font-family="Inter,Arial,sans-serif" font-size="34" font-weight="800">Greenlit</text>
   </g>
-  <text x="84" y="270" fill="#edf8f1" font-family="Inter,Arial,sans-serif" font-size="75" font-weight="750" letter-spacing="-4">Green here.</text>
-  <text x="84" y="350" fill="#a5ffbe" font-family="Inter,Arial,sans-serif" font-size="75" font-weight="750" letter-spacing="-4">Green on GitHub.</text>
-  <text x="88" y="421" fill="#91a99a" font-family="Inter,Arial,sans-serif" font-size="27">Run GitHub Actions locally, fast, with results you can trust.</text>
+  <text x="84" y="270" fill="#edf8f1" font-family="Inter,Arial,sans-serif" font-size="72" font-weight="750" letter-spacing="-4">Know your CI is green</text>
+  <text x="84" y="350" fill="#a5ffbe" font-family="Inter,Arial,sans-serif" font-size="72" font-weight="750" letter-spacing="-4">before GitHub does.</text>
+  <text x="88" y="421" fill="#91a99a" font-family="Inter,Arial,sans-serif" font-size="27">Catch failures in seconds. Skip the queue. Ship confidently.</text>
   <g transform="translate(84 487)">
     <rect width="268" height="58" rx="10" fill="#0b1711" stroke="#a5ffbe" stroke-opacity=".22"/>
     <text x="22" y="38" fill="#a5ffbe" font-family="monospace" font-size="23">$ litci run</text>

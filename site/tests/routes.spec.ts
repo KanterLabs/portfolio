@@ -9,11 +9,13 @@ test.describe("utility routes", () => {
     expect(response?.status()).toBe(200);
     await expect(page).toHaveTitle("Greenlit — Run GitHub Actions locally");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Your CI should not need a commit",
+      "Know your CI is green",
     );
-    await expect(page.getByText("Green here.")).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Get launch updates" }).first(),
+      page.getByRole("heading", { name: "Less waiting. More shipping." }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Get early access" }).first(),
     ).toHaveAttribute(
       "href",
       "mailto:shanekanterman04@gmail.com?subject=Greenlit%20launch%20updates",
