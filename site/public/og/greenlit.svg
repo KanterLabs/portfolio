@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627" role="img" aria-labelledby="title desc">
+  <title id="title">Greenlit</title>
+  <desc id="desc">Run GitHub Actions locally, fast, with results you can trust.</desc>
+  <rect width="1200" height="627" fill="#07110d"/>
+  <circle cx="925" cy="110" r="290" fill="#1e6b3a" opacity=".18"/>
+  <g stroke="#a5ffbe" stroke-opacity=".07"><path d="M0 80h1200M0 160h1200M0 240h1200M0 320h1200M0 400h1200M0 480h1200M0 560h1200M80 0v627M160 0v627M240 0v627M320 0v627M400 0v627M480 0v627M560 0v627M640 0v627M720 0v627M800 0v627M880 0v627M960 0v627M1040 0v627M1120 0v627"/></g>
+  <g transform="translate(84 80)">
+    <rect width="54" height="54" rx="14" fill="#a5ffbe" fill-opacity=".08" stroke="#a5ffbe" stroke-opacity=".4"/>
+    <circle cx="27" cy="27" r="9" fill="#a5ffbe"/>
+    <text x="72" y="39" fill="#edf8f1" font-family="Inter,Arial,sans-serif" font-size="34" font-weight="800">Greenlit</text>
+  </g>
+  <text x="84" y="270" fill="#edf8f1" font-family="Inter,Arial,sans-serif" font-size="75" font-weight="750" letter-spacing="-4">Green here.</text>
+  <text x="84" y="350" fill="#a5ffbe" font-family="Inter,Arial,sans-serif" font-size="75" font-weight="750" letter-spacing="-4">Green on GitHub.</text>
+  <text x="88" y="421" fill="#91a99a" font-family="Inter,Arial,sans-serif" font-size="27">Run GitHub Actions locally, fast, with results you can trust.</text>
+  <g transform="translate(84 487)">
+    <rect width="268" height="58" rx="10" fill="#0b1711" stroke="#a5ffbe" stroke-opacity=".22"/>
+    <text x="22" y="38" fill="#a5ffbe" font-family="monospace" font-size="23">$ litci run</text>
+  </g>
+</svg>

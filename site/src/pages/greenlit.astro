@@ -1,0 +1,285 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const interestUrl = 'mailto:shanekanterman04@gmail.com?subject=Greenlit%20launch%20updates';
+const principles = [
+  {
+    number: '01',
+    title: 'Trust the result',
+    body: 'Greenlit is built around workflow fidelity—not a best-effort approximation. The goal is simple: green locally means green on GitHub.',
+  },
+  {
+    number: '02',
+    title: 'Start with one command',
+    body: 'Run the workflows already in your repository. No Greenlit config file, image selection, or hosted control plane required.',
+  },
+  {
+    number: '03',
+    title: 'Contain untrusted code',
+    body: 'Actions run away from your working tree and host Docker socket, with a throwaway writable layer and host-LAN isolation.',
+  },
+];
+
+const capabilities = [
+  'GitHub expression contexts',
+  'Matrix jobs and dependencies',
+  'JavaScript, composite, and Docker actions',
+  'Services, artifacts, and cache emulation',
+  'Local secrets and repository variables',
+  'Step-level logs and local-only metrics',
+];
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Greenlit',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Linux x86-64',
+  description: 'Run GitHub Actions workflows locally, fast, with results you can trust.',
+  author: {
+    '@type': 'Person',
+    name: 'Shane Kanterman',
+    url: 'https://shanekanterman.dev',
+  },
+};
+---
+
+<BaseLayout
+  title="Greenlit — Run GitHub Actions locally"
+  description="Run GitHub Actions workflows locally, fast, with results you can trust. Green locally means green on GitHub."
+  image="/og/greenlit.svg"
+  imageAlt="Greenlit, a local GitHub Actions runner"
+  structuredData={structuredData}
+>
+  <div class="greenlit-shell">
+    <header class="greenlit-nav" aria-label="Greenlit navigation">
+      <a class="brand" href="/greenlit" aria-label="Greenlit home">
+        <span class="brand-mark" aria-hidden="true"><span></span></span>
+        <span>Greenlit</span>
+      </a>
+      <nav aria-label="Page navigation">
+        <a href="#why">Why Greenlit</a>
+        <a href="#roadmap">Roadmap</a>
+        <a class="nav-portfolio" href="/">Shane's portfolio <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <section class="hero" aria-labelledby="greenlit-title">
+        <div class="hero-copy">
+          <p class="status"><span></span> In active development</p>
+          <h1 id="greenlit-title">Your CI should not need a <em>commit</em> to tell you it is broken.</h1>
+          <p class="hero-lede">
+            Greenlit runs your GitHub Actions workflows locally—fast, contained, and with results
+            designed to match GitHub. Stop pushing just to debug CI.
+          </p>
+          <div class="hero-actions">
+            <a class="greenlit-button primary" href={interestUrl}>
+              Get launch updates
+              <span aria-hidden="true">→</span>
+            </a>
+            <a class="greenlit-button secondary" href="#why">See how it works <span aria-hidden="true">↓</span></a>
+          </div>
+          <p class="platform-note">Open source · MIT licensed · Linux x86-64 first</p>
+        </div>
+
+        <div class="terminal-wrap" aria-label="Example Greenlit terminal session">
+          <div class="terminal-glow"></div>
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="terminal-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+              <span>~/your-project</span>
+              <span class="terminal-state"><i></i> local</span>
+            </div>
+            <div class="terminal-body" aria-hidden="true">
+              <p><b>$</b> litci run</p>
+              <p class="muted">→ Reading .github/workflows/ci.yml</p>
+              <p class="muted">→ Planning 3 jobs · 8 steps</p>
+              <div class="terminal-rule"></div>
+              <p><span class="check">✓</span> lint <small>1.4s</small></p>
+              <p><span class="check">✓</span> test <small>6.8s</small></p>
+              <p><span class="check">✓</span> build <small>3.1s</small></p>
+              <div class="terminal-rule"></div>
+              <p class="success">Workflow passed <small>11.7s total</small></p>
+              <p class="cursor-line"><b>$</b> <span class="cursor"></span></p>
+            </div>
+          </div>
+          <div class="parity-tag"><span>✓</span><div><strong>Local result</strong><small>Built for GitHub parity</small></div></div>
+        </div>
+      </section>
+
+      <section class="problem-strip" aria-label="The CI feedback loop">
+        <p>THE OLD LOOP</p>
+        <ol>
+          <li><span>1</span> Push</li><li class="arrow">→</li>
+          <li><span>2</span> Wait</li><li class="arrow">→</li>
+          <li><span>3</span> Read logs</li><li class="arrow">→</li>
+          <li><span>4</span> Repeat</li>
+        </ol>
+        <strong>Greenlit moves that loop to your machine.</strong>
+      </section>
+
+      <section class="principles section-pad" id="why">
+        <div class="section-heading">
+          <p class="eyebrow">Designed for confidence</p>
+          <h2>Local speed without local guesswork.</h2>
+          <p>Greenlit treats fidelity, containment, and a zero-config start as product requirements—not optional modes.</p>
+        </div>
+        <div class="principle-grid">
+          {principles.map((principle) => (
+            <article>
+              <span class="principle-number">{principle.number}</span>
+              <h3>{principle.title}</h3>
+              <p>{principle.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="details section-pad" id="roadmap">
+        <div class="capability-panel">
+          <p class="eyebrow">Built around real workflows</p>
+          <h2>The parts of Actions your pipeline actually depends on.</h2>
+          <ul>
+            {capabilities.map((capability) => <li><span>✓</span>{capability}</li>)}
+          </ul>
+        </div>
+        <div class="roadmap-panel">
+          <div class="roadmap-top">
+            <p class="eyebrow">Build status</p>
+            <span>Phase 1 of 6</span>
+          </div>
+          <h2>Engine first. Evidence before launch.</h2>
+          <p>
+            Greenlit is currently building the workflow parser, expression evaluator, job planner,
+            and metrics foundation. Execution, actions, environment parity, speed, and a public
+            parity dashboard follow in measured phases.
+          </p>
+          <div class="progress" aria-label="Phase 1 of 6"><span></span></div>
+          <div class="phase-labels"><span>Engine core</span><span>Parity + launch</span></div>
+          <a href={interestUrl}>Get Greenlit launch updates <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+
+      <section class="closing section-pad">
+        <p class="eyebrow">The goal</p>
+        <h2>Green here.<br/><span>Green on GitHub.</span></h2>
+        <p>One command. Your existing workflows. A result you can act on before you push.</p>
+        <a class="greenlit-button primary" href={interestUrl}>Get launch updates <span aria-hidden="true">→</span></a>
+      </section>
+    </main>
+  </div>
+</BaseLayout>
+
+<style>
+  :global(body) { background: #07110d; color: #edf8f1; }
+  :global(body::before) { display: none; }
+  :global(.site-footer) { background: #050c09; border-color: rgba(157,255,190,.1); color: #6f8879; }
+  :global(.site-footer-build) { color: #52655a; }
+  :global(.skip-link) { background: #a5ffbe; color: #07110d; }
+  .greenlit-shell { --green: #a5ffbe; --green-strong: #62ed8d; --ink: #edf8f1; --muted: #91a99a; --line: rgba(173,255,200,.13); overflow: hidden; background: radial-gradient(circle at 70% 12%, rgba(55,198,102,.12), transparent 28%), #07110d; }
+  .greenlit-nav { width: min(calc(100% - 3rem), 1180px); margin: 0 auto; min-height: 84px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+  .brand { display: inline-flex; align-items: center; gap: .75rem; font-size: 1.05rem; font-weight: 800; letter-spacing: -.02em; }
+  .brand-mark { width: 30px; height: 30px; border: 1px solid rgba(165,255,190,.35); border-radius: 9px; display: grid; place-items: center; background: rgba(165,255,190,.07); }
+  .brand-mark span { width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 18px var(--green); }
+  .greenlit-nav nav { display: flex; align-items: center; gap: 2rem; color: var(--muted); font-size: .86rem; font-weight: 600; }
+  .greenlit-nav nav a:hover { color: var(--ink); }
+  .nav-portfolio { padding: .65rem 1rem; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); }
+  .hero { width: min(calc(100% - 3rem), 1180px); margin: 0 auto; min-height: 720px; display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(390px, .98fr); align-items: center; gap: clamp(3rem, 7vw, 7rem); padding: 6rem 0 7rem; }
+  .status { display: inline-flex; align-items: center; gap: .6rem; margin: 0 0 1.5rem; color: var(--green); font: 700 .72rem/1 var(--font-family-sans); letter-spacing: .14em; text-transform: uppercase; }
+  .status span { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 14px var(--green); }
+  .hero h1 { max-width: 760px; margin: 0; color: var(--ink); font-family: var(--font-family-sans); font-size: clamp(3.1rem, 6vw, 5.8rem); font-weight: 750; line-height: .98; letter-spacing: -.065em; }
+  .hero h1 em { color: var(--green); font-style: normal; }
+  .hero-lede { max-width: 620px; margin: 2rem 0 0; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.14rem); line-height: 1.75; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: .85rem; margin-top: 2.1rem; }
+  .greenlit-button { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: .7rem; padding: .75rem 1.25rem; border-radius: 9px; border: 1px solid transparent; font-weight: 750; font-size: .91rem; transition: transform 160ms ease, background 160ms ease, border-color 160ms ease; }
+  .greenlit-button:hover { transform: translateY(-2px); }
+  .greenlit-button.primary { color: #06100b; background: var(--green); box-shadow: 0 0 30px rgba(98,237,141,.12); }
+  .greenlit-button.primary:hover { background: #c0ffcf; }
+  .greenlit-button.secondary { color: var(--ink); border-color: var(--line); background: rgba(255,255,255,.025); }
+  .platform-note { margin: 1.15rem 0 0; color: #60766a; font-size: .76rem; }
+  .terminal-wrap { position: relative; }
+  .terminal-glow { position: absolute; inset: 15% 4%; background: rgba(77,232,124,.2); filter: blur(80px); }
+  .terminal { position: relative; overflow: hidden; border: 1px solid rgba(166,255,194,.2); border-radius: 16px; background: rgba(5,12,9,.92); box-shadow: 0 35px 90px rgba(0,0,0,.5); transform: perspective(1200px) rotateY(-3deg) rotateX(1deg); }
+  .terminal-bar { min-height: 48px; padding: 0 1rem; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; color: #62766a; border-bottom: 1px solid var(--line); font: 600 .68rem/1 var(--font-family-sans); }
+  .terminal-dots { display: flex; gap: 6px; }
+  .terminal-dots span { width: 8px; height: 8px; border-radius: 50%; background: #27372e; }
+  .terminal-state { justify-self: end; display: inline-flex; align-items: center; gap: .4rem; }
+  .terminal-state i { width: 6px; height: 6px; border-radius: 50%; background: var(--green-strong); }
+  .terminal-body { padding: 1.7rem 1.8rem 1.9rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .83rem; }
+  .terminal-body p { display: flex; align-items: center; min-height: 1.6rem; margin: 0 0 .45rem; color: #d6e8dd; }
+  .terminal-body b { margin-right: .8rem; color: var(--green); }
+  .terminal-body .muted { color: #708579; }
+  .terminal-rule { height: 1px; margin: 1rem 0; background: var(--line); }
+  .terminal-body .check { width: 23px; color: var(--green); }
+  .terminal-body small { margin-left: auto; color: #53675b; }
+  .terminal-body .success { color: var(--green); font-weight: 700; }
+  .cursor-line { margin-top: 1rem !important; }
+  .cursor { width: 7px; height: 15px; background: var(--green); opacity: .8; }
+  .parity-tag { position: absolute; right: -28px; bottom: -34px; display: flex; align-items: center; gap: .8rem; padding: .85rem 1rem; border: 1px solid rgba(165,255,190,.22); border-radius: 12px; background: #0b1711; box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+  .parity-tag > span { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--green); color: #07110d; font-weight: 900; }
+  .parity-tag div { display: grid; gap: .15rem; }
+  .parity-tag strong { font-size: .77rem; }
+  .parity-tag small { color: var(--muted); font-size: .67rem; }
+  .problem-strip { border-block: 1px solid var(--line); background: rgba(255,255,255,.018); min-height: 104px; padding: 1.5rem max(1.5rem, calc((100vw - 1180px)/2)); display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
+  .problem-strip > p, .eyebrow { color: var(--green); font-size: .68rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+  .problem-strip ol { display: flex; align-items: center; gap: .8rem; padding: 0; list-style: none; color: var(--muted); font-size: .79rem; }
+  .problem-strip li:not(.arrow) { display: flex; align-items: center; gap: .45rem; }
+  .problem-strip li span { display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 50%; color: var(--green); font-size: .63rem; }
+  .problem-strip .arrow { color: #405247; }
+  .problem-strip strong { max-width: 245px; color: var(--ink); font-size: .9rem; line-height: 1.45; text-align: right; }
+  .section-pad { width: min(calc(100% - 3rem), 1180px); margin: 0 auto; padding: 8rem 0; }
+  .section-heading { max-width: 710px; }
+  .eyebrow { margin: 0 0 1.2rem; }
+  .section-heading h2, .details h2, .closing h2 { margin: 0; color: var(--ink); font-family: var(--font-family-sans); font-size: clamp(2.3rem, 4.5vw, 4rem); line-height: 1.05; letter-spacing: -.05em; }
+  .section-heading > p:last-child { max-width: 610px; margin: 1.4rem 0 0; color: var(--muted); line-height: 1.75; }
+  .principle-grid { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 4rem; border-block: 1px solid var(--line); }
+  .principle-grid article { padding: 2.3rem 2.3rem 2.3rem 0; }
+  .principle-grid article + article { padding-left: 2.3rem; border-left: 1px solid var(--line); }
+  .principle-number { color: var(--green); font: 700 .68rem/1 ui-monospace, monospace; }
+  .principle-grid h3 { margin: 3rem 0 .9rem; color: var(--ink); font-family: var(--font-family-sans); font-size: 1.15rem; }
+  .principle-grid p { margin: 0; color: var(--muted); line-height: 1.7; font-size: .9rem; }
+  .details { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; padding: 0; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--line); }
+  .details > div { padding: clamp(2rem, 5vw, 4rem); background: #09140f; }
+  .details h2 { font-size: clamp(1.8rem, 3vw, 2.8rem); }
+  .capability-panel ul { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 2.4rem 0 0; padding: 0; list-style: none; }
+  .capability-panel li { display: flex; gap: .7rem; padding: .85rem .8rem .85rem 0; border-top: 1px solid var(--line); color: #b6c9bd; font-size: .8rem; line-height: 1.45; }
+  .capability-panel li span { color: var(--green); }
+  .roadmap-top { display: flex; align-items: center; justify-content: space-between; }
+  .roadmap-top > span { color: var(--green); font-size: .7rem; font-weight: 700; }
+  .roadmap-panel > p:not(.eyebrow) { margin: 1.3rem 0 0; color: var(--muted); font-size: .88rem; line-height: 1.75; }
+  .progress { height: 4px; margin-top: 2.4rem; overflow: hidden; border-radius: 999px; background: #1b2a21; }
+  .progress span { display: block; width: 16.666%; height: 100%; background: var(--green); box-shadow: 0 0 12px var(--green); }
+  .phase-labels { display: flex; justify-content: space-between; margin-top: .65rem; color: #63786b; font-size: .65rem; }
+  .roadmap-panel > a { display: inline-flex; gap: .5rem; margin-top: 2.3rem; color: var(--green); font-size: .82rem; font-weight: 700; }
+  .closing { text-align: center; padding-block: 11rem; }
+  .closing h2 span { color: var(--green); }
+  .closing > p:not(.eyebrow) { margin: 1.5rem auto 2.2rem; color: var(--muted); }
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding-top: 4rem; }
+    .terminal-wrap { max-width: 620px; }
+    .problem-strip { flex-wrap: wrap; }
+    .problem-strip strong { text-align: left; }
+    .principle-grid { grid-template-columns: 1fr; }
+    .principle-grid article, .principle-grid article + article { padding: 2rem 0; border-left: 0; border-top: 1px solid var(--line); }
+    .principle-grid article:first-child { border-top: 0; }
+    .principle-grid h3 { margin-top: 1.6rem; }
+    .details { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .greenlit-nav, .hero, .section-pad { width: min(calc(100% - 2rem), 1180px); }
+    .greenlit-nav nav > a:not(.nav-portfolio) { display: none; }
+    .nav-portfolio { padding: .55rem .8rem; }
+    .hero { min-height: auto; padding-block: 4rem 5.5rem; }
+    .hero h1 { font-size: clamp(2.75rem, 14vw, 4.1rem); }
+    .terminal { transform: none; }
+    .parity-tag { right: 12px; bottom: -42px; }
+    .problem-strip { padding-block: 2rem; }
+    .problem-strip ol { width: 100%; flex-wrap: wrap; }
+    .problem-strip .arrow { display: none; }
+    .section-pad { padding-block: 6rem; }
+    .capability-panel ul { grid-template-columns: 1fr; }
+    .details { padding: 0; }
+    .details > div { padding: 2rem 1.4rem; }
+  }
+</style>
