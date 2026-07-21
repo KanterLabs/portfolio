@@ -3,7 +3,9 @@
 ## Build and release
 
 - [ ] `npm ci`, `npm run build`, and Playwright pass
-- [ ] Tailscale workload identity is configured before setting the production `DEPLOY_ENABLED` variable to `true`
+- [ ] the repository-scoped `portfolio-deploy` runner is online before setting the repository `DEPLOY_ENABLED` variable to `true`
+- [ ] `PORTFOLIO_DEPLOY_SSH_KEY` is readable from the Infisical `prod` environment on the runner
+- [ ] the pinned key in `infrastructure/kantercloud/portfolio-known-hosts` matches the portfolio LXC SSH host key
 - [ ] the release archive contains `index.html`, project pages, sitemap, resume, and hashed assets
 - [ ] the deploy identity can run only `deploy <sha>` or `rollback <sha>`
 - [ ] `/srv/portfolio/current` points at the intended commit
