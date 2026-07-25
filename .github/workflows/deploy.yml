@@ -54,7 +54,7 @@ jobs:
     # production environment is attached to the runner.
     if: github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true'
     needs: build-and-test
-    runs-on: [self-hosted, linux, x64, portfolio-deploy]
+    runs-on: homelab
     timeout-minutes: 10
     environment:
       name: production
@@ -70,23 +70,15 @@ jobs:
         with:
           name: site-dist
       - name: Configure deployment SSH identity
+        env:
+          PORTFOLIO_DEPLOY_SSH_KEY: ${{ secrets.PORTFOLIO_DEPLOY_SSH_KEY }}
         run: |
           set -euo pipefail
-          source ~/.config/infisical/machine.env
-          infisical_token=$(infisical login --method=universal-auth \
-            --client-id="$INFISICAL_CLIENT_ID" \
-            --client-secret="$INFISICAL_CLIENT_SECRET" \
-            --domain="$INFISICAL_DOMAIN" --plain --silent)
-          deploy_key=$(INFISICAL_TOKEN="$infisical_token" \
-            infisical secrets get PORTFOLIO_DEPLOY_SSH_KEY \
-            --projectId="$INFISICAL_PROJECT" --env=prod \
-            --domain="$INFISICAL_DOMAIN" --plain --silent)
           install -m 0700 -d ~/.ssh
-          printf '%s\n' "$deploy_key" > ~/.ssh/portfolio
+          printf '%s\n' "$PORTFOLIO_DEPLOY_SSH_KEY" > ~/.ssh/portfolio
           chmod 0600 ~/.ssh/portfolio
           install -m 0644 infrastructure/kantercloud/portfolio-known-hosts \
             ~/.ssh/known_hosts
-          unset deploy_key infisical_token
       - name: Deploy release
         if: inputs.rollback_sha == ''
         env:
