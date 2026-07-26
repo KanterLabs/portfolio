@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: homelab
     defaults:
       run:
         working-directory: site
@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Install browser
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Run browser tests
         run: npm run test:e2e
       - name: Archive build output
