@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627" role="img" aria-labelledby="title desc">
+  <title id="title">KanterLabs Homelab Platform</title>
+  <desc id="desc">Social preview showing a reviewed infrastructure repository connected to edge, workload, and ephemeral CI systems.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8fafc"/><stop offset="1" stop-color="#e2e8f0"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-opacity=".12"/></filter>
+  </defs>
+  <rect width="1200" height="627" fill="url(#bg)"/>
+  <path d="M0 92H1200M0 184H1200M0 276H1200M0 368H1200M0 460H1200M0 552H1200M100 0V627M200 0V627M300 0V627M400 0V627M500 0V627M600 0V627M700 0V627M800 0V627M900 0V627M1000 0V627M1100 0V627" stroke="#0f172a" stroke-opacity=".035"/>
+  <text x="72" y="92" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="#64748b">KANTERLABS · INFRASTRUCTURE</text>
+  <text x="72" y="162" font-family="Georgia,serif" font-size="58" font-weight="700" fill="#18181b">Homelab Platform</text>
+  <text x="72" y="207" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="500" fill="#475569">Reviewed ingress, isolated workloads, and ephemeral CI</text>
+
+  <rect x="72" y="280" width="270" height="150" rx="20" fill="#fff" stroke="#94a3b8" filter="url(#shadow)"/>
+  <text x="102" y="320" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="2" fill="#64748b">SOURCE OF TRUTH</text>
+  <text x="102" y="362" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700" fill="#18181b">Infrastructure repo</text>
+  <text x="102" y="395" font-family="Inter,Arial,sans-serif" font-size="16" fill="#52525b">Reviewed configs and scripts</text>
+
+  <rect x="465" y="255" width="290" height="100" rx="18" fill="#eef2ff" stroke="#6366f1" filter="url(#shadow)"/>
+  <text x="610" y="298" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="20" font-weight="700" fill="#18181b">Shared application edge</text>
+  <text x="610" y="327" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="15" fill="#52525b">Public and private entrances</text>
+
+  <rect x="465" y="385" width="290" height="100" rx="18" fill="#ecfdf5" stroke="#16a34a" filter="url(#shadow)"/>
+  <text x="610" y="428" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="20" font-weight="700" fill="#18181b">Isolated workload zones</text>
+  <text x="610" y="457" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="15" fill="#52525b">Default-deny lateral routing</text>
+
+  <rect x="870" y="320" width="260" height="150" rx="20" fill="#f5f3ff" stroke="#7c3aed" filter="url(#shadow)"/>
+  <text x="900" y="360" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="2" fill="#64748b">ORGANIZATION CI</text>
+  <text x="900" y="402" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700" fill="#18181b">Ephemeral runners</text>
+  <text x="900" y="435" font-family="Inter,Arial,sans-serif" font-size="16" fill="#52525b">k3s · ARC · private Docker</text>
+
+  <path d="M342 355H420V305H465M342 355H420V435H465M755 305H815V395H870M755 435H815V395H870" fill="none" stroke="#64748b" stroke-width="3"/>
+  <circle cx="420" cy="355" r="6" fill="#64748b"/>
+  <circle cx="815" cy="395" r="6" fill="#64748b"/>
+  <text x="72" y="570" font-family="Inter,Arial,sans-serif" font-size="17" font-weight="600" fill="#64748b">Shane Kanterman · Infrastructure case study</text>
+</svg>

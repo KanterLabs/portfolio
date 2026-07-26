@@ -7,9 +7,9 @@ const caseStudies = [
     heading: 'Portfolio Infrastructure Deployment',
   },
   {
-    path: '/projects/self-hosted-dev-server',
-    title: 'Self-Hosted Linux Server | Shane Kanterman',
-    heading: 'Self-Hosted Linux Server',
+    path: '/projects/kanterlabs-homelab',
+    title: 'KanterLabs Homelab Platform | Shane Kanterman',
+    heading: 'KanterLabs Homelab Platform',
   },
   {
     path: '/projects/hostlet',
@@ -37,23 +37,75 @@ test.describe('case studies', () => {
     });
   }
 
-  test('featured case study repo link is correct', async ({ page }) => {
-    await page.goto('/projects/multi-node-portfolio');
+  test('featured case study source link is correct', async ({ page }) => {
+    await page.goto('/projects/kanterlabs-homelab');
 
-    await expect(page.getByRole('link', { name: 'View portfolio repo' })).toHaveAttribute(
+    await expect(page.getByRole('link', { name: 'View portfolio source' })).toHaveAttribute(
       'href',
-      'https://github.com/ShaneKanterman04/portfolio',
+      'https://github.com/KanterLabs/portfolio',
     );
     await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
   });
 
   test('back to all projects returns to homepage projects anchor', async ({ page }) => {
-    await page.goto('/projects/self-hosted-dev-server');
+    await page.goto('/projects/kanterlabs-homelab');
     await page.getByRole('link', { name: 'Back to all projects' }).click();
 
     await expect
       .poll(async () => page.evaluate(() => window.location.hash))
       .toBe('#projects');
     await expect(page).toHaveURL(/#projects$/);
+  });
+
+  test('legacy homelab route redirects to the new case study', async ({ page }) => {
+    await page.goto('/projects/self-hosted-dev-server');
+
+    await expect(page).toHaveURL(/\/projects\/kanterlabs-homelab\/?$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'KanterLabs Homelab Platform' }),
+    ).toBeVisible();
+  });
+
+  test('homelab diagrams expand and close from the keyboard', async ({ page }) => {
+    await page.goto('/projects/kanterlabs-homelab');
+
+    const trigger = page.getByRole('button', { name: /Expand diagram:/ }).first();
+    await trigger.click();
+
+    const dialog = page.getByRole('dialog').first();
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+  });
+
+  test('public case-study assets do not expose private network identifiers', async ({
+    page,
+    request,
+  }) => {
+    await page.goto('/projects/kanterlabs-homelab');
+    const renderedText = await page.locator('main').innerText();
+    const assetPaths = [
+      '/diagrams/homelab-estate.svg',
+      '/diagrams/repository-control-map.svg',
+      '/diagrams/homelab-trust-zones.svg',
+      '/diagrams/runner-lifecycle.svg',
+      '/diagrams/architecture-diagram.svg',
+    ];
+    const assetText = (
+      await Promise.all(
+        assetPaths.map(async (path) => {
+          const response = await request.get(path);
+          expect(response.ok()).toBe(true);
+          return response.text();
+        }),
+      )
+    ).join('\n');
+    const publicContent = `${renderedText}\n${assetText}`;
+
+    expect(publicContent).not.toMatch(/\b10\.(?:\d{1,3}\.){2}\d{1,3}\b/);
+    expect(publicContent).not.toMatch(/\b100\.(?:\d{1,3}\.){2}\d{1,3}\b/);
+    expect(publicContent).not.toMatch(/\btail[a-z0-9]+\.ts\.net\b/i);
+    expect(publicContent).not.toMatch(/\b(?:VM|LXC)\s+\d{2,3}\b/);
+    expect(publicContent).not.toContain('kanter-edge');
   });
 });

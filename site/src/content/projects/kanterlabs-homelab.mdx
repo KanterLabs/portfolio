@@ -1,0 +1,193 @@
+---
+title: KanterLabs Homelab Platform
+summary: A two-site Proxmox platform that separates public ingress, private workloads, secrets, and ephemeral CI, with reviewed infrastructure configuration kept in Git.
+highlight: Turns a collection of servers into an intentional platform with documented trust boundaries and repeatable operations.
+impact: Replaced repository-specific persistent runners and loosely coupled ingress rules with organization-wide ephemeral CI and explicit public/private workload zones.
+constraint: Keep the system understandable and recoverable without publishing secrets, mounting host privileges into CI jobs, or pretending every change is continuously reconciled.
+role: Infrastructure designer, builder, and operator.
+scope: Proxmox, Linux, Caddy, Cloudflare, Tailscale, network policy, k3s, Actions Runner Controller, GHCR, and GitHub Actions.
+keyOutcome: A reviewed source of truth for edge routing and CI, backed by isolated job execution, staged migrations, and documented rollback paths.
+featured: true
+order: 1
+stack:
+  - Proxmox VE
+  - Linux
+  - Caddy
+  - Tailscale
+  - k3s
+  - GitHub Actions
+  - ARC
+  - Docker
+status: shipped
+date: 2026-07-25
+socialImage: /og/project-homelab-platform.svg
+links:
+  - label: View portfolio source
+    href: https://github.com/KanterLabs/portfolio
+---
+
+import Callout from '../../components/Callout.astro';
+import DiagramFigure from '../../components/DiagramFigure.astro';
+import InfrastructureStats from '../../components/InfrastructureStats.astro';
+
+## Overview
+
+My homelab grew from a development server into a small platform spread across two Proxmox environments: one at home for development, CI, secrets, and supporting services, and one for public application workloads and edge routing.
+
+The interesting part is not the machine count. It is the set of boundaries around them:
+
+- public traffic enters through a dedicated edge instead of reaching workloads directly
+- private applications have a separate Tailnet-only entrance
+- management networking is not treated as an application ingress zone
+- GitHub Actions jobs run in disposable pods instead of long-lived repository runners
+- credentials live outside Git and are injected only where they are needed
+
+<InfrastructureStats />
+
+<DiagramFigure
+  src="/diagrams/homelab-estate.svg"
+  alt="High-level map of the KanterLabs homelab and Kantercloud environments"
+  caption="The home environment provides development, CI, and secrets; the remote environment provides the shared edge and isolated application zones."
+  wide={true}
+/>
+
+## How the Infrastructure Repository Fits
+
+The private `KanterLabs/infrastructure` repository is the **reviewed source of truth for selected infrastructure**, not a complete inventory and not a continuously reconciling GitOps controller.
+
+That distinction matters. A merged change records the intended configuration and gives me something reviewable, testable, and recoverable. It does not automatically rewrite every target host.
+
+| Repository area | What it describes | How it reaches runtime |
+|---|---|---|
+| Edge configuration | Caddy routes, public and private listeners, workload interfaces | Validated and deliberately installed on the edge VM |
+| Workload policy | Host firewall rules and private/public service bindings | Applied on the relevant workload |
+| Hypervisor networking | NAT, forwarding, and isolation between zones | Installed as a host-managed network script |
+| CI platform | k3s, ARC, runner pods, custom images, verification, and dashboard | Installed with versioned scripts and Helm values |
+| GitHub workflows | Runner image publication and end-to-end smoke checks | Executed by GitHub Actions |
+
+Secrets are intentionally absent. GitHub App credentials, deployment keys, and service tokens are provisioned through GitHub, Infisical, Kubernetes Secrets, or root-only environment files.
+
+<Callout type="note" title="Reviewed does not mean automatic">
+  The repository makes changes inspectable and repeatable, while the install scripts preserve an explicit operator checkpoint. That is a deliberate tradeoff for a small environment where an incorrect firewall or ingress change can disconnect the very host needed to repair it.
+</Callout>
+
+<DiagramFigure
+  src="/diagrams/repository-control-map.svg"
+  alt="Map from infrastructure repository areas to the systems they configure"
+  caption="Git records the intended state. Workflows automate safe build and smoke-test paths; host and network changes retain an operator-controlled apply step."
+  wide={true}
+/>
+
+## Public and Private Ingress
+
+The edge VM owns application ingress. Workloads do not receive arbitrary inbound traffic from the Internet or from other workload zones.
+
+### Public path
+
+Public requests pass through Cloudflare, reach the hypervisor's public forwarding boundary, and are sent only to the edge VM's public-zone interface. Caddy selects the hostname and proxies to the correct public workload.
+
+The portfolio origin and hosted application platform live behind that boundary. Their host firewalls permit application traffic from the edge, not from the entire network.
+
+### Private path
+
+Private applications use Tailscale Serve as the only entrance. Tailscale terminates HTTPS on the edge and forwards to a loopback-only Caddy listener. That listener can reach the private workload zone, but it cannot be reached directly from the LAN or public interface.
+
+### Zone policy
+
+The design separates three concerns:
+
+1. **management** for administration during the migration period
+2. **public workloads** for services intentionally reachable through the edge
+3. **private workloads** for Tailnet-only applications
+
+Forwarding between those zones is denied by default. Public and private workloads can make outbound connections, but they cannot route laterally into each other or use the management network as an alternate ingress path.
+
+<DiagramFigure
+  src="/diagrams/homelab-trust-zones.svg"
+  alt="Public, private, and management traffic paths through the shared edge"
+  caption="Every application path crosses a named entrance. The management network remains an administration plane, not a shortcut around the edge."
+  wide={true}
+/>
+
+## Organization-Wide Ephemeral CI
+
+The CI migration replaced repository-specific, persistent runners with one organization runner scale set selected by:
+
+```yaml
+jobs:
+  test:
+    runs-on: homelab
+```
+
+The runner group is available to current and future KanterLabs repositories. Actions Runner Controller maintains one warm runner and can scale to three concurrent runners when jobs arrive.
+
+Each job receives a fresh Kubernetes pod with two cooperating containers:
+
+- a non-root Actions runner containing the pinned development toolchain
+- a private Docker-in-Docker sidecar for image builds and Compose-based tests
+
+The containers share only the job workspace, Docker socket, and bounded ephemeral storage they need. The host Docker socket, host home directory, and Kubernetes service-account token are not mounted into the runner.
+
+When the job finishes, ARC deletes the pod and its private Docker daemon. Package and compiler caches can persist on the runner host, but workspace and container state do not.
+
+<DiagramFigure
+  src="/diagrams/runner-lifecycle.svg"
+  alt="Lifecycle of a GitHub Actions job on the KanterLabs homelab runner scale set"
+  caption="ARC turns an organization workflow request into a disposable runner pod, then removes the job environment after completion."
+  wide={true}
+/>
+
+## A Pinned Runner Environment
+
+The runner image is built from Git and published to GitHub Container Registry. ARC references the result by immutable digest, so a tag cannot silently change the environment underneath a workflow.
+
+The image carries the common tools used across the organization:
+
+- Node.js and pnpm for web projects
+- Rust, Clippy, rustfmt, and sccache for systems projects
+- Docker Compose and Buildx for container workflows
+- Python and YAML tooling for repository contract checks
+- Chromium and Firefox dependencies for browser tests
+- GitHub and Infisical CLIs for controlled automation
+
+A smoke workflow verifies both the toolchain and the isolation contract. It confirms the runner is ephemeral and non-root, checks that sensitive host paths are absent, and performs a real Docker build through the per-job daemon.
+
+## Resource and Failure Boundaries
+
+The runner platform uses a single-node k3s cluster because the goal is controlled CI capacity, not a general-purpose Kubernetes environment.
+
+That keeps operations small, but it creates an honest failure domain: if the runner VM or its Proxmox host is unavailable, homelab jobs wait. The configuration accounts for this with:
+
+- reserved CPU, memory, and disk space for the node and Kubernetes services
+- explicit pod requests and limits
+- bounded work and Docker storage per job
+- eviction thresholds before the node exhausts storage or memory
+- pinned installer, chart, controller, runner, and Docker image versions
+- retained migration state and a documented rollback window
+
+The custom dashboard is LAN-only and read-only. It combines GitHub job state with host and cluster health without sending its server-side credentials to the browser.
+
+## Security Decisions
+
+The platform does not claim that running untrusted CI is risk-free. Docker-in-Docker still needs a privileged sidecar. The security boundary is instead made narrow and disposable:
+
+- privilege is isolated to the job's Docker sidecar rather than the host daemon
+- the runner itself stays non-root
+- credentials are not baked into the image
+- host access is limited to a purpose-built cache directory
+- workloads cannot move laterally between public, private, and management zones
+- secret values never enter the infrastructure repository
+
+This is a practical balance for my own organization: enough capability to run browser, Rust, Node, and container-heavy tests, with far less persistent state than the old runner fleet.
+
+## What I Learned
+
+The largest improvement came from treating infrastructure as a set of contracts instead of a collection of machines.
+
+- **Ingress contract:** every application has one intended entrance.
+- **Network contract:** workload zones cannot become accidental management paths.
+- **CI contract:** `runs-on: homelab` always means the same disposable environment.
+- **Repository contract:** reviewed files describe intended state, while secrets and host-local state remain outside Git.
+- **Recovery contract:** migrations keep an explicit fallback until the replacement has been exercised.
+
+The result is still a homelab—small, resource-conscious, and operated by one person—but it now behaves like a platform I can reason about, review, and extend.
