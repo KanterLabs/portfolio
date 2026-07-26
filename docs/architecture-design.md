@@ -9,7 +9,7 @@ Internet
    |
 Cloudflare DNS, CDN, and Full (strict) TLS
    |
-kanter-edge VM — Caddy on the public edge
+Shared edge VM — Caddy on the public edge
    |
 Private Kantercloud network
    |
@@ -25,7 +25,7 @@ The origin is an unprivileged Debian LXC sized for a static workload. Nginx serv
 The origin exposes `/healthz` for infrastructure checks. Its deny-by-default firewall permits:
 
 - SSH from the Kantercloud subnet router
-- HTTP from `kanter-edge`, Homebase, and the Proxmox host
+- HTTP from the shared edge, approved monitoring, and the Proxmox host
 - established traffic, loopback, and required ICMP
 
 ## Delivery

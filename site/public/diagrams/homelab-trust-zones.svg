@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">KanterLabs ingress and trust-zone paths</title>
+  <desc id="desc">Public requests enter through Cloudflare and the public edge listener before reaching public workloads. Private requests enter through Tailscale Serve and a loopback edge listener before reaching private workloads. Management access remains separate, and lateral routing between all three zones is denied.</desc>
+  <defs>
+    <style>
+      .title{font:700 30px Inter,Arial,sans-serif;fill:#18181b}.subtitle{font:500 16px Inter,Arial,sans-serif;fill:#52525b}
+      .label{font:700 16px Inter,Arial,sans-serif;fill:#18181b}.small{font:500 13px Inter,Arial,sans-serif;fill:#52525b}
+      .tiny{font:700 11px Inter,Arial,sans-serif;fill:#71717a;letter-spacing:.06em}.node{fill:#fff;stroke:#94a3b8;stroke-width:1.5}
+      .edge{fill:#eef2ff;stroke:#6366f1;stroke-width:1.5}.public{fill:#ecfdf5;stroke:#16a34a;stroke-width:1.5}
+      .private{fill:#eff6ff;stroke:#2563eb;stroke-width:1.5}.management{fill:#fff7ed;stroke:#ea580c;stroke-width:1.5}
+      .deny{fill:#fef2f2;stroke:#dc2626;stroke-width:1.5}.publicLine{stroke:#16a34a;stroke-width:3;fill:none}
+      .privateLine{stroke:#2563eb;stroke-width:3;fill:none}.managementLine{stroke:#ea580c;stroke-width:3;fill:none}
+      .denyLine{stroke:#dc2626;stroke-width:2.2;stroke-dasharray:8 7;fill:none}.boundary{fill:none;stroke:#cbd5e1;stroke-width:1.5;stroke-dasharray:7 6}
+    </style>
+    <marker id="greenArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#16a34a"/></marker>
+    <marker id="blueArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#2563eb"/></marker>
+    <marker id="orangeArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#ea580c"/></marker>
+  </defs>
+  <rect width="1400" height="900" fill="#f4f4f5"/>
+  <text x="700" y="50" text-anchor="middle" class="title">Named Entrances, Isolated Workload Zones</text>
+  <text x="700" y="79" text-anchor="middle" class="subtitle">Public, private, and management traffic cannot silently substitute for one another</text>
+
+  <text x="92" y="145" class="tiny">PUBLIC APPLICATION PATH</text>
+  <rect x="90" y="175" width="200" height="82" rx="15" class="node"/>
+  <text x="190" y="210" text-anchor="middle" class="label">Internet visitor</text>
+  <text x="190" y="234" text-anchor="middle" class="small">Public hostname</text>
+  <rect x="350" y="175" width="200" height="82" rx="15" class="public"/>
+  <text x="450" y="210" text-anchor="middle" class="label">Cloudflare</text>
+  <text x="450" y="234" text-anchor="middle" class="small">Proxy and TLS</text>
+  <rect x="610" y="175" width="220" height="82" rx="15" class="edge"/>
+  <text x="720" y="210" text-anchor="middle" class="label">Public edge listener</text>
+  <text x="720" y="234" text-anchor="middle" class="small">Caddy hostname route</text>
+  <rect x="890" y="175" width="245" height="82" rx="15" class="public"/>
+  <text x="1012" y="210" text-anchor="middle" class="label">Public workload zone</text>
+  <text x="1012" y="234" text-anchor="middle" class="small">Origin accepts edge traffic</text>
+  <path d="M290 216H350" class="publicLine" marker-end="url(#greenArrow)"/>
+  <path d="M550 216H610" class="publicLine" marker-end="url(#greenArrow)"/>
+  <path d="M830 216H890" class="publicLine" marker-end="url(#greenArrow)"/>
+
+  <text x="92" y="360" class="tiny">PRIVATE APPLICATION PATH</text>
+  <rect x="90" y="390" width="200" height="82" rx="15" class="node"/>
+  <text x="190" y="425" text-anchor="middle" class="label">Tailnet client</text>
+  <text x="190" y="449" text-anchor="middle" class="small">Authenticated device</text>
+  <rect x="350" y="390" width="200" height="82" rx="15" class="private"/>
+  <text x="450" y="425" text-anchor="middle" class="label">Tailscale Serve</text>
+  <text x="450" y="449" text-anchor="middle" class="small">Private HTTPS entrance</text>
+  <rect x="610" y="390" width="220" height="82" rx="15" class="edge"/>
+  <text x="720" y="425" text-anchor="middle" class="label">Loopback listener</text>
+  <text x="720" y="449" text-anchor="middle" class="small">Not exposed on LAN</text>
+  <rect x="890" y="390" width="245" height="82" rx="15" class="private"/>
+  <text x="1012" y="425" text-anchor="middle" class="label">Private workload zone</text>
+  <text x="1012" y="449" text-anchor="middle" class="small">Origin accepts edge traffic</text>
+  <path d="M290 431H350" class="privateLine" marker-end="url(#blueArrow)"/>
+  <path d="M550 431H610" class="privateLine" marker-end="url(#blueArrow)"/>
+  <path d="M830 431H890" class="privateLine" marker-end="url(#blueArrow)"/>
+
+  <text x="92" y="575" class="tiny">MANAGEMENT PATH</text>
+  <rect x="90" y="605" width="200" height="82" rx="15" class="node"/>
+  <text x="190" y="640" text-anchor="middle" class="label">Operator</text>
+  <text x="190" y="664" text-anchor="middle" class="small">Administrative access</text>
+  <rect x="350" y="605" width="270" height="82" rx="15" class="management"/>
+  <text x="485" y="640" text-anchor="middle" class="label">Management plane</text>
+  <text x="485" y="664" text-anchor="middle" class="small">SSH and hypervisor administration</text>
+  <path d="M290 646H350" class="managementLine" marker-end="url(#orangeArrow)"/>
+
+  <rect x="780" y="575" width="500" height="180" rx="20" class="deny"/>
+  <text x="815" y="610" class="tiny">DEFAULT-DENY FORWARDING</text>
+  <text x="815" y="644" class="label">No lateral route between zones</text>
+  <text x="815" y="676" class="small">Public ↔ private workload traffic is blocked</text>
+  <text x="815" y="704" class="small">Management is not an alternate application entrance</text>
+  <text x="815" y="732" class="small">Tailnet clients cannot bypass named private services</text>
+  <path d="M620 646H780" class="denyLine"/>
+
+  <rect x="90" y="810" width="1190" height="48" rx="12" class="boundary"/>
+  <text x="685" y="840" text-anchor="middle" class="small">Workloads retain controlled outbound access while inbound and lateral paths stay explicit</text>
+</svg>
