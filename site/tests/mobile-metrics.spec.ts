@@ -51,7 +51,7 @@ test('mobile nav panel is compact', async ({ page }) => {
 test('mobile case study pages layout', async ({ page }) => {
   const pages = [
     ['/projects/multi-node-portfolio', 'Portfolio Infrastructure Deployment'],
-    ['/projects/self-hosted-dev-server', 'Self-Hosted Linux Server'],
+    ['/projects/kanterlabs-homelab', 'KanterLabs Homelab Platform'],
     ['/projects/data-center-operations', 'InterServer Data Center Operations'],
   ] as const;
 

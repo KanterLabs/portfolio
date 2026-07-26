@@ -28,7 +28,7 @@ npm run test:e2e
 
 ## Production
 
-Cloudflare terminates public traffic and connects to the shared `kanter-edge` Caddy VM with Full (strict) TLS. Caddy proxies the portfolio over Kantercloud's private network to a dedicated unprivileged Debian LXC running Nginx. The LXC does not run Tailscale or Docker.
+Cloudflare terminates public traffic and connects to a shared Caddy edge VM with Full (strict) TLS. Caddy proxies the portfolio over Kantercloud's private network to a dedicated unprivileged Debian LXC running Nginx. The LXC does not run Tailscale or Docker.
 
 GitHub-hosted Actions runners build and test the site. After a successful push to `main`, an ephemeral KanterLabs homelab runner uses the production environment's deploy key and sends the release archive over the existing private route to a restricted deploy account. Releases are stored by commit SHA and activated with an atomic symlink swap.
 

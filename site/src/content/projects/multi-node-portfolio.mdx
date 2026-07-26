@@ -7,8 +7,8 @@ constraint: Keep the runtime small and inexpensive without putting Tailscale or 
 role: Designer, builder, and operator.
 scope: Astro, Debian LXC, Nginx, Caddy, Cloudflare, Tailscale, Proxmox, and CI/CD.
 keyOutcome: A portfolio whose live deployment matches the infrastructure story it tells.
-featured: true
-order: 1
+featured: false
+order: 2
 stack:
   - Astro
   - Nginx
@@ -32,7 +32,7 @@ import Callout from '../../components/Callout.astro';
 
 The portfolio is intentionally static. The operational work is in making that small application deploy safely, remain private behind a shared edge, and recover without rebuilding a server by hand.
 
-The current production path is **Cloudflare → kanter-edge → private portfolio LXC**. Cloudflare provides the public network and validates the origin certificate. Caddy owns public ingress on the shared edge VM. Nginx serves the generated Astro files from a dedicated unprivileged container.
+The current production path is **Cloudflare → shared edge VM → private portfolio origin**. Cloudflare provides the public network and validates the origin certificate. Caddy owns public ingress on the shared edge VM. Nginx serves the generated Astro files from a dedicated unprivileged container.
 
 ## Current Architecture
 
@@ -41,7 +41,7 @@ Internet
    |
 Cloudflare DNS, CDN, Full (strict) TLS
    |
-kanter-edge VM · Caddy
+Shared edge VM · Caddy
    |
 Private Kantercloud network
    |
@@ -61,7 +61,7 @@ The edge VM already owns the server's public ports and certificate lifecycle. Pu
 
 The resulting boundary is small and explicit:
 
-- the Proxmox host routes public 80/443 only to `kanter-edge`
+- the Proxmox host routes public web traffic only to the shared edge VM
 - Caddy proxies the portfolio hostname over the private guest network
 - the LXC accepts HTTP only from approved infrastructure addresses
 - deployment reaches private SSH through the existing subnet router
