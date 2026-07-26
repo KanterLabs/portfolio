@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">Infrastructure repository control map</title>
+  <desc id="desc">The private infrastructure repository contains reviewed edge, workload, hypervisor, runner, and workflow configuration. Automated paths build images and run smoke tests. Operator-controlled paths install host and network configuration. Secrets remain in external stores.</desc>
+  <defs>
+    <style>
+      .title{font:700 30px Inter,Arial,sans-serif;fill:#18181b}.subtitle{font:500 16px Inter,Arial,sans-serif;fill:#52525b}
+      .label{font:700 16px Inter,Arial,sans-serif;fill:#18181b}.small{font:500 13px Inter,Arial,sans-serif;fill:#52525b}
+      .tiny{font:700 11px Inter,Arial,sans-serif;fill:#71717a;letter-spacing:.06em}
+      .repo{fill:#1e293b;stroke:#0f172a;stroke-width:2}.repoText{font:700 19px Inter,Arial,sans-serif;fill:#fff}
+      .repoSmall{font:500 13px Inter,Arial,sans-serif;fill:#cbd5e1}.folder{fill:#fff;stroke:#94a3b8;stroke-width:1.5}
+      .auto{fill:#ecfdf5;stroke:#16a34a;stroke-width:1.5}.manual{fill:#fff7ed;stroke:#ea580c;stroke-width:1.5}
+      .secret{fill:#f5f3ff;stroke:#7c3aed;stroke-width:1.5}.line{stroke:#64748b;stroke-width:2.3;fill:none}
+      .autoLine{stroke:#16a34a;stroke-width:2.5;fill:none}.manualLine{stroke:#ea580c;stroke-width:2.5;stroke-dasharray:9 7;fill:none}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#64748b"/></marker>
+    <marker id="greenArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#16a34a"/></marker>
+    <marker id="orangeArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#ea580c"/></marker>
+  </defs>
+  <rect width="1400" height="820" fill="#f4f4f5"/>
+  <text x="700" y="48" text-anchor="middle" class="title">From Reviewed Git to Running Infrastructure</text>
+  <text x="700" y="77" text-anchor="middle" class="subtitle">One repository, two delivery modes, and a separate secret boundary</text>
+
+  <rect x="465" y="115" width="470" height="105" rx="20" class="repo"/>
+  <text x="700" y="158" text-anchor="middle" class="repoText">KanterLabs / infrastructure</text>
+  <text x="700" y="186" text-anchor="middle" class="repoSmall">Reviewed configuration, scripts, workflows, and recovery notes</text>
+
+  <rect x="70" y="285" width="230" height="92" rx="15" class="folder"/>
+  <text x="92" y="316" class="tiny">EDGE</text><text x="92" y="345" class="label">Ingress and listeners</text>
+  <rect x="325" y="285" width="230" height="92" rx="15" class="folder"/>
+  <text x="347" y="316" class="tiny">WORKLOADS</text><text x="347" y="345" class="label">Bindings and firewalls</text>
+  <rect x="580" y="285" width="240" height="92" rx="15" class="folder"/>
+  <text x="602" y="316" class="tiny">HYPERVISOR</text><text x="602" y="345" class="label">NAT and zone policy</text>
+  <rect x="845" y="285" width="230" height="92" rx="15" class="folder"/>
+  <text x="867" y="316" class="tiny">CI PLATFORM</text><text x="867" y="345" class="label">k3s, ARC, runners</text>
+  <rect x="1100" y="285" width="230" height="92" rx="15" class="folder"/>
+  <text x="1122" y="316" class="tiny">WORKFLOWS</text><text x="1122" y="345" class="label">Build and smoke tests</text>
+
+  <path d="M700 220V250H185V285" class="line" marker-end="url(#arrow)"/>
+  <path d="M700 250H440V285" class="line" marker-end="url(#arrow)"/>
+  <path d="M700 250V285" class="line" marker-end="url(#arrow)"/>
+  <path d="M700 250H960V285" class="line" marker-end="url(#arrow)"/>
+  <path d="M700 250H1215V285" class="line" marker-end="url(#arrow)"/>
+
+  <rect x="135" y="500" width="480" height="180" rx="20" class="manual"/>
+  <text x="170" y="538" class="tiny">OPERATOR-CONTROLLED APPLY</text>
+  <text x="170" y="573" class="label">Host and network configuration</text>
+  <text x="170" y="605" class="small">Validate target and access path</text>
+  <text x="170" y="632" class="small">Install reviewed files and scripts</text>
+  <text x="170" y="659" class="small">Verify health before retiring rollback state</text>
+
+  <rect x="785" y="500" width="480" height="180" rx="20" class="auto"/>
+  <text x="820" y="538" class="tiny">AUTOMATED DELIVERY</text>
+  <text x="820" y="573" class="label">Images and CI contract checks</text>
+  <text x="820" y="605" class="small">Build and publish the runner image</text>
+  <text x="820" y="632" class="small">Pin the immutable image digest</text>
+  <text x="820" y="659" class="small">Run isolation and toolchain smoke tests</text>
+
+  <path d="M185 377V425H375V500" class="manualLine" marker-end="url(#orangeArrow)"/>
+  <path d="M440 377V500" class="manualLine" marker-end="url(#orangeArrow)"/>
+  <path d="M700 377V425H375V500" class="manualLine" marker-end="url(#orangeArrow)"/>
+  <path d="M960 377V425H1025V500" class="autoLine" marker-end="url(#greenArrow)"/>
+  <path d="M1215 377V500" class="autoLine" marker-end="url(#greenArrow)"/>
+
+  <rect x="440" y="718" width="520" height="66" rx="16" class="secret"/>
+  <text x="700" y="745" text-anchor="middle" class="label">External secret stores</text>
+  <text x="700" y="768" text-anchor="middle" class="small">Credentials enter runtime through scoped GitHub, Kubernetes, Infisical, or host-local storage—not Git</text>
+</svg>

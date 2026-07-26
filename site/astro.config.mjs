@@ -10,6 +10,9 @@ const siteUrl = 'https://shanekanterman.dev';
 
 export default defineConfig({
   site: siteUrl,
+  redirects: {
+    '/projects/self-hosted-dev-server': '/projects/kanterlabs-homelab',
+  },
   devToolbar: {
     enabled: process.env.PLAYWRIGHT !== 'true',
   },
