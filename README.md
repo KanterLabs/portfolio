@@ -30,6 +30,15 @@ npm run test:e2e
 
 Cloudflare terminates public traffic and connects to a shared Caddy edge VM with Full (strict) TLS. Caddy proxies the portfolio over Kantercloud's private network to a dedicated unprivileged Debian LXC running Nginx. The LXC does not run Tailscale or Docker.
 
-GitHub-hosted Actions runners build and test the site. After a successful push to `main`, an ephemeral KanterLabs homelab runner uses the production environment's deploy key and sends the release archive over the existing private route to a restricted deploy account. Releases are stored by commit SHA and activated with an atomic symlink swap.
+KanterLabs GitHub Actions uses the `homelab` micro tier for both build/test and
+deployment. ARC creates a fresh runner pod for each job; the runner uses the
+production environment's deploy key to send the release archive over the
+existing private route to a restricted deploy account, then disappears.
+Releases are stored by commit SHA and activated with an atomic symlink swap.
+
+The portfolio remains on the micro tier because its current workflow is short
+and not sustained CPU-bound. See the
+[canonical runner runbook](https://github.com/KanterLabs/infrastructure/tree/main/homelab/ci-runners)
+for ARC, runner, and tier definitions.
 
 See `docs/architecture-design.md` and `docs/setup-checklist.md` for the topology, validation order, and rollback procedure.
