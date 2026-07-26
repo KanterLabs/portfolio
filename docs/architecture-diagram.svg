@@ -15,11 +15,11 @@
   <text x="700" y="288" text-anchor="middle" class="small">DNS • CDN • DDoS protection • Full (strict) TLS</text>
   <text x="700" y="315" text-anchor="middle" class="small">Health check: /healthz</text>
   <rect x="390" y="405" width="620" height="135" class="box edge"/>
-  <text x="700" y="440" text-anchor="middle" class="label">kanter-edge — 10.40.0.2</text>
+  <text x="700" y="440" text-anchor="middle" class="label">Shared edge VM — Caddy</text>
   <text x="700" y="468" text-anchor="middle" class="small">Caddy terminates origin TLS and applies security headers</text>
   <text x="700" y="495" text-anchor="middle" class="small">Public services use domains; private services may use Tailscale</text>
   <rect x="390" y="605" width="620" height="145" class="box origin"/>
-  <text x="700" y="640" text-anchor="middle" class="label">Portfolio LXC 202 — 10.40.0.32</text>
+  <text x="700" y="640" text-anchor="middle" class="label">Private portfolio origin — Nginx</text>
   <text x="700" y="668" text-anchor="middle" class="small">Debian 13 • Nginx • static Astro output</text>
   <text x="700" y="695" text-anchor="middle" class="small">Unprivileged container • deny-by-default firewall • no Tailscale</text>
   <text x="700" y="722" text-anchor="middle" class="small">Atomic releases with five-release rollback</text>

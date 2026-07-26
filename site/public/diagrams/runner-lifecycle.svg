@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">KanterLabs ephemeral runner lifecycle</title>
+  <desc id="desc">A GitHub workflow using the homelab label enters the organization runner group. Actions Runner Controller scales a k3s runner set from one warm runner to a maximum of three. Each job gets a disposable pod containing a non-root runner and a private Docker sidecar. The pod is deleted after the job completes while bounded caches remain.</desc>
+  <defs>
+    <style>
+      .title{font:700 30px Inter,Arial,sans-serif;fill:#18181b}.subtitle{font:500 16px Inter,Arial,sans-serif;fill:#52525b}
+      .label{font:700 16px Inter,Arial,sans-serif;fill:#18181b}.small{font:500 13px Inter,Arial,sans-serif;fill:#52525b}
+      .tiny{font:700 11px Inter,Arial,sans-serif;fill:#71717a;letter-spacing:.06em}.node{fill:#fff;stroke:#94a3b8;stroke-width:1.5}
+      .github{fill:#f5f3ff;stroke:#7c3aed;stroke-width:1.5}.arc{fill:#eef2ff;stroke:#6366f1;stroke-width:1.5}
+      .pod{fill:#ecfdf5;stroke:#16a34a;stroke-width:2}.container{fill:#fff;stroke:#16a34a;stroke-width:1.3}
+      .cache{fill:#fff7ed;stroke:#ea580c;stroke-width:1.5}.destroy{fill:#fef2f2;stroke:#dc2626;stroke-width:1.5}
+      .line{stroke:#64748b;stroke-width:2.6;fill:none}.green{stroke:#16a34a;stroke-width:2.6;fill:none}
+      .dash{stroke:#ea580c;stroke-width:2.3;stroke-dasharray:8 7;fill:none}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#64748b"/></marker>
+    <marker id="greenArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#16a34a"/></marker>
+  </defs>
+  <rect width="1400" height="900" fill="#f4f4f5"/>
+  <text x="700" y="48" text-anchor="middle" class="title">One Workflow Job, One Disposable Runner Pod</text>
+  <text x="700" y="77" text-anchor="middle" class="subtitle">Organization-wide CI capacity without long-lived repository runner state</text>
+
+  <rect x="70" y="130" width="240" height="105" rx="18" class="github"/>
+  <text x="95" y="161" class="tiny">GITHUB WORKFLOW</text>
+  <text x="95" y="193" class="label">runs-on: homelab</text>
+  <text x="95" y="217" class="small">Any approved org repository</text>
+
+  <rect x="370" y="130" width="240" height="105" rx="18" class="github"/>
+  <text x="395" y="161" class="tiny">RUNNER GROUP</text>
+  <text x="395" y="193" class="label">Organization boundary</text>
+  <text x="395" y="217" class="small">Routes jobs to one scale set</text>
+
+  <rect x="670" y="130" width="270" height="105" rx="18" class="arc"/>
+  <text x="695" y="161" class="tiny">ARC LISTENER</text>
+  <text x="695" y="193" class="label">Observe job demand</text>
+  <text x="695" y="217" class="small">Request ephemeral runners</text>
+
+  <rect x="1000" y="130" width="330" height="105" rx="18" class="arc"/>
+  <text x="1025" y="161" class="tiny">AUTOSCALING RUNNER SET</text>
+  <text x="1025" y="193" class="label">One warm · three maximum</text>
+  <text x="1025" y="217" class="small">k3s schedules capacity on demand</text>
+
+  <path d="M310 182H370" class="line" marker-end="url(#arrow)"/>
+  <path d="M610 182H670" class="line" marker-end="url(#arrow)"/>
+  <path d="M940 182H1000" class="line" marker-end="url(#arrow)"/>
+
+  <path d="M1165 235V290H700V335" class="green" marker-end="url(#greenArrow)"/>
+  <rect x="270" y="335" width="860" height="330" rx="26" class="pod"/>
+  <text x="310" y="378" class="tiny">EPHEMERAL KUBERNETES POD</text>
+  <text x="310" y="412" class="label">A clean job environment created for one workflow job</text>
+
+  <rect x="310" y="455" width="350" height="155" rx="18" class="container"/>
+  <text x="338" y="489" class="tiny">RUNNER CONTAINER</text>
+  <text x="338" y="522" class="label">Non-root Actions runner</text>
+  <text x="338" y="551" class="small">Pinned Node, Rust, Python, and browser tools</text>
+  <text x="338" y="578" class="small">No host home or Kubernetes token</text>
+
+  <rect x="740" y="455" width="350" height="155" rx="18" class="container"/>
+  <text x="768" y="489" class="tiny">JOB-LOCAL SIDECAR</text>
+  <text x="768" y="522" class="label">Private Docker daemon</text>
+  <text x="768" y="551" class="small">Privileged inside the pod boundary</text>
+  <text x="768" y="578" class="small">No host Docker socket</text>
+
+  <path d="M660 533H740" class="green" marker-end="url(#greenArrow)"/>
+  <text x="700" y="518" text-anchor="middle" class="tiny">UNIX SOCKET</text>
+
+  <rect x="95" y="715" width="360" height="110" rx="18" class="cache"/>
+  <text x="123" y="748" class="tiny">BOUNDED PERSISTENCE</text>
+  <text x="123" y="780" class="label">Package and compiler caches</text>
+  <text x="123" y="806" class="small">Reusable acceleration without workspace state</text>
+  <path d="M380 665V715" class="dash"/>
+
+  <rect x="515" y="715" width="360" height="110" rx="18" class="destroy"/>
+  <text x="543" y="748" class="tiny">JOB COMPLETION</text>
+  <text x="543" y="780" class="label">Pod and Docker state deleted</text>
+  <text x="543" y="806" class="small">Next job starts from a clean environment</text>
+  <path d="M700 665V715" class="line" marker-end="url(#arrow)"/>
+
+  <rect x="935" y="715" width="370" height="110" rx="18" class="node"/>
+  <text x="963" y="748" class="tiny">CONTRACT VERIFICATION</text>
+  <text x="963" y="780" class="label">Toolchain and isolation smoke test</text>
+  <text x="963" y="806" class="small">Includes a real Docker image build</text>
+  <path d="M1020 665V715" class="line" marker-end="url(#arrow)"/>
+</svg>

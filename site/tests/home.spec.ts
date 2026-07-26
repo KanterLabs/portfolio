@@ -10,6 +10,10 @@ test.describe('homepage', () => {
 
     await expect(page).toHaveTitle('Shane Kanterman | Linux Infrastructure and Web Projects');
     await expect(page.getByRole('heading', { name: 'Building Linux infrastructure and web projects that are designed to ship.' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 3, name: 'KanterLabs Homelab Platform' }),
+    ).toBeVisible();
+    await expect(page.getByText('Featured case study')).toBeVisible();
 
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'About' }).click(), 'about');
     await page.goto('/');

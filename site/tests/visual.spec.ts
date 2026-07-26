@@ -12,8 +12,8 @@ test.describe('visual coverage', () => {
   });
 
   for (const entry of [
-    ['/projects/multi-node-portfolio', 'featured-case-study'],
-    ['/projects/self-hosted-dev-server', 'homelab-case-study'],
+    ['/projects/kanterlabs-homelab', 'featured-homelab-case-study'],
+    ['/projects/multi-node-portfolio', 'portfolio-infrastructure-case-study'],
     ['/projects/data-center-operations', 'datacenter-case-study'],
   ] as const) {
     test(`captures screenshot for ${entry[1]}`, async ({ page }, testInfo) => {
