@@ -10,23 +10,23 @@ const config = {
   note: {
     label: 'Note',
     icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-    borderColor: 'rgba(30,41,59,0.2)',
-    labelColor: '#52525b',
-    bgColor: 'rgba(30,41,59,0.04)',
+    borderColor: 'rgba(61,220,132,0.3)',
+    labelColor: '#6ff0a8',
+    bgColor: 'rgba(61,220,132,0.06)',
   },
   tip: {
     label: 'Tip',
     icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6L15 17H9l-.7-2C6.3 13.7 5 11.5 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/><path d="M9 17h6"/></svg>`,
-    borderColor: 'rgba(22,163,74,0.3)',
-    labelColor: '#16a34a',
-    bgColor: 'rgba(22,163,74,0.05)',
+    borderColor: 'rgba(74,222,128,0.35)',
+    labelColor: '#4ade80',
+    bgColor: 'rgba(74,222,128,0.07)',
   },
   warning: {
     label: 'Warning',
     icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-    borderColor: 'rgba(217,119,6,0.3)',
-    labelColor: '#d97706',
-    bgColor: 'rgba(217,119,6,0.05)',
+    borderColor: 'rgba(251,191,36,0.35)',
+    labelColor: '#fbbf24',
+    bgColor: 'rgba(251,191,36,0.07)',
   },
 } as const;
 
@@ -39,13 +39,13 @@ const displayTitle = title ?? c.label;
   style={`border-left: 3px solid ${c.borderColor}; background: ${c.bgColor}; border: 1px solid ${c.borderColor};`}
 >
   <p
-    class="callout-label flex items-center gap-2 mb-2 text-[0.8rem] font-bold tracking-[0.1em] uppercase"
+    class="callout-label flex items-center gap-2 mb-2 text-[0.8rem] font-bold font-mono tracking-[0.1em] uppercase"
     style={`color: ${c.labelColor};`}
   >
     <span set:html={c.icon} />
     {displayTitle}
   </p>
-  <div class="callout-body text-[#52525b] text-[0.96rem] leading-[1.75]">
+  <div class="callout-body text-text-muted text-[0.96rem] leading-[1.75]">
     <slot />
   </div>
 </div>
