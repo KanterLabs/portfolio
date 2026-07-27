@@ -1,11 +1,12 @@
 # Shane Kanterman Portfolio
 
-Static Astro portfolio plus the deployment configuration and documentation for its Kantercloud production environment.
+Static Astro portfolio plus the deployment configuration and documentation for
+its Kantercloud production and Access-protected beta environments.
 
 ## Repository Structure
 
 - `site/`: Astro application, case studies, tests, and public assets
-- `infrastructure/kantercloud/`: Nginx, firewall, SSH, and atomic-release configuration
+- `infrastructure/kantercloud/`: Nginx, firewall, SSH, atomic-release, and beta tunnel configuration
 - `infrastructure/archive/gcp/`: retired two-origin GCP design retained as migration history
 - `docs/`: current architecture and recovery checklist
 - `.github/workflows/deploy.yml`: validation and private production deployment
@@ -42,3 +43,16 @@ and not sustained CPU-bound. See the
 for ARC, runner, and tier definitions.
 
 See `docs/architecture-design.md` and `docs/setup-checklist.md` for the topology, validation order, and rollback procedure.
+
+## Beta promotion
+
+Feature branches merge into the protected `beta` branch. Every successful
+`beta` push deploys an isolated release to
+`https://beta.shanekanterman.dev`, which is available only through
+owner-email Cloudflare Access. A pull request from `beta` to `main` runs the
+same browser suite again; merging it triggers the normal production deployment.
+
+Beta uses its own GitHub environment, SSH key, Unix deployment account, release
+root, lock, and rollback history. The beta workflow therefore cannot activate a
+production release. Select `beta` or `main` when manually dispatching the
+workflow to target that environment's retained releases.

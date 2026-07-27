@@ -1,0 +1,1 @@
+restrict,command="/usr/local/sbin/portfolio-deploy" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDBCSFu5pQVw67NhZdTMGw1lKiIvRt57c5klrQycRSyn portfolio-github-beta-deploy

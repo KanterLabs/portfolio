@@ -1,7 +1,22 @@
 #!/bin/sh
 set -eu
 
-root=/srv/portfolio
+deploy_user=$(id -un)
+case "$deploy_user" in
+    portfolio-deploy)
+        root=/srv/portfolio
+        health_host=shanekanterman.dev
+        ;;
+    portfolio-beta-deploy)
+        root=/srv/portfolio-beta
+        health_host=beta.shanekanterman.dev
+        ;;
+    *)
+        printf 'unsupported deployment identity\n' >&2
+        exit 1
+        ;;
+esac
+
 releases="$root/releases"
 incoming="$root/incoming"
 command=${SSH_ORIGINAL_COMMAND:-}
@@ -22,7 +37,8 @@ activate() {
     ln -s "$release" "$root/current.next"
     mv -Tf "$root/current.next" "$root/current"
 
-    if ! curl --fail --silent --show-error --max-time 5 http://127.0.0.1/ >/dev/null; then
+    if ! curl --fail --silent --show-error --max-time 5 \
+        -H "Host: $health_host" http://127.0.0.1/ >/dev/null; then
         if [ -n "$previous" ] && [ -d "$previous" ]; then
             ln -s "$previous" "$root/current.previous"
             mv -Tf "$root/current.previous" "$root/current"
