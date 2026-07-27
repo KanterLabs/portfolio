@@ -1,0 +1,34 @@
+[Unit]
+Description=Cloudflare Tunnel for portfolio beta
+After=network-online.target nginx.service
+Wants=network-online.target
+Requires=nginx.service
+
+[Service]
+Type=notify
+User=cloudflared
+Group=cloudflared
+ExecStart=/usr/local/bin/cloudflared tunnel --no-autoupdate --loglevel info run --token-file /etc/portfolio-beta/cloudflared.token
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=0
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+ProtectClock=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictRealtime=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+MemoryMax=192M
+TasksMax=128
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
