@@ -2,13 +2,13 @@ name: Build, test, and deploy portfolio
 
 on:
   pull_request:
-    branches: [main]
+    branches: [beta, main]
   push:
-    branches: [main]
+    branches: [beta, main]
   workflow_dispatch:
     inputs:
       rollback_sha:
-        description: "Retained 40-character release SHA to activate instead of deploying"
+        description: "Retained 40-character release SHA to activate on the selected branch environment"
         required: false
         type: string
 
@@ -20,6 +20,20 @@ permissions:
   contents: read
 
 jobs:
+  promotion-source:
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: homelab
+    steps:
+      - name: Require promotion from this repository's beta branch
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          TARGET_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          [ "$HEAD_REF" = "beta" ]
+          [ "$HEAD_REPOSITORY" = "$TARGET_REPOSITORY" ]
+
   build-and-test:
     runs-on: homelab
     defaults:
@@ -50,15 +64,20 @@ jobs:
           if-no-files-found: error
 
   deploy:
-    # DEPLOY_ENABLED is repository-scoped so GitHub can evaluate it before the
-    # production environment is attached to the runner.
-    if: github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true'
+    # Both kill switches are repository-scoped so GitHub can evaluate them
+    # before the branch-specific environment is attached to the runner.
+    if: >-
+      github.event_name != 'pull_request' &&
+      (
+        (github.ref_name == 'main' && vars.DEPLOY_ENABLED == 'true') ||
+        (github.ref_name == 'beta' && vars.BETA_DEPLOY_ENABLED == 'true')
+      )
     needs: build-and-test
     runs-on: homelab
     timeout-minutes: 10
     environment:
-      name: production
-      url: https://shanekanterman.dev
+      name: ${{ github.ref_name == 'beta' && 'beta' || 'production' }}
+      url: ${{ github.ref_name == 'beta' && 'https://beta.shanekanterman.dev' || 'https://shanekanterman.dev' }}
     permissions:
       contents: read
     steps:
@@ -82,25 +101,36 @@ jobs:
       - name: Deploy release
         if: inputs.rollback_sha == ''
         env:
+          DEPLOY_USER: ${{ github.ref_name == 'beta' && 'portfolio-beta-deploy' || 'portfolio-deploy' }}
           RELEASE_SHA: ${{ github.sha }}
         run: |
-          ssh -i ~/.ssh/portfolio portfolio-deploy@10.40.0.32 "deploy $RELEASE_SHA" < site-dist.tar.gz
+          ssh -i ~/.ssh/portfolio "$DEPLOY_USER@10.40.0.32" "deploy $RELEASE_SHA" < site-dist.tar.gz
       - name: Roll back to retained release
         if: inputs.rollback_sha != ''
         env:
+          DEPLOY_USER: ${{ github.ref_name == 'beta' && 'portfolio-beta-deploy' || 'portfolio-deploy' }}
           ROLLBACK_SHA: ${{ inputs.rollback_sha }}
         run: |
           printf '%s' "$ROLLBACK_SHA" | grep -Eq '^[0-9a-f]{40}$' || {
             echo "rollback_sha must be exactly 40 lowercase hexadecimal characters" >&2
             exit 1
           }
-          ssh -i ~/.ssh/portfolio portfolio-deploy@10.40.0.32 "rollback $ROLLBACK_SHA"
-      - name: Verify public health
+          ssh -i ~/.ssh/portfolio "$DEPLOY_USER@10.40.0.32" "rollback $ROLLBACK_SHA"
+      - name: Verify production health
+        if: github.ref_name == 'main'
         run: |
           response=$(curl --fail --silent --show-error \
             --retry 5 --retry-delay 2 --retry-all-errors \
             https://shanekanterman.dev/healthz)
           [ "$response" = "ok" ]
+      - name: Verify beta Access gate
+        if: github.ref_name == 'beta'
+        run: |
+          status=$(curl --silent --show-error --output /dev/null \
+            --write-out '%{http_code}' \
+            --retry 5 --retry-delay 2 --retry-all-errors \
+            https://beta.shanekanterman.dev/healthz)
+          [ "$status" = "302" ] || [ "$status" = "303" ]
       - name: Remove deployment SSH identity
         if: always()
         run: rm -f ~/.ssh/portfolio
