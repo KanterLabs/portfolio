@@ -1165,6 +1165,111 @@ select {
   background: rgba(143, 184, 163, 0.07);
 }
 
+/* Give the editorial system a real desktop composition. */
+@media (min-width: 961px) {
+  .editorial-shell {
+    width: min(calc(100% - 4rem), 1120px);
+  }
+
+  .editorial-shell .hero-surface {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 24rem);
+    gap: 5rem;
+    align-items: start;
+    padding: 6.5rem 0 6rem;
+  }
+
+  .editorial-shell .hero-surface > div:first-child {
+    max-width: 42rem;
+  }
+
+  .editorial-shell .hero-surface > .glass {
+    display: flex;
+    position: sticky;
+    top: 6rem;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--panel);
+  }
+
+  .editorial-shell #about > .grid,
+  .editorial-shell #architecture > .grid,
+  .editorial-shell #skills > .grid {
+    display: grid;
+  }
+
+  .editorial-shell #about > .grid:nth-of-type(2) {
+    grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.85fr);
+    gap: 3rem;
+  }
+
+  .editorial-shell #about > .grid.grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: grid;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .editorial-shell #about > .grid:nth-of-type(4) {
+    grid-template-columns: minmax(14rem, 0.7fr) 1fr;
+    gap: 3rem;
+    margin-top: 2rem;
+  }
+
+  .editorial-shell #about .grid.grid-cols-3 .glass {
+    display: block;
+  }
+
+  .editorial-shell #about .grid.grid-cols-3 .glass > p:last-child {
+    margin-top: 0.6rem;
+  }
+
+  .editorial-shell #architecture > .grid {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.72fr);
+    gap: 4rem;
+  }
+
+  .editorial-shell #architecture .grid > .glass:last-child {
+    display: block;
+    padding: 0;
+    border: none;
+  }
+
+  .editorial-shell #architecture .grid > .glass:first-child {
+    padding: 0;
+  }
+
+  .editorial-shell #skills > .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+  }
+
+  .editorial-shell #skills .glass {
+    display: block;
+    padding: 0;
+  }
+
+  .editorial-shell #skills .glass > p:nth-child(2),
+  .editorial-shell #skills .glass > div {
+    margin-top: 0.75rem;
+  }
+
+  .editorial-shell #contact .glass {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) auto;
+    gap: 4rem;
+    align-items: end;
+  }
+
+  .editorial-shell #contact .contact-link-grid {
+    display: grid;
+    margin-top: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
