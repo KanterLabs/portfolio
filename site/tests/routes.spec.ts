@@ -14,6 +14,8 @@ test.describe("utility routes", () => {
     await expect(
       page.getByRole("heading", { name: "Less waiting. More shipping." }),
     ).toBeVisible();
+    await expect(page.locator(".terminal-branch")).toHaveText("⑂ main");
+    await expect(page.locator(".terminal-state")).toHaveText("clean");
     await expect(
       page.getByRole("link", { name: "Get early access" }).first(),
     ).toHaveAttribute(
