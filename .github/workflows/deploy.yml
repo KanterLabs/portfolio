@@ -36,6 +36,10 @@ jobs:
 
   build-and-test:
     runs-on: homelab
+    env:
+      # Keep browser installation private to this job. The homelab runner's
+      # shared cache can be pruned while parallel Playwright shards are active.
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
     defaults:
       run:
         working-directory: site
