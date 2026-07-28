@@ -11,10 +11,12 @@
     "preview": "astro preview",
     "astro": "astro",
     "test:e2e": "playwright test",
+    "test:a11y": "playwright test tests/accessibility.spec.ts",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:update": "playwright test --update-snapshots"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.54.2"
   },
   "dependencies": {
