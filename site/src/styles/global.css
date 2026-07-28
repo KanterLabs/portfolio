@@ -53,8 +53,8 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-family-sans);
-  color: #e6e8e7;
-  background: #0c0e0d;
+  color: var(--color-text-base);
+  background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -66,8 +66,8 @@ h3 {
 }
 
 ::selection {
-  background: rgba(143, 184, 163, 0.22);
-  color: #e6e8e7;
+  background: color-mix(in srgb, var(--accent-color) 22%, transparent);
+  color: var(--color-text-base);
 }
 
 a {
@@ -83,7 +83,7 @@ select {
 }
 
 :focus-visible {
-  outline: 2px solid #8fb8a3;
+  outline: 2px solid var(--accent-color);
   outline-offset: 3px;
 }
 
@@ -94,8 +94,8 @@ select {
   z-index: 100;
   padding: 0.75rem 1rem;
   border-radius: 999px;
-  background: #8fb8a3;
-  color: #0c0e0d;
+  background: var(--accent-color);
+  color: var(--accent-ink);
   font-weight: 600;
   transform: translateY(-140%);
   transition: transform var(--transition);
@@ -119,7 +119,7 @@ select {
 
 .glass-hover:hover {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.035);
+  background: color-mix(in srgb, var(--panel) 70%, var(--color-text-base) 3%);
 }
 
 @utility gradient-text {
@@ -144,17 +144,17 @@ select {
 }
 
 .btn-primary {
-  background: #8fb8a3;
-  color: #0c0e0d;
+  background: var(--accent-color);
+  color: var(--accent-ink);
 }
 
 .btn-primary:hover {
-  background: #aecbbb;
+  background: var(--color-accent-strong);
 }
 
 .btn-secondary {
   background: transparent;
-  color: #e6e8e7;
+  color: var(--color-text-base);
   border-color: var(--line-strong);
 }
 
@@ -177,7 +177,7 @@ select {
 
 .eyebrow {
   margin: 0 0 0.9rem;
-  color: #6b736f;
+  color: #78837d;
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -188,7 +188,7 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  color: #e6e8e7;
+  color: var(--color-text-base);
   font-weight: 500;
   border-bottom: 1px solid var(--line-strong);
   padding-bottom: 0.1rem;
@@ -198,7 +198,7 @@ select {
 }
 
 .text-link:hover {
-  color: #8fb8a3;
+  color: var(--accent-color);
   border-color: rgba(143, 184, 163, 0.5);
 }
 
@@ -239,19 +239,19 @@ select {
   border: none;
   border-radius: 0;
   background: transparent;
-  color: #e6e8e7;
+  color: var(--color-text-base);
   box-shadow: none;
   border-bottom: 1px solid var(--line-strong);
   padding-bottom: 0.2rem;
 }
 
 .editorial-shell .hero-surface .btn:hover {
-  color: #8fb8a3;
+  color: var(--accent-color);
   border-color: rgba(143, 184, 163, 0.5);
 }
 
 .editorial-shell .hero-surface .btn-primary {
-  color: #8fb8a3;
+  color: var(--accent-color);
 }
 
 .editorial-shell > main > .observe-animate {
@@ -348,7 +348,7 @@ select {
   border-bottom: 1px solid var(--line-strong);
   border-radius: 0;
   background: transparent;
-  color: #e6e8e7;
+  color: var(--color-text-base);
 }
 
 @media (max-width: 780px) {
@@ -1248,8 +1248,8 @@ select {
   --color-bg-elevated: #ffffff;
   --color-text-base: #17201b;
   --color-text-muted: #55625a;
-  --color-text-soft: #758078;
-  --color-accent: #4f7d65;
+  --color-text-soft: #66716b;
+  --color-accent: #47725c;
   --color-accent-strong: #365b48;
   --color-line: rgba(23, 32, 27, 0.12);
   --color-line-strong: rgba(23, 32, 27, 0.2);
@@ -1258,7 +1258,7 @@ select {
   --panel-soft: #eef1ed;
   --line: rgba(23, 32, 27, 0.12);
   --line-strong: rgba(23, 32, 27, 0.2);
-  --accent-color: #4f7d65;
+  --accent-color: #47725c;
   --accent-ink: #ffffff;
 }
 
@@ -1277,12 +1277,12 @@ select {
 }
 
 [data-theme="light"] :focus-visible {
-  outline-color: #4f7d65;
+  outline-color: #47725c;
 }
 
 [data-theme="light"] .skip-link,
 [data-theme="light"] .btn-primary {
-  background: #4f7d65;
+  background: #47725c;
   color: #ffffff;
 }
 
@@ -1301,7 +1301,7 @@ select {
 [data-theme="light"] .project-proof-label,
 [data-theme="light"] .site-footer,
 [data-theme="light"] .site-footer-build {
-  color: #758078;
+  color: #66716b;
 }
 
 [data-theme="light"] .text-link,
@@ -1320,7 +1320,7 @@ select {
 [data-theme="light"] .prose h2 > .heading-anchor:hover,
 [data-theme="light"] .prose h3 > .heading-anchor:hover,
 [data-theme="light"] .toc-link-active {
-  color: #4f7d65 !important;
+  color: #47725c !important;
 }
 
 [data-theme="light"] .text-link:hover {
@@ -1342,23 +1342,23 @@ select {
 [data-theme="light"] .project-status-archived,
 [data-theme="light"] .project-status-progress,
 [data-theme="light"] .project-status-in-progress {
-  color: #758078;
+  color: #66716b;
 }
 
 [data-theme="light"] .project-status-shipped .project-status-dot,
 [data-theme="light"] .site-header-mark,
 [data-theme="light"] .project-progress-bar,
 [data-theme="light"] .profile-point-dot {
-  background: #4f7d65;
+  background: #47725c;
 }
 
 [data-theme="light"] .project-status-shipped {
-  color: #4f7d65;
+  color: #47725c;
 }
 
 [data-theme="light"] .project-status-progress .project-status-dot,
 [data-theme="light"] .project-status-in-progress .project-status-dot {
-  background: #758078;
+  background: #66716b;
 }
 
 [data-theme="light"] .project-status-archived .project-status-dot {
@@ -1400,7 +1400,7 @@ select {
 }
 
 [data-theme="light"] .infrastructure-stats strong {
-  color: #4f7d65;
+  color: #47725c;
 }
 
 [data-theme="light"] .infrastructure-stats span {
@@ -1410,12 +1410,41 @@ select {
 [data-theme="light"] .infrastructure-stats p,
 [data-theme="light"] .diagram-zoom-hint,
 [data-theme="light"] .diagram-dialog-caption {
-  color: #758078;
+  color: #66716b;
 }
 
 [data-theme="light"] .diagram-trigger {
   background: #ffffff;
   border-color: var(--line);
+}
+
+[data-theme="light"] .infrastructure-stats strong {
+  color: #47725c !important;
+}
+
+[data-theme="light"] .infrastructure-stats span {
+  color: #17201b !important;
+}
+
+[data-theme="light"] .infrastructure-stats p,
+[data-theme="light"] figcaption.diagram-dialog-caption,
+[data-theme="light"] figure > figcaption {
+  color: #55625a !important;
+}
+
+html:not([data-theme="light"]) .text-text-soft,
+html:not([data-theme="light"]) .eyebrow,
+html:not([data-theme="light"]) .label-row-term,
+html:not([data-theme="light"]) .system-summary-label,
+html:not([data-theme="light"]) .system-node-label,
+html:not([data-theme="light"]) .project-proof-label,
+html:not([data-theme="light"]) .site-footer,
+html:not([data-theme="light"]) .site-footer-build {
+  color: #78837d;
+}
+
+html:not([data-theme="light"]) .project-row-stack {
+  color: #78837d;
 }
 
 /* Give the editorial system a real desktop composition. */
