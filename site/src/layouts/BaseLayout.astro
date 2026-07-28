@@ -13,6 +13,7 @@ interface Props {
   imageAlt?: string;
   type?: 'website' | 'article';
   structuredData?: StructuredDataEntry | StructuredDataEntry[];
+  theme?: 'system' | 'dark';
 }
 
 const {
@@ -22,6 +23,7 @@ const {
   imageAlt = `${title} social preview`,
   type = 'website',
   structuredData,
+  theme = 'system',
 } = Astro.props;
 
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
@@ -41,7 +43,7 @@ const jsonLdItems = structuredData
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#0a0f0d" />
+    <meta name="theme-color" content="#0c0e0d" />
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -63,6 +65,13 @@ const jsonLdItems = structuredData
       <script type="application/ld+json" set:html={JSON.stringify(entry)} />
     ))}
     <title>{title}</title>
+    <script is:inline define:vars={{ theme }}>
+      const themeStorageKey = 'portfolio-theme';
+      const savedTheme = localStorage.getItem(themeStorageKey);
+      const systemTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      const resolvedTheme = theme === 'dark' ? 'dark' : (savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : systemTheme);
+      document.documentElement.dataset.theme = resolvedTheme;
+    </script>
     <script is:inline>
       document.documentElement.classList.remove('no-js');
       document.documentElement.classList.add('js');
