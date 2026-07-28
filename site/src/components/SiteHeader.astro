@@ -11,6 +11,8 @@ interface Props {
   backLabel?: string;
 }
 
+import ThemeToggle from './ThemeToggle.astro';
+
 const {
   home = false,
   navItems = [],
@@ -19,21 +21,14 @@ const {
 } = Astro.props;
 ---
 
-<header class="site-header sticky top-4 z-20 pt-4" id={home ? 'header' : undefined} data-site-header>
+<header class="site-header sticky top-0 z-20" id={home ? 'header' : undefined} data-site-header>
   <div
-    class="header-inner glass flex items-center justify-between gap-4 px-5 py-4 rounded-full transition-[background-color,border-color,padding,box-shadow] duration-[180ms] ease-out"
+    class="header-inner flex items-center justify-between gap-4 py-5 border-b border-transparent transition-[background-color,border-color,padding] duration-[180ms] ease-out"
   >
-    <a class="inline-flex items-center gap-3.5 min-w-0" href={home ? '#top' : '/'} aria-label="Shane Kanterman home">
-      <span
-        class="site-header-mark inline-flex items-center justify-center w-11 h-11 rounded-full font-extrabold text-sm tracking-widest text-white flex-shrink-0"
-      >
-        SK
-      </span>
-      <span class="flex flex-col min-w-0">
-        <strong class="text-[0.95rem] leading-tight text-[#18181b]">Shane Kanterman</strong>
-        <span class="text-[0.76rem] leading-tight text-[#71717a] max-[780px]:hidden">
-          Infrastructure and Web Projects
-        </span>
+    <a class="inline-flex items-center gap-2.5 min-w-0" href={home ? '#top' : '/'} aria-label="Shane Kanterman home">
+      <strong class="text-[0.95rem] leading-tight text-text-base font-semibold">Shane Kanterman</strong>
+      <span class="text-[0.82rem] leading-tight text-text-soft max-[780px]:hidden">
+        Infrastructure and Web Projects
       </span>
     </a>
 
@@ -43,7 +38,7 @@ const {
           {navItems.map((item) => (
             <a
               href={item.href}
-              class="nav-link text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms] font-medium"
+              class="nav-link text-[0.9rem] text-text-muted hover:text-text-base transition-colors duration-[180ms]"
               data-nav-link={item.href.replace('#', '')}
             >
               {item.label}
@@ -52,33 +47,37 @@ const {
         </nav>
 
         <button
-          class="mobile-toggle hidden max-[780px]:inline-grid place-items-center w-11 h-11 border border-[rgba(0,0,0,0.10)] bg-white rounded-full p-0 cursor-pointer"
+          class="mobile-toggle hidden max-[780px]:inline-grid place-items-center w-11 h-11 border border-line-strong bg-transparent rounded-full p-0 cursor-pointer"
           type="button"
           aria-expanded="false"
           aria-controls="mobile-nav"
         >
-          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#18181b] rounded-full transition-transform duration-[180ms]"></span>
-          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#18181b] rounded-full transition-[transform,opacity] duration-[180ms]"></span>
-          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#18181b] rounded-full transition-transform duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#e6e8e7] rounded-full transition-transform duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#e6e8e7] rounded-full transition-[transform,opacity] duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#e6e8e7] rounded-full transition-transform duration-[180ms]"></span>
           <span class="sr-only">Toggle navigation</span>
         </button>
+        <ThemeToggle />
       </>
     ) : (
-      <a
-        href={backHref}
-        class="inline-flex items-center gap-2 text-[#52525b] hover:text-[#18181b] transition-colors duration-[180ms] text-sm font-medium"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-        {backLabel}
-      </a>
+      <>
+        <a
+          href={backHref}
+          class="inline-flex items-center gap-2 text-text-muted hover:text-text-base transition-colors duration-[180ms] text-sm font-medium"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+          {backLabel}
+        </a>
+        <ThemeToggle />
+      </>
     )}
   </div>
 
   {home && (
     <nav
-      class="mobile-nav-panel glass mt-2.5 p-1.5 rounded-[var(--radius-md)]"
+      class="mobile-nav-panel glass mt-2 p-1.5 rounded-[var(--radius-md)]"
       id="mobile-nav"
       aria-label="Mobile navigation"
       data-mobile-nav
@@ -86,7 +85,7 @@ const {
       {navItems.map((item) => (
         <a
           href={item.href}
-          class="nav-link block px-4 py-2.5 rounded-xl text-[#52525b] hover:text-[#18181b] hover:bg-[rgba(0,0,0,0.04)] transition-colors duration-[180ms] text-[0.95rem]"
+          class="nav-link block px-4 py-2.5 rounded-xl text-text-muted hover:text-text-base hover:bg-[rgba(255,255,255,0.04)] transition-colors duration-[180ms] text-[0.95rem]"
           data-nav-link={item.href.replace('#', '')}
         >
           {item.label}

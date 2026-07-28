@@ -1,46 +1,46 @@
 <div class="architecture-snapshot">
   <div class="architecture-tier">
-    <div class="system-node system-node-primary">
+    <div class="system-node system-node-primary architecture-boot-node">
       <span class="system-node-label">Public entry</span>
       <strong>Cloudflare</strong>
       <span class="system-node-copy">DNS, CDN, and verified origin TLS</span>
     </div>
   </div>
 
-  <div class="architecture-connector architecture-connector-simple" aria-hidden="true">
+  <div class="architecture-connector architecture-connector-simple architecture-boot-connector" aria-hidden="true">
     <span class="architecture-connector-trunk"></span>
   </div>
 
   <div class="architecture-tier">
-    <div class="system-node system-node-primary">
+    <div class="system-node system-node-primary architecture-boot-node">
       <span class="system-node-label">Shared edge VM</span>
       <strong>Shared edge VM · Caddy</strong>
       <span class="system-node-copy">Certificates, headers, compression, and routing</span>
     </div>
   </div>
 
-  <div class="architecture-connector architecture-connector-simple" aria-hidden="true">
+  <div class="architecture-connector architecture-connector-simple architecture-boot-connector" aria-hidden="true">
     <span class="architecture-connector-trunk"></span>
   </div>
 
   <div class="architecture-tier">
-    <div class="system-node system-node-primary">
+    <div class="system-node system-node-primary architecture-boot-node">
       <span class="system-node-label">Private origin</span>
       <strong>Unprivileged LXC · Nginx</strong>
       <span class="system-node-copy">Static Astro files and atomic releases</span>
     </div>
   </div>
 
-  <div class="architecture-footer">
-    <div>
+  <div class="architecture-footer architecture-boot-footer">
+    <div class="architecture-boot-footer-item">
       <span class="system-node-label">Deploy</span>
       <strong>Ephemeral CI over Tailscale</strong>
     </div>
-    <div>
+    <div class="architecture-boot-footer-item">
       <span class="system-node-label">Health</span>
       <strong>Public and private `/healthz` checks</strong>
     </div>
-    <div>
+    <div class="architecture-boot-footer-item">
       <span class="system-node-label">Recover</span>
       <strong>Retained releases and Proxmox snapshots</strong>
     </div>

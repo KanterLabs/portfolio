@@ -7,6 +7,8 @@ test.describe("utility routes", () => {
     const response = await page.goto("/greenlit");
 
     expect(response?.status()).toBe(200);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator("[data-theme-toggle]")).toHaveCount(0);
     await expect(page).toHaveTitle("Greenlit — Run GitHub Actions locally");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Know your CI is green",
@@ -14,6 +16,8 @@ test.describe("utility routes", () => {
     await expect(
       page.getByRole("heading", { name: "Less waiting. More shipping." }),
     ).toBeVisible();
+    await expect(page.locator(".terminal-branch")).toHaveText("⑂ main");
+    await expect(page.locator(".terminal-state")).toHaveText("clean");
     await expect(
       page.getByRole("link", { name: "Get early access" }).first(),
     ).toHaveAttribute(

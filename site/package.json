@@ -11,17 +11,18 @@
     "preview": "astro preview",
     "astro": "astro",
     "test:e2e": "playwright test",
+    "test:a11y": "playwright test tests/accessibility.spec.ts",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:update": "playwright test --update-snapshots"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.54.2"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.6.0",
     "@astrojs/mdx": "^5.0.3",
+    "@astrojs/sitemap": "^3.6.0",
     "@fontsource/inter": "^5.2.8",
-    "@fontsource/playfair-display": "^5.2.8",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.5",
     "rehype-autolink-headings": "^7.1.0",
