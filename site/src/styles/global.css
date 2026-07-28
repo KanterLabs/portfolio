@@ -1267,6 +1267,10 @@ select {
   background: #f7f8f6;
 }
 
+[data-theme="light"] .site-header.is-scrolled .header-inner {
+  background: rgba(247, 248, 246, 0.94);
+}
+
 [data-theme="light"] ::selection {
   background: rgba(79, 125, 101, 0.2);
   color: #17201b;
