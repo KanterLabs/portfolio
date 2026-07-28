@@ -644,6 +644,101 @@ select {
   font-size: 0.82rem;
 }
 
+/* Motion stays short, directional, and tied to meaningful content. */
+.hero-reveal {
+  animation: editorial-reveal 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-reveal-1 { animation-delay: 80ms; }
+.hero-reveal-2 { animation-delay: 150ms; }
+.hero-reveal-3 { animation-delay: 230ms; }
+.hero-reveal-4 { animation-delay: 310ms; }
+.hero-reveal-5 { animation-delay: 390ms; }
+
+@keyframes editorial-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.observe-animate.visible .project-row {
+  animation: editorial-reveal 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.observe-animate.visible .project-row:nth-child(2) { animation-delay: 70ms; }
+.observe-animate.visible .project-row:nth-child(3) { animation-delay: 140ms; }
+.observe-animate.visible .project-row:nth-child(4) { animation-delay: 210ms; }
+
+.project-row .text-link span {
+  display: inline-block;
+  transition: transform var(--transition);
+}
+
+.project-row:hover .text-link span,
+.project-row:focus-within .text-link span {
+  transform: translate(3px, -3px);
+}
+
+.project-row:hover .project-row-title,
+.project-row:focus-within .project-row-title {
+  color: var(--accent-color);
+}
+
+.architecture-boot-node,
+.architecture-boot-footer-item {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.architecture-boot-connector {
+  transform: scaleY(0);
+  transform-origin: top;
+}
+
+.observe-animate.visible .architecture-boot-node {
+  animation: architecture-node-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.observe-animate.visible .architecture-tier:nth-child(1) .architecture-boot-node { animation-delay: 100ms; }
+.observe-animate.visible .architecture-tier:nth-child(3) .architecture-boot-node { animation-delay: 360ms; }
+.observe-animate.visible .architecture-tier:nth-child(5) .architecture-boot-node { animation-delay: 620ms; }
+
+.observe-animate.visible .architecture-boot-connector {
+  animation: architecture-connector-in 260ms ease-out both;
+}
+
+.observe-animate.visible .architecture-boot-connector:nth-child(2) { animation-delay: 260ms; }
+.observe-animate.visible .architecture-boot-connector:nth-child(4) { animation-delay: 520ms; }
+
+.observe-animate.visible .architecture-boot-footer-item {
+  animation: architecture-node-in 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.observe-animate.visible .architecture-boot-footer-item:nth-child(1) { animation-delay: 760ms; }
+.observe-animate.visible .architecture-boot-footer-item:nth-child(2) { animation-delay: 820ms; }
+.observe-animate.visible .architecture-boot-footer-item:nth-child(3) { animation-delay: 880ms; }
+
+@keyframes architecture-node-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes architecture-connector-in {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
 .project-proof-grid,
 .project-detail-facts {
   display: grid;
@@ -1193,6 +1288,7 @@ select {
 }
 
 .theme-toggle {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1220,15 +1316,26 @@ select {
 }
 
 .theme-icon-moon {
-  display: none;
+  position: absolute;
+  opacity: 0;
+  transform: rotate(-25deg) scale(0.7);
+  transition: opacity var(--transition), transform var(--transition);
+}
+
+.theme-icon-sun {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+  transition: opacity var(--transition), transform var(--transition);
 }
 
 [data-theme="light"] .theme-icon-sun {
-  display: none;
+  opacity: 0;
+  transform: rotate(25deg) scale(0.7);
 }
 
 [data-theme="light"] .theme-icon-moon {
-  display: block;
+  opacity: 1;
+  transform: rotate(0) scale(1);
 }
 
 @media (max-width: 780px) {
@@ -1568,5 +1675,19 @@ html:not([data-theme="light"]) .project-row-stack {
   .js .observe-animate {
     opacity: 1;
     transform: none;
+  }
+
+  .hero-reveal,
+  .observe-animate.visible .project-row,
+  .architecture-boot-node,
+  .architecture-boot-footer-item {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
+
+  .architecture-boot-connector {
+    transform: none;
+    animation: none !important;
   }
 }
