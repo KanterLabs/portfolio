@@ -10,7 +10,7 @@ const themedRoutes = [
 for (const theme of ['light', 'dark'] as const) {
   for (const route of themedRoutes) {
     test(`axe ${theme} ${route}`, async ({ page }) => {
-      await page.emulateMedia({ colorScheme: theme });
+      await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
       await page.addInitScript(() => localStorage.clear());
       await page.goto(route);
       await page.evaluate(() => {
