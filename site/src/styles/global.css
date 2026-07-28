@@ -1165,6 +1165,255 @@ select {
   background: rgba(143, 184, 163, 0.07);
 }
 
+.callout {
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+}
+
+.callout-label {
+  color: var(--accent-strong);
+}
+
+.callout-tip {
+  border-color: color-mix(in srgb, var(--accent-color) 45%, transparent);
+  background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+}
+
+.callout-tip .callout-label {
+  color: var(--accent-color);
+}
+
+.callout-warning {
+  border-color: rgba(172, 137, 69, 0.42);
+  background: rgba(172, 137, 69, 0.08);
+}
+
+.callout-warning .callout-label {
+  color: #c5a56a;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition), background-color var(--transition);
+}
+
+.theme-toggle:hover {
+  color: var(--color-text-base);
+  border-color: var(--accent-color);
+  background: var(--panel);
+}
+
+.theme-toggle-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.theme-icon-moon {
+  display: none;
+}
+
+[data-theme="light"] .theme-icon-sun {
+  display: none;
+}
+
+[data-theme="light"] .theme-icon-moon {
+  display: block;
+}
+
+@media (max-width: 780px) {
+  .theme-toggle-label {
+    display: none;
+  }
+
+  .theme-toggle {
+    width: 2.75rem;
+    padding-inline: 0;
+  }
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #f7f8f6;
+  --color-bg-elevated: #ffffff;
+  --color-text-base: #17201b;
+  --color-text-muted: #55625a;
+  --color-text-soft: #758078;
+  --color-accent: #4f7d65;
+  --color-accent-strong: #365b48;
+  --color-line: rgba(23, 32, 27, 0.12);
+  --color-line-strong: rgba(23, 32, 27, 0.2);
+  --panel: rgba(255, 255, 255, 0.72);
+  --panel-strong: #ffffff;
+  --panel-soft: #eef1ed;
+  --line: rgba(23, 32, 27, 0.12);
+  --line-strong: rgba(23, 32, 27, 0.2);
+  --accent-color: #4f7d65;
+  --accent-ink: #ffffff;
+}
+
+[data-theme="light"] body {
+  color: #17201b;
+  background: #f7f8f6;
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(79, 125, 101, 0.2);
+  color: #17201b;
+}
+
+[data-theme="light"] :focus-visible {
+  outline-color: #4f7d65;
+}
+
+[data-theme="light"] .skip-link,
+[data-theme="light"] .btn-primary {
+  background: #4f7d65;
+  color: #ffffff;
+}
+
+[data-theme="light"] .btn-primary:hover {
+  background: #365b48;
+}
+
+[data-theme="light"] .glass-hover:hover {
+  background: rgba(23, 32, 27, 0.025);
+}
+
+[data-theme="light"] .eyebrow,
+[data-theme="light"] .label-row-term,
+[data-theme="light"] .system-summary-label,
+[data-theme="light"] .system-node-label,
+[data-theme="light"] .project-proof-label,
+[data-theme="light"] .site-footer,
+[data-theme="light"] .site-footer-build {
+  color: #758078;
+}
+
+[data-theme="light"] .text-link,
+[data-theme="light"] .project-row-title,
+[data-theme="light"] .system-node strong,
+[data-theme="light"] .architecture-footer strong,
+[data-theme="light"] .prose h2,
+[data-theme="light"] .prose h3,
+[data-theme="light"] .prose strong,
+[data-theme="light"] .prose th {
+  color: #17201b;
+}
+
+[data-theme="light"] .text-link:hover,
+[data-theme="light"] .nav-link[aria-current='location'],
+[data-theme="light"] .prose h2 > .heading-anchor:hover,
+[data-theme="light"] .prose h3 > .heading-anchor:hover,
+[data-theme="light"] .toc-link-active {
+  color: #4f7d65 !important;
+}
+
+[data-theme="light"] .text-link:hover {
+  border-color: rgba(79, 125, 101, 0.5);
+}
+
+[data-theme="light"] .project-row-summary,
+[data-theme="light"] .project-proof-copy,
+[data-theme="light"] .system-summary-copy,
+[data-theme="light"] .system-node-copy,
+[data-theme="light"] .label-row-copy,
+[data-theme="light"] .prose,
+[data-theme="light"] .prose td,
+[data-theme="light"] .prose blockquote {
+  color: #55625a;
+}
+
+[data-theme="light"] .project-row-stack,
+[data-theme="light"] .project-status-archived,
+[data-theme="light"] .project-status-progress,
+[data-theme="light"] .project-status-in-progress {
+  color: #758078;
+}
+
+[data-theme="light"] .project-status-shipped .project-status-dot,
+[data-theme="light"] .site-header-mark,
+[data-theme="light"] .project-progress-bar,
+[data-theme="light"] .profile-point-dot {
+  background: #4f7d65;
+}
+
+[data-theme="light"] .project-status-shipped {
+  color: #4f7d65;
+}
+
+[data-theme="light"] .project-status-progress .project-status-dot,
+[data-theme="light"] .project-status-in-progress .project-status-dot {
+  background: #758078;
+}
+
+[data-theme="light"] .project-status-archived .project-status-dot {
+  background: #9aa39d;
+}
+
+[data-theme="light"] .system-node,
+[data-theme="light"] .project-proof-grid > div,
+[data-theme="light"] .project-detail-facts > div,
+[data-theme="light"] .proof-inline-row {
+  background: transparent;
+}
+
+[data-theme="light"] .prose a:not(.heading-anchor) {
+  color: #365b48;
+}
+
+[data-theme="light"] .prose :not(pre) > code {
+  color: #365b48;
+  background: rgba(79, 125, 101, 0.08);
+  border-color: rgba(79, 125, 101, 0.2);
+}
+
+[data-theme="light"] .prose pre.astro-code,
+[data-theme="light"] .prose pre.shiki {
+  background: #17201b !important;
+}
+
+[data-theme="light"] .prose thead {
+  background: rgba(23, 32, 27, 0.04);
+}
+
+[data-theme="light"] .toc-link-active {
+  background: rgba(79, 125, 101, 0.09);
+}
+
+[data-theme="light"] .mobile-toggle span {
+  background: #17201b !important;
+}
+
+[data-theme="light"] .infrastructure-stats strong {
+  color: #4f7d65;
+}
+
+[data-theme="light"] .infrastructure-stats span {
+  color: #17201b;
+}
+
+[data-theme="light"] .infrastructure-stats p,
+[data-theme="light"] .diagram-zoom-hint,
+[data-theme="light"] .diagram-dialog-caption {
+  color: #758078;
+}
+
+[data-theme="light"] .diagram-trigger {
+  background: #ffffff;
+  border-color: var(--line);
+}
+
 /* Give the editorial system a real desktop composition. */
 @media (min-width: 961px) {
   .editorial-shell {

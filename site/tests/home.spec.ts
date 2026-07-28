@@ -79,4 +79,22 @@ test.describe('homepage', () => {
     await expectNoHorizontalOverflow(page);
     await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
   });
+
+  test('theme follows system preference and persists manual selection', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Desktop-only theme validation');
+
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    const toggle = page.locator('[data-theme-toggle]');
+    await expect(toggle).toHaveAttribute('aria-label', 'Switch to dark theme');
+
+    await toggle.click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  });
 });
