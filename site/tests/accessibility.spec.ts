@@ -1,5 +1,6 @@
 import { AxeBuilder } from '@axe-core/playwright';
 import { test, expect } from '@playwright/test';
+import { expectPseudoElementContrast } from './helpers/contrast';
 
 const themedRoutes = [
   '/',
@@ -59,6 +60,36 @@ test('theme controls are keyboard accessible and meet touch size', async ({ page
   await themeToggle.focus();
   await page.keyboard.press('Space');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+});
+
+// Axe cannot see text rendered by ::before/::after, so the ordered-list
+// numerals and the code-block language chip need explicit contrast checks.
+for (const theme of ['light', 'dark'] as const) {
+  test(`pseudo-element text meets AA contrast in ${theme} mode`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+    await page.addInitScript(() => localStorage.clear());
+    await page.goto('/projects/hostlet');
+
+    await expectPseudoElementContrast(page, '.prose ol li', '::before', 4.5);
+    await expectPseudoElementContrast(page, '.prose pre[data-language]', '::before', 4.5);
+  });
+}
+
+test.describe('theme without JavaScript', () => {
+  test.use({ javaScriptEnabled: false, colorScheme: 'light' });
+
+  test('light-preference users get the light palette', async ({ page }) => {
+    await page.goto('/');
+    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    expect(bg).toBe('rgb(247, 248, 246)');
+  });
+
+  test('routes that lock the theme stay dark', async ({ page }) => {
+    await page.goto('/greenlit');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    expect(bg).not.toBe('rgb(247, 248, 246)');
+  });
 });
 
 test('homepage reflows at 320px without horizontal overflow', async ({ page }) => {

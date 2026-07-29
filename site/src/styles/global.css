@@ -15,7 +15,7 @@
   --color-bg-elevated: #121514;
   --color-text-base: #e6e8e7;
   --color-text-muted: #9aa3a0;
-  --color-text-soft: #6b736f;
+  --color-text-soft: #78837d; /* 4.9:1 on --color-bg; keep AA for small text */
   --color-accent: #8fb8a3;
   --color-accent-strong: #aecbbb;
   --color-line: rgba(255, 255, 255, 0.08);
@@ -175,7 +175,7 @@ select {
 
 .eyebrow {
   margin: 0 0 0.9rem;
-  color: #78837d;
+  color: var(--color-text-soft);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -387,7 +387,7 @@ select {
 }
 
 .label-row-term {
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -430,7 +430,7 @@ select {
 }
 
 .system-summary-label {
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -554,7 +554,7 @@ select {
 }
 
 .system-node-label {
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -633,7 +633,7 @@ select {
 
 .project-row-stack {
   margin: 0.85rem 0 1rem;
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-size: 0.82rem;
 }
 
@@ -760,7 +760,7 @@ select {
 }
 
 .project-proof-label {
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -824,11 +824,11 @@ select {
 }
 
 .project-status-archived {
-  color: #6b736f;
+  color: var(--color-text-soft);
 }
 
 .project-status-archived .project-status-dot {
-  background: #6b736f;
+  background: var(--color-text-soft);
 }
 
 .certification-row {
@@ -839,7 +839,7 @@ select {
 .site-footer {
   padding: 4.5rem 1rem 1.5rem;
   text-align: center;
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-size: 0.88rem;
 }
 
@@ -850,7 +850,7 @@ select {
 .site-footer-build {
   margin-top: 0.35rem;
   font-size: 0.8rem;
-  color: #565e59;
+  color: var(--color-text-soft);
 }
 
 .observe-animate {
@@ -1025,7 +1025,7 @@ select {
 }
 
 .prose h4 {
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-family: var(--font-family-sans);
   font-size: 0.82rem;
   font-weight: 700;
@@ -1135,7 +1135,7 @@ select {
   position: absolute;
   left: 0;
   top: 0;
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-weight: 700;
   font-size: 0.9em;
   font-variant-numeric: tabular-nums;
@@ -1177,7 +1177,7 @@ select {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .prose pre code {
@@ -1270,7 +1270,7 @@ select {
 }
 
 .callout-label {
-  color: var(--accent-strong);
+  color: var(--color-accent-strong);
 }
 
 .callout-tip {
@@ -1392,6 +1392,38 @@ select {
   background: #f7f8f6;
 }
 
+/* No-JS fallback: a verbatim mirror of the [data-theme="light"] variable
+   block above — keep the two in sync. JS always sets data-theme before
+   paint, so this only applies with scripts disabled and an OS light
+   preference. Pages that lock the theme server-render data-theme="dark"
+   and are excluded by :not([data-theme]). */
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) {
+    color-scheme: light;
+    --color-bg: #f7f8f6;
+    --color-bg-elevated: #ffffff;
+    --color-text-base: #17201b;
+    --color-text-muted: #55625a;
+    --color-text-soft: #66716b;
+    --color-accent: #47725c;
+    --color-accent-strong: #365b48;
+    --color-line: rgba(23, 32, 27, 0.12);
+    --color-line-strong: rgba(23, 32, 27, 0.2);
+    --panel: rgba(255, 255, 255, 0.72);
+    --panel-strong: #ffffff;
+    --panel-soft: #eef1ed;
+    --line: rgba(23, 32, 27, 0.12);
+    --line-strong: rgba(23, 32, 27, 0.2);
+    --accent-color: #47725c;
+    --accent-ink: #ffffff;
+  }
+
+  html:not([data-theme]) body {
+    color: var(--color-text-base);
+    background: var(--color-bg);
+  }
+}
+
 [data-theme="light"] .site-header.is-scrolled .header-inner {
   background: rgba(247, 248, 246, 0.94);
 }
@@ -1417,16 +1449,6 @@ select {
 
 [data-theme="light"] .glass-hover:hover {
   background: rgba(23, 32, 27, 0.025);
-}
-
-[data-theme="light"] .eyebrow,
-[data-theme="light"] .label-row-term,
-[data-theme="light"] .system-summary-label,
-[data-theme="light"] .system-node-label,
-[data-theme="light"] .project-proof-label,
-[data-theme="light"] .site-footer,
-[data-theme="light"] .site-footer-build {
-  color: #66716b;
 }
 
 [data-theme="light"] .text-link,
@@ -1463,8 +1485,6 @@ select {
   color: #55625a;
 }
 
-[data-theme="light"] .project-row-stack,
-[data-theme="light"] .project-status-archived,
 [data-theme="light"] .project-status-progress,
 [data-theme="light"] .project-status-in-progress {
   color: #66716b;
@@ -1516,6 +1536,14 @@ select {
   background: rgba(23, 32, 27, 0.04);
 }
 
+[data-theme="light"] .prose em {
+  color: #46524a;
+}
+
+[data-theme="light"] .callout-warning .callout-label {
+  color: #7d5f1f;
+}
+
 [data-theme="light"] .toc-link-active {
   background: rgba(79, 125, 101, 0.09);
 }
@@ -1524,10 +1552,8 @@ select {
   background: #17201b !important;
 }
 
-[data-theme="light"] .diagram-zoom-hint,
-[data-theme="light"] .diagram-dialog-caption {
-  color: #66716b;
-}
+/* .diagram-zoom-hint and .diagram-dialog-caption keep their dark-theme
+   colors in light mode on purpose: both sit on dark overlay surfaces. */
 
 [data-theme="light"] .diagram-trigger {
   background: #ffffff;
@@ -1536,21 +1562,6 @@ select {
 
 [data-theme="light"] figure > figcaption {
   color: #55625a !important;
-}
-
-html:not([data-theme="light"]) .text-text-soft,
-html:not([data-theme="light"]) .eyebrow,
-html:not([data-theme="light"]) .label-row-term,
-html:not([data-theme="light"]) .system-summary-label,
-html:not([data-theme="light"]) .system-node-label,
-html:not([data-theme="light"]) .project-proof-label,
-html:not([data-theme="light"]) .site-footer,
-html:not([data-theme="light"]) .site-footer-build {
-  color: #78837d;
-}
-
-html:not([data-theme="light"]) .project-row-stack {
-  color: #78837d;
 }
 
 /* Give the editorial system a real desktop composition. */
