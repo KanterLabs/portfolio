@@ -80,6 +80,31 @@ test.describe('homepage', () => {
     await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
   });
 
+  test('every case-study row after the first has a divider line', async ({ page }) => {
+    await page.goto('/');
+
+    const rows = page.locator('#projects .project-row');
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(2);
+
+    for (let i = 0; i < count; i += 1) {
+      const border = await rows.nth(i).evaluate((el) => {
+        const style = getComputedStyle(el);
+        const alpha = style.borderTopColor.match(/rgba?\(([^)]+)\)/)?.[1].split(',')[3];
+        return {
+          width: parseFloat(style.borderTopWidth),
+          style: style.borderTopStyle,
+          alpha: alpha === undefined ? 1 : parseFloat(alpha),
+        };
+      });
+
+      if (i === 0) continue; // the featured row leads the list, no divider
+      expect(border.width, `row ${i} divider width`).toBeGreaterThanOrEqual(1);
+      expect(border.style, `row ${i} divider style`).toBe('solid');
+      expect(border.alpha, `row ${i} divider visibility`).toBeGreaterThan(0);
+    }
+  });
+
   test('theme follows system preference and persists manual selection', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Desktop-only theme validation');
 

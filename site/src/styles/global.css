@@ -587,6 +587,14 @@ select {
   padding-top: 0;
 }
 
+/* The supporting projects sit in a nested wrapper, so their first row is
+   also a :first-child — but it follows the featured row in the rendered
+   list and must keep its divider. */
+#projects .grid > .grid > .project-row:first-child {
+  border-top: 1px solid var(--line);
+  padding-top: 2rem;
+}
+
 .project-row-featured {
   padding-bottom: 2.5rem;
 }
