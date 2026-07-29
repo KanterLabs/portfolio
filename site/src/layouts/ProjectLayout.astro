@@ -1,4 +1,5 @@
 ---
+import GithubSlugger from 'github-slugger';
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
@@ -31,17 +32,14 @@ const statusClass: Record<string, string> = {
 const wordCount = project.body?.split(/\s+/).filter(Boolean).length ?? 0;
 const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
+// Same slugger rehype-slug uses, so TOC hrefs always match the ids it
+// stamps on the rendered headings (incl. duplicate "-1" suffixing).
 const headingMatches = project.body?.matchAll(/^##\s+(.+)$/gm) ?? [];
 const tocItems: { text: string; slug: string }[] = [];
+const slugger = new GithubSlugger();
 for (const match of headingMatches) {
   const text = match[1].trim();
-  const slug = text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-  tocItems.push({ text, slug });
+  tocItems.push({ text, slug: slugger.slug(text) });
 }
 
 const projectUrl = Astro.site ? new URL(`/projects/${project.id}/`, Astro.site).toString() : undefined;
@@ -142,7 +140,7 @@ const structuredData = {
             {links.map((link) => (
               <a href={link.href} target="_blank" rel="noopener noreferrer" class="btn btn-secondary text-sm">
                 {link.label}
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" y1="14" x2="21" y2="3" />
@@ -184,18 +182,18 @@ const structuredData = {
             <details class="lg:hidden mb-8 glass p-0 overflow-hidden w-full" data-toc-details>
               <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-[0.82rem] font-semibold text-text-muted select-none list-none">
                 <span class="flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                     <line x1="3" y1="6" x2="21" y2="6" />
                     <line x1="3" y1="12" x2="15" y2="12" />
                     <line x1="3" y1="18" x2="18" y2="18" />
                   </svg>
                   On this page
                 </span>
-                <svg class="toc-chevron w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="toc-chevron w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </summary>
-              <nav class="px-5 pb-4 border-t border-line pt-3" aria-label="Table of contents">
+              <nav class="px-5 pb-4 border-t border-line pt-3" aria-label="On this page">
                 <ul class="grid gap-1 p-0 list-none">
                   {tocItems.map((item) => (
                     <li>
@@ -223,7 +221,7 @@ const structuredData = {
           href="/#projects"
           class="inline-flex items-center gap-2 text-text-muted hover:text-text-base transition-colors duration-[180ms] font-medium"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
           Back to all projects

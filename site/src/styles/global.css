@@ -1043,7 +1043,7 @@ select {
   opacity: 0;
   transition: opacity 180ms ease;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.55);
   font-size: 0.75em;
   font-weight: 400;
   vertical-align: middle;
@@ -1052,7 +1052,9 @@ select {
 .prose h2:hover > .heading-anchor,
 .prose h3:hover > .heading-anchor,
 .prose h2 > .heading-anchor:hover,
-.prose h3 > .heading-anchor:hover {
+.prose h3 > .heading-anchor:hover,
+.prose h2 > .heading-anchor:focus-visible,
+.prose h3 > .heading-anchor:focus-visible {
   opacity: 1;
 }
 
@@ -1460,6 +1462,11 @@ select {
 [data-theme="light"] .prose strong,
 [data-theme="light"] .prose th {
   color: #17201b;
+}
+
+[data-theme="light"] .prose h2 .heading-anchor,
+[data-theme="light"] .prose h3 .heading-anchor {
+  color: rgba(23, 32, 27, 0.65);
 }
 
 [data-theme="light"] .text-link:hover,
