@@ -31,6 +31,10 @@
   --line-strong: rgba(255, 255, 255, 0.16);
   --accent-color: #8fb8a3;
   --accent-ink: #0c0e0d;
+  /* Sticky header ≈85px, plus the 20px translateY of the .observe-animate
+     reveal — anchor scrolls are computed from the pre-reveal rect, so the
+     section settles 20px higher than the scroll target. */
+  --header-offset: 7rem;
   --radius-lg: 20px;
   --radius-md: 16px;
   --radius-sm: 10px;
@@ -170,7 +174,7 @@ select {
 .section-block {
   padding-block: 4.5rem;
   border-top: 1px solid var(--line);
-  scroll-margin-top: 4.5rem;
+  scroll-margin-top: var(--header-offset);
 }
 
 .eyebrow {
@@ -250,7 +254,7 @@ select {
 .editorial-shell > main > .observe-animate {
   padding: 4.5rem 0;
   border-top: 1px solid var(--line);
-  scroll-margin-top: 4.5rem;
+  scroll-margin-top: var(--header-offset);
 }
 
 .editorial-shell .observe-animate > .grid,
@@ -890,6 +894,27 @@ select {
   display: none !important;
 }
 
+/* Enlarge small tap targets on touch devices; negative margins keep the
+   visual layout roughly unchanged while the hit box grows. */
+@media (pointer: coarse) {
+  .text-link {
+    display: inline-flex;
+    align-items: center;
+    padding-block: 0.75rem;
+    margin-block: -0.45rem;
+  }
+
+  [data-toc-details] nav a {
+    padding-block: 0.75rem;
+  }
+
+  .prose h2 .heading-anchor,
+  .prose h3 .heading-anchor {
+    padding: 0.5rem;
+    margin: -0.5rem -0.2rem;
+  }
+}
+
 /* The open panel overlays page content, so it needs a solid surface —
    the .glass background is 2% white in dark mode. */
 .mobile-nav-panel {
@@ -1215,6 +1240,8 @@ select {
   margin: 3.5rem 0;
 }
 
+/* display:block + overflow-x makes the table its own scroll container on
+   narrow screens; nowrap headers otherwise clip right-hand columns. */
 .prose table {
   display: block;
   width: 100%;
@@ -1224,7 +1251,6 @@ select {
   font-size: 0.92rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  overflow: hidden;
 }
 
 .prose thead {
