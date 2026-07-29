@@ -21,7 +21,7 @@ const {
 } = Astro.props;
 ---
 
-<header class="site-header sticky top-0 z-20" id={home ? 'header' : undefined} data-site-header>
+<header class="site-header sticky top-0 z-20" data-site-header>
   <div
     class="header-inner flex items-center justify-between gap-4 py-5 border-b border-transparent transition-[background-color,border-color,padding] duration-[180ms] ease-out"
   >
@@ -94,3 +94,92 @@ const {
     </nav>
   )}
 </header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+
+  if (header) {
+    let scrollFrame = 0;
+
+    const syncHeader = () => {
+      header.classList.toggle('is-scrolled', window.scrollY > 12);
+      scrollFrame = 0;
+    };
+
+    const requestHeaderSync = () => {
+      if (scrollFrame !== 0) return;
+      scrollFrame = window.requestAnimationFrame(syncHeader);
+    };
+
+    syncHeader();
+    window.addEventListener('scroll', requestHeaderSync, { passive: true });
+
+    const mobileToggle = header.querySelector<HTMLButtonElement>('.mobile-toggle');
+    const mobileNav = header.querySelector<HTMLElement>('[data-mobile-nav]');
+    // Complement of Tailwind's max-[780px] (= width < 780px)
+    const desktopBreakpoint = window.matchMedia('(width >= 780px)');
+
+    if (mobileToggle && mobileNav) {
+      const iconBars = mobileToggle.querySelectorAll<HTMLElement>('span:not(.sr-only)');
+
+      const renderMenuState = (open: boolean) => {
+        mobileToggle.setAttribute('aria-expanded', String(open));
+        mobileNav.classList.toggle('is-open', open);
+
+        if (open) {
+          iconBars[0]?.style.setProperty('transform', 'translateY(8px) rotate(45deg)');
+          iconBars[1]?.style.setProperty('opacity', '0');
+          iconBars[2]?.style.setProperty('transform', 'translateY(-8px) rotate(-45deg)');
+        } else {
+          iconBars[0]?.style.removeProperty('transform');
+          iconBars[1]?.style.removeProperty('opacity');
+          iconBars[2]?.style.removeProperty('transform');
+        }
+      };
+
+      const closeMenu = (restoreFocus = true) => {
+        renderMenuState(false);
+        if (restoreFocus) mobileToggle.focus();
+      };
+
+      renderMenuState(false);
+
+      mobileToggle.addEventListener('click', () => {
+        const shouldOpen = mobileToggle.getAttribute('aria-expanded') !== 'true';
+        renderMenuState(shouldOpen);
+
+        if (shouldOpen) {
+          mobileNav.querySelector('a')?.focus();
+        }
+      });
+
+      mobileNav.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          closeMenu(false);
+        });
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && mobileToggle.getAttribute('aria-expanded') === 'true') {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener('click', (event) => {
+        if (
+          mobileToggle.getAttribute('aria-expanded') === 'true' &&
+          event.target instanceof Node &&
+          !header.contains(event.target)
+        ) {
+          closeMenu(false);
+        }
+      });
+
+      desktopBreakpoint.addEventListener('change', (event) => {
+        if (event.matches) {
+          closeMenu(false);
+        }
+      });
+    }
+  }
+</script>
