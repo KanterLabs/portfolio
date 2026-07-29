@@ -105,6 +105,22 @@ test.describe('homepage', () => {
     }
   });
 
+  test('case-study titles link to their case studies', async ({ page }) => {
+    await page.goto('/');
+
+    const titleLinks = page.locator('.project-row-title a');
+    await expect(titleLinks).toHaveCount(4);
+    for (const href of await titleLinks.evaluateAll((links) => links.map((l) => l.getAttribute('href')))) {
+      expect(href).toMatch(/^\/projects\/.+/);
+    }
+
+    await titleLinks.first().click();
+    await expect(page).toHaveURL(/\/projects\/kanterlabs-homelab\/?$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'KanterLabs Homelab Platform' }),
+    ).toBeVisible();
+  });
+
   test('featured case study is visually distinct from supporting rows', async ({ page }) => {
     await page.goto('/');
 
