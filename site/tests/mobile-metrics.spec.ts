@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-test('mobile homepage metrics and content spot checks', async ({ page }) => {
+test('mobile homepage metrics and content spot checks', async ({ page }, testInfo) => {
   await page.goto('/');
   await page.waitForTimeout(600);
 
@@ -33,7 +33,11 @@ test('mobile homepage metrics and content spot checks', async ({ page }) => {
   expect(metrics.contactLine).toContain('shanekanterman04@gmail.com');
   expect(metrics.contactLine).toContain('Cranford');
 
-  await page.screenshot({ path: 'mobile-homepage-final.png', fullPage: true, type: 'png' });
+  // Keep the capture inside Playwright's output dir (gitignored) and on
+  // the HTML report instead of dropping a stray PNG at the repo root.
+  const screenshotPath = testInfo.outputPath('mobile-homepage-final.png');
+  await page.screenshot({ path: screenshotPath, fullPage: true, type: 'png' });
+  await testInfo.attach('mobile-homepage-final', { path: screenshotPath, contentType: 'image/png' });
 });
 
 test('mobile nav panel is compact', async ({ page }) => {

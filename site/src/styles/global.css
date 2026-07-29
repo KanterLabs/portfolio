@@ -913,6 +913,15 @@ select {
     padding: 0.5rem;
     margin: -0.5rem -0.2rem;
   }
+
+  /* The editorial hero/contact CTAs are styled as underlined text rows
+     (min-height: 0). Grow the tap box upward; flex-end keeps the text
+     sitting on its underline. */
+  .editorial-shell .hero-surface .btn,
+  .editorial-shell #contact .btn {
+    min-height: 2.75rem;
+    align-items: flex-end;
+  }
 }
 
 /* The open panel overlays page content, so it needs a solid surface —

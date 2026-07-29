@@ -1,12 +1,37 @@
 import { AxeBuilder } from '@axe-core/playwright';
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { expectPseudoElementContrast } from './helpers/contrast';
+import { expectMinTargetSizes } from './helpers/touchTargets';
 
 const themedRoutes = [
   '/',
+  '/projects/multi-node-portfolio',
   '/projects/kanterlabs-homelab',
+  '/projects/hostlet',
+  '/projects/data-center-operations',
   '/this-page-does-not-exist',
 ] as const;
+
+// wcag22aa adds target-size; best-practice adds heading-order,
+// landmark-unique, region, and friends.
+const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'];
+
+async function settle(page: Page) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+}
+
+async function expectNoAxeViolations(page: Page) {
+  const results = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
+  expect(
+    results.violations,
+    results.violations
+      .map((violation) => `${violation.id}: ${violation.help}\n  ${violation.nodes.map((n) => n.target.join(' ')).join('\n  ')}`)
+      .join('\n')
+  ).toEqual([]);
+}
 
 for (const theme of ['light', 'dark'] as const) {
   for (const route of themedRoutes) {
@@ -19,17 +44,49 @@ for (const theme of ['light', 'dark'] as const) {
           section.classList.add('visible');
         });
       });
-      await page.waitForTimeout(700);
+      await settle(page);
 
-      const results = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
-        .analyze();
-
-      expect(results.violations, results.violations.map((violation) => `${violation.id}: ${violation.help}`).join('\n'))
-        .toEqual([]);
+      await expectNoAxeViolations(page);
     });
   }
 }
+
+// Axe only sees what is rendered — scan the interactive widgets in their
+// open states too.
+test('axe with the mobile nav open', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'mobile nav only exists at mobile widths');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+
+  await page.getByRole('button', { name: 'Toggle navigation' }).click();
+  await expect(page.locator('#mobile-nav')).toBeVisible();
+  await settle(page);
+
+  await expectNoAxeViolations(page);
+});
+
+test('axe with a diagram dialog open', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/projects/kanterlabs-homelab');
+
+  await page.getByRole('button', { name: /Expand diagram:/ }).first().click();
+  await expect(page.getByRole('dialog').first()).toBeVisible();
+  await settle(page);
+
+  await expectNoAxeViolations(page);
+});
+
+test('axe with the mobile TOC expanded', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'the details TOC only renders below lg');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/projects/kanterlabs-homelab');
+
+  await page.locator('[data-toc-details] summary').click();
+  await expect(page.locator('[data-toc-details] nav')).toBeVisible();
+  await settle(page);
+
+  await expectNoAxeViolations(page);
+});
 
 test('Greenlit remains dark and has no portfolio theme control', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
@@ -91,6 +148,33 @@ test.describe('theme without JavaScript', () => {
     expect(bg).not.toBe('rgb(247, 248, 246)');
   });
 });
+
+// WCAG 2.5.8: 44px targets on touch surfaces, 24px floor with a pointer.
+for (const route of ['/', '/projects/kanterlabs-homelab'] as const) {
+  test(`interactive targets meet size minimums on ${route}`, async ({ page, isMobile }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(route);
+
+    if (isMobile) {
+      // Include the widgets that only exist open.
+      const menuToggle = page.getByRole('button', { name: 'Toggle navigation' });
+      if (await menuToggle.isVisible()) {
+        await menuToggle.click();
+        await expect(page.locator('#mobile-nav')).toBeVisible();
+      }
+      const tocSummary = page.locator('[data-toc-details] summary');
+      if (await tocSummary.isVisible()) {
+        await tocSummary.click();
+        await expect(page.locator('[data-toc-details] nav')).toBeVisible();
+      }
+    }
+
+    await expectMinTargetSizes(page, isMobile ? 44 : 24, [
+      // Revealed only on focus; its size tracks the focused content.
+      '.skip-link',
+    ]);
+  });
+}
 
 test('homepage reflows at 320px without horizontal overflow', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
