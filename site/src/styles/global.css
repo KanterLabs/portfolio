@@ -595,8 +595,48 @@ select {
   padding-top: 2rem;
 }
 
+/* The featured row breaks the flat list on purpose: an accent rule down
+   the left edge, accent eyebrow, larger headline, and the case study's
+   outcome pulled into the row. */
 .project-row-featured {
   padding-bottom: 2.5rem;
+  padding-left: 1.75rem;
+  border-left: 2px solid var(--accent-color);
+}
+
+.project-row-featured .eyebrow {
+  color: var(--accent-color);
+}
+
+.project-row-outcome {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  margin: 1.1rem 0 0;
+  max-width: 42rem;
+  color: var(--color-text-base);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.project-row-outcome-label {
+  flex: none;
+  color: var(--color-text-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@media (width < 780px) {
+  .project-row-featured {
+    padding-left: 1.1rem;
+  }
+
+  .project-row-outcome {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
 }
 
 .project-row-header {
@@ -633,7 +673,7 @@ select {
 }
 
 .project-row-featured .project-row-title {
-  font-size: 1.7rem;
+  font-size: clamp(1.8rem, 2.6vw, 2.3rem);
 }
 
 .project-row-summary {
