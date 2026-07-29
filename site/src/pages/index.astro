@@ -494,28 +494,8 @@ const structuredData = [
   </div>
 
   <script>
-    const header = document.getElementById('header');
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    const mobileNav = document.getElementById('mobile-nav');
     const sectionIds = ['about', 'architecture', 'projects', 'skills', 'contact'];
     const sectionLinks = Array.from(document.querySelectorAll('[data-nav-link]'));
-    const mobileBreakpoint = window.matchMedia('(min-width: 781px)');
-
-    let scrollFrame = 0;
-
-    const syncHeader = () => {
-      if (!header) return;
-      header.classList.toggle('is-scrolled', window.scrollY > 12);
-      scrollFrame = 0;
-    };
-
-    const requestHeaderSync = () => {
-      if (scrollFrame !== 0) return;
-      scrollFrame = window.requestAnimationFrame(syncHeader);
-    };
-
-    syncHeader();
-    window.addEventListener('scroll', requestHeaderSync, { passive: true });
 
     const setActiveSection = (sectionId) => {
       sectionLinks.forEach((link) => {
@@ -548,60 +528,6 @@ const structuredData = [
       sectionIds.forEach((id) => {
         const section = document.getElementById(id);
         if (section) observer.observe(section);
-      });
-    }
-
-    if (mobileToggle instanceof HTMLButtonElement && mobileNav instanceof HTMLElement) {
-      const iconBars = mobileToggle.querySelectorAll('span:not(.sr-only)');
-
-      const renderMenuState = (open) => {
-        mobileToggle.setAttribute('aria-expanded', String(open));
-        mobileNav.classList.toggle('is-open', open);
-
-        if (open) {
-          iconBars[0]?.style.setProperty('transform', 'translateY(8px) rotate(45deg)');
-          iconBars[1]?.style.setProperty('opacity', '0');
-          iconBars[2]?.style.setProperty('transform', 'translateY(-8px) rotate(-45deg)');
-        } else {
-          iconBars[0]?.style.removeProperty('transform');
-          iconBars[1]?.style.removeProperty('opacity');
-          iconBars[2]?.style.removeProperty('transform');
-        }
-      };
-
-      const closeMenu = (restoreFocus = true) => {
-        renderMenuState(false);
-        if (restoreFocus) mobileToggle.focus();
-      };
-
-      renderMenuState(false);
-
-      mobileToggle.addEventListener('click', () => {
-        const shouldOpen = mobileToggle.getAttribute('aria-expanded') !== 'true';
-        renderMenuState(shouldOpen);
-
-        if (shouldOpen) {
-          const firstLink = mobileNav.querySelector('a');
-          firstLink?.focus();
-        }
-      });
-
-      mobileNav.querySelectorAll('a').forEach((link) => {
-        link.addEventListener('click', () => {
-          closeMenu(false);
-        });
-      });
-
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && mobileToggle.getAttribute('aria-expanded') === 'true') {
-          closeMenu();
-        }
-      });
-
-      mobileBreakpoint.addEventListener('change', (event) => {
-        if (event.matches) {
-          closeMenu(false);
-        }
       });
     }
   </script>

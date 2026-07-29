@@ -344,7 +344,7 @@ select {
   color: var(--color-text-base);
 }
 
-@media (max-width: 780px) {
+@media (width < 780px) {
   .editorial-shell .hero-surface {
     padding: 3.5rem 0 3rem;
   }
@@ -890,13 +890,24 @@ select {
   display: none !important;
 }
 
-@media (min-width: 781px) {
+/* The open panel overlays page content, so it needs a solid surface —
+   the .glass background is 2% white in dark mode. */
+.mobile-nav-panel {
+  background: var(--panel-strong);
+  border-color: var(--line-strong);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+/* Tailwind v4 max-[780px] compiles to (width < 780px), so desktop starts
+   at exactly 780px. Keep every rule on this breakpoint an exact
+   complement so no viewport width falls between nav modes. */
+@media (width >= 780px) {
   .mobile-nav-panel {
     display: none !important;
   }
 }
 
-@media (max-width: 780px) {
+@media (width < 780px) {
   .js .mobile-nav-panel {
     display: none;
   }
@@ -1345,7 +1356,7 @@ select {
   transform: rotate(0) scale(1);
 }
 
-@media (max-width: 780px) {
+@media (width < 780px) {
   .theme-toggle-label {
     display: none;
   }
