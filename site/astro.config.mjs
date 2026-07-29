@@ -26,8 +26,7 @@ export default defineConfig({
             behavior: 'append',
             properties: {
               className: ['heading-anchor'],
-              ariaHidden: 'true',
-              tabIndex: -1,
+              ariaLabel: 'Link to this section',
             },
             content: {
               type: 'element',

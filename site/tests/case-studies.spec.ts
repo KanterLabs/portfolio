@@ -66,6 +66,35 @@ test.describe('case studies', () => {
     ).toBeVisible();
   });
 
+  test('heading anchors are keyboard reachable and reveal on focus', async ({ page }) => {
+    await page.goto('/projects/kanterlabs-homelab');
+
+    const anchor = page.locator('.prose h2 > .heading-anchor').first();
+    await anchor.focus();
+    await expect(anchor).toBeFocused();
+    // The anchor is hidden until hovered or focused.
+    await expect.poll(() => anchor.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+
+    const href = await anchor.getAttribute('href');
+    expect(href).toMatch(/^#.+/);
+    await page.keyboard.press('Enter');
+    await expect.poll(() => page.evaluate(() => window.location.hash)).toBe(href);
+  });
+
+  test('TOC links target real heading ids', async ({ page }) => {
+    await page.goto('/projects/kanterlabs-homelab');
+
+    const hrefs = await page
+      .locator('.toc-sidebar a.toc-link, [data-toc-details] nav a')
+      .evaluateAll((links) => links.map((link) => link.getAttribute('href') ?? ''));
+    expect(hrefs.length).toBeGreaterThan(0);
+
+    for (const href of hrefs) {
+      expect(href).toMatch(/^#.+/);
+      await expect(page.locator(`[id="${href.slice(1)}"]`)).toHaveCount(1);
+    }
+  });
+
   test('homelab diagrams expand and close from the keyboard', async ({ page }) => {
     await page.goto('/projects/kanterlabs-homelab');
 
