@@ -22,13 +22,6 @@ const navItems = [
   { label: 'Contact', href: '#contact' },
 ];
 
-const proofStats = [
-  { value: 'Datacenter Technician', label: 'Rack-and-stack, PXE imaging, OS installs at InterServer' },
-  { value: 'PXE deployment', label: 'Network boot imaging and server provisioning' },
-  { value: 'Private LXC', label: 'Isolated static origin behind a shared edge VM' },
-  { value: 'Atomic releases', label: 'Commit-addressed deploys with fast rollback' },
-];
-
 const capabilityGroups = [
   {
     name: 'Deploy and Operate',
@@ -209,15 +202,6 @@ const structuredData = [
             >
               GitHub
             </a>
-          </div>
-
-          <div class="proof-strip mt-6 max-[780px]:mt-5" aria-label="Portfolio proof points">
-            {proofStats.map((stat) => (
-              <div class="proof-stat">
-                <strong>{stat.value}</strong>
-                <span>{stat.label}</span>
-              </div>
-            ))}
           </div>
         </div>
 

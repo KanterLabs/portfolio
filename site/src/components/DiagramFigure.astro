@@ -9,8 +9,9 @@ interface Props {
 
 const { src, alt, caption, wide = false } = Astro.props;
 
-// Unique id so multiple diagrams on one page don't collide
-const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
+// Unique id so multiple diagrams on one page don't collide; derived from src
+// so ids are stable across builds
+const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
 ---
 
 <figure
@@ -92,7 +93,6 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
     border-radius: var(--radius-md);
     background: var(--panel);
     border: 1px solid var(--line);
-    box-shadow: var(--shadow);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
   }
@@ -228,7 +228,6 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
       const inner = dialog.querySelector('.diagram-dialog-inner');
       if (inner && !inner.contains(e.target as Node)) {
         dialog.close();
-        document.body.style.overflow = '';
       }
     });
 
@@ -236,17 +235,15 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
     const img = dialog.querySelector<HTMLImageElement>('.diagram-dialog-img');
     img?.addEventListener('click', () => {
       dialog.close();
-      document.body.style.overflow = '';
     });
 
     // Close button
     const closeBtn = dialog.querySelector<HTMLButtonElement>(`[data-close-dialog="${dialogId}"]`);
     closeBtn?.addEventListener('click', () => {
       dialog.close();
-      document.body.style.overflow = '';
     });
 
-    // Escape is handled natively by <dialog> — just restore scroll
+    // Every close path (incl. native Escape) fires 'close' — restore scroll here
     dialog.addEventListener('close', () => {
       document.body.style.overflow = '';
     });
