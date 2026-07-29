@@ -1308,8 +1308,22 @@ select {
   font-weight: 600;
 }
 
-.theme-icon-moon {
+/* Fixed-size in-flow slot; both icons stack inside it so the hidden one
+   never leaves a gap and the visible one can't drift over the label. */
+.theme-icon-stack {
+  position: relative;
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+
+.theme-icon {
   position: absolute;
+  inset: 0;
+}
+
+.theme-icon-moon {
   opacity: 0;
   transform: rotate(-25deg) scale(0.7);
   transition: opacity var(--transition), transform var(--transition);
