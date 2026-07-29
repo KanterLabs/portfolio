@@ -119,7 +119,12 @@ const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`
     margin: 0;
     padding: 0;
     border: none;
-    background: transparent;
+    /* The scrim lives on the dialog itself (it spans the viewport), not
+       on ::backdrop — tools like axe can't composite ::backdrop, so a
+       transparent dialog reads as caption-on-page-background. */
+    background: rgba(4, 9, 18, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -127,9 +132,7 @@ const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`
   }
 
   .diagram-dialog::backdrop {
-    background: rgba(4, 9, 18, 0.88);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: transparent;
   }
 
   /* hidden state — dialog[open] is set by JS */
@@ -171,7 +174,7 @@ const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`
 
   /* ── Caption ── */
   .diagram-dialog-caption {
-    color: #7c8a81;
+    color: #9aa9a0; /* AA on the dialog scrim even over a light body */
     font-size: 0.82rem;
     text-align: center;
     line-height: 1.5;
