@@ -105,6 +105,30 @@ test.describe('homepage', () => {
     }
   });
 
+  test('featured case study is visually distinct from supporting rows', async ({ page }) => {
+    await page.goto('/');
+
+    const featured = page.locator('.project-row-featured');
+    await expect(featured).toHaveCount(1);
+    await expect(featured.locator('.project-row-outcome')).toBeVisible();
+
+    const accent = await featured.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { width: parseFloat(style.borderLeftWidth), style: style.borderLeftStyle };
+    });
+    expect(accent.width).toBeGreaterThanOrEqual(2);
+    expect(accent.style).toBe('solid');
+
+    const featuredTitle = await featured
+      .locator('.project-row-title')
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    const supportingTitle = await page
+      .locator('.project-row:not(.project-row-featured) .project-row-title')
+      .first()
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    expect(featuredTitle).toBeGreaterThan(supportingTitle * 1.2);
+  });
+
   test('theme follows system preference and persists manual selection', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Desktop-only theme validation');
 
