@@ -35,7 +35,6 @@
     border: 1px solid var(--line);
     border-radius: 14px;
     background: var(--panel);
-    box-shadow: var(--shadow);
   }
 
   .infrastructure-stats strong {
@@ -60,6 +59,18 @@
     color: #7c8a81;
     font-size: 0.75rem;
     line-height: 1.5;
+  }
+
+  :global([data-theme='light']) .infrastructure-stats strong {
+    color: #47725c;
+  }
+
+  :global([data-theme='light']) .infrastructure-stats span {
+    color: #17201b;
+  }
+
+  :global([data-theme='light']) .infrastructure-stats p {
+    color: #55625a;
   }
 
   @media (max-width: 780px) {

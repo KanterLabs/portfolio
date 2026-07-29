@@ -31,8 +31,6 @@
   --line-strong: rgba(255, 255, 255, 0.16);
   --accent-color: #8fb8a3;
   --accent-ink: #0c0e0d;
-  --shadow: none;
-  --shadow-hover: none;
   --radius-lg: 20px;
   --radius-md: 16px;
   --radius-sm: 10px;
@@ -213,16 +211,11 @@ select {
   font-family: var(--font-family-sans);
 }
 
-.editorial-shell .hero-surface::before {
-  display: none;
-}
-
 .editorial-shell .hero-surface > div:first-child {
   max-width: 42rem;
 }
 
-.editorial-shell .hero-surface > .glass,
-.editorial-shell .proof-strip {
+.editorial-shell .hero-surface > .glass {
   display: none;
 }
 
@@ -1506,15 +1499,6 @@ select {
   background: #17201b !important;
 }
 
-[data-theme="light"] .infrastructure-stats strong {
-  color: #47725c;
-}
-
-[data-theme="light"] .infrastructure-stats span {
-  color: #17201b;
-}
-
-[data-theme="light"] .infrastructure-stats p,
 [data-theme="light"] .diagram-zoom-hint,
 [data-theme="light"] .diagram-dialog-caption {
   color: #66716b;
@@ -1525,16 +1509,6 @@ select {
   border-color: var(--line);
 }
 
-[data-theme="light"] .infrastructure-stats strong {
-  color: #47725c !important;
-}
-
-[data-theme="light"] .infrastructure-stats span {
-  color: #17201b !important;
-}
-
-[data-theme="light"] .infrastructure-stats p,
-[data-theme="light"] figcaption.diagram-dialog-caption,
 [data-theme="light"] figure > figcaption {
   color: #55625a !important;
 }
