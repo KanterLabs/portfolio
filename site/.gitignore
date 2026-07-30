@@ -17,6 +17,9 @@ test-results/
 playwright-report/
 /*.png
 
+# UI iteration review screenshots (artifacts, not baselines)
+.ui-iterate/
+
 
 # environment variables
 .env
