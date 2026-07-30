@@ -39,6 +39,22 @@
   --radius-md: 16px;
   --radius-sm: 10px;
   --transition: 180ms ease;
+
+  /* One type ramp, shared by the homepage and the case-study layout. */
+  --step-display: clamp(2.7rem, 7vw, 5.2rem); /* homepage hero h1 only */
+  --step-title: clamp(2.4rem, 6.6vw, 3.4rem); /* case-study h1, 404 h1, contact h2 */
+  --step-section: clamp(1.8rem, 4.1vw, 2.5rem); /* homepage section h2 */
+  --step-heading: clamp(1.55rem, 3vw, 2.1rem); /* prose h2 */
+
+  /* One section rhythm, shared by the homepage and the case-study layout. */
+  --space-section: 4.5rem;
+}
+
+@media (width < 780px) {
+  :root {
+    --step-display: clamp(2.65rem, 13vw, 4rem);
+    --space-section: 3rem;
+  }
 }
 
 *,
@@ -164,12 +180,20 @@ select {
   border-color: rgba(143, 184, 163, 0.5);
 }
 
-/* ── Editorial layout primitives ── */
+/* ── Shared page frame ── */
 
-.editorial-shell {
+.page-shell {
   width: min(calc(100% - 2.5rem), 44rem);
   margin-inline: auto;
 }
+
+@media (width >= 960px) {
+  .page-shell {
+    width: min(calc(100% - 4rem), 1120px);
+  }
+}
+
+/* ── Editorial layout primitives ── */
 
 .section-block {
   padding-block: 4.5rem;
@@ -183,6 +207,25 @@ select {
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* One data-label style, shared by every "ROLE / SCOPE / OUTCOME"-style
+   micro-label on the homepage and in a case study. No margin here — this
+   rule is unlayered and would beat Tailwind's `mb-*` utilities (which live
+   in @layer utilities), silently clobbering every call site's spacing.
+   Preflight already zeroes margins on headings/paragraphs, so callers that
+   want a gap add their own `mb-*`. */
+.field-label,
+.project-proof-label,
+.system-summary-label,
+.system-node-label,
+.project-row-outcome-label,
+.label-row-term {
+  color: var(--color-text-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -211,10 +254,6 @@ select {
   padding: 5rem 0 4.5rem;
 }
 
-.editorial-shell .font-mono {
-  font-family: var(--font-family-sans);
-}
-
 .editorial-shell .hero-surface > div:first-child {
   max-width: 42rem;
 }
@@ -225,7 +264,7 @@ select {
 
 .editorial-shell .hero-surface h1 {
   max-width: none;
-  font-size: clamp(2.7rem, 7vw, 5.2rem);
+  font-size: var(--step-display);
   line-height: 1.02;
   letter-spacing: -0.055em;
 }
@@ -251,8 +290,14 @@ select {
   color: var(--accent-color);
 }
 
+.editorial-shell .hero-surface .btn,
+.editorial-shell #contact .btn {
+  justify-content: flex-start;
+  text-align: left;
+}
+
 .editorial-shell > main > .observe-animate {
-  padding: 4.5rem 0;
+  padding: var(--space-section) 0;
   border-top: 1px solid var(--line);
   scroll-margin-top: var(--header-offset);
 }
@@ -270,7 +315,12 @@ select {
   background: transparent;
 }
 
-.editorial-shell #about .glass:first-child {
+/* Only the literal first card of the section (the bio row) skips the rule,
+   so it doesn't duplicate the section's own top border. The experience
+   3-up row and the certifications row are later rows in the same section,
+   not the section's first item, so their first card keeps the default
+   .glass border-top and the hairline runs the full width of the row. */
+.editorial-shell #about > .grid:nth-of-type(2) > .glass:first-child {
   border-top: none;
 }
 
@@ -353,14 +403,6 @@ select {
     padding: 3.5rem 0 3rem;
   }
 
-  .editorial-shell .hero-surface h1 {
-    font-size: clamp(2.65rem, 13vw, 4rem);
-  }
-
-  .editorial-shell > main > .observe-animate {
-    padding: 3rem 0;
-  }
-
   .editorial-shell #about .grid.grid-cols-3 .glass,
   .editorial-shell #skills .glass {
     display: block;
@@ -391,11 +433,6 @@ select {
 }
 
 .label-row-term {
-  color: var(--color-text-soft);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   padding-top: 0.15rem;
 }
 
@@ -431,14 +468,6 @@ select {
 .system-summary-row:last-child {
   padding-bottom: 0;
   border-bottom: none;
-}
-
-.system-summary-label {
-  color: var(--color-text-soft);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 .system-summary-copy {
@@ -557,13 +586,6 @@ select {
   line-height: 1.5;
 }
 
-.system-node-label {
-  color: var(--color-text-soft);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
 
 .project-meta-badge {
   display: inline-flex;
@@ -621,11 +643,6 @@ select {
 
 .project-row-outcome-label {
   flex: none;
-  color: var(--color-text-soft);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 @media (width < 780px) {
@@ -815,20 +832,12 @@ select {
 .project-detail-facts > div,
 .proof-inline-row {
   display: grid;
+  align-content: start;
   gap: 0.35rem;
   padding: 1rem;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: transparent;
-}
-
-.project-proof-label {
-  color: var(--color-text-soft);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin: 0;
 }
 
 .project-proof-copy {
@@ -840,6 +849,107 @@ select {
 
 .proof-inline-row {
   padding: 0.95rem 1rem;
+}
+
+/* ── Case-study layout ── */
+
+.case-body {
+  border-top: 1px solid var(--line);
+  margin-top: var(--space-section);
+  padding-top: var(--space-section);
+}
+
+.case-footer {
+  border-top: 1px solid var(--line);
+  margin-top: var(--space-section);
+  padding-top: var(--space-section);
+}
+
+.case-prose {
+  min-width: 0;
+}
+
+.toc-sidebar {
+  display: none;
+}
+
+[data-toc-details] {
+  display: block;
+}
+
+@media (width >= 960px) {
+  .case-body {
+    display: grid;
+    grid-template-columns: minmax(0, 42rem) 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .toc-sidebar {
+    display: block;
+    width: 14rem;
+    margin-left: auto;
+    position: sticky;
+    top: var(--header-offset);
+    align-self: start;
+  }
+
+  [data-toc-details] {
+    display: none;
+  }
+}
+
+/* Metadata row: the separator lives in the column gutter (absolutely
+   positioned, offset by half the gap) rather than travelling with the
+   following item. That way a wrapped line's first item starts flush on
+   the shared left edge instead of dangling a dot ahead of it — the
+   container clips anything that lands outside its own box. */
+.case-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.9rem;
+  row-gap: 0.35rem;
+  overflow: clip;
+}
+
+.case-meta > * {
+  margin: 0;
+  position: relative;
+}
+
+.case-meta > * + *::before {
+  content: '·';
+  position: absolute;
+  left: -0.5rem;
+  color: var(--color-text-soft);
+}
+
+/* Stack lists read as a list, not a run-on sentence. Same gutter-separator
+   treatment as .case-meta, so a wrapped entry never opens a line with a
+   stray middot at the shared left edge. */
+.stack-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 1rem;
+  row-gap: 0.4rem;
+  overflow: clip;
+  color: var(--color-text-soft);
+  font-size: 0.82rem;
+}
+
+.stack-list > * {
+  position: relative;
+  color: inherit;
+  font-size: inherit;
+}
+
+.stack-list > * + *::before {
+  content: '·';
+  position: absolute;
+  left: -0.55rem;
+  color: var(--color-text-soft);
 }
 
 .contact-link-grid {
@@ -1085,10 +1195,10 @@ select {
 }
 
 .prose h2 {
-  scroll-margin-top: 7rem;
+  scroll-margin-top: var(--header-offset);
   color: #e6e8e7;
   font-family: var(--font-family-sans);
-  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  font-size: var(--step-heading);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.15;
@@ -1103,6 +1213,13 @@ select {
   margin-top: 0;
   padding-top: 0;
   border-top: none;
+}
+
+@media (width < 780px) {
+  .prose h2 {
+    margin-top: 3rem;
+    padding-top: 1.25rem;
+  }
 }
 
 .prose h3 {
@@ -1178,13 +1295,13 @@ select {
   color: #aecbbb;
   text-decoration: underline;
   text-underline-offset: 3px;
-  text-decoration-color: rgba(143, 184, 163, 0.35);
+  text-decoration-color: color-mix(in srgb, var(--accent-color) 45%, transparent);
   transition: color 180ms ease, text-decoration-color 180ms ease;
 }
 
 .prose a:not(.heading-anchor):hover {
   color: #8fb8a3;
-  text-decoration-color: rgba(143, 184, 163, 0.7);
+  text-decoration-color: color-mix(in srgb, var(--accent-color) 75%, transparent);
 }
 
 .prose ul {
@@ -1208,7 +1325,7 @@ select {
   width: 0.3rem;
   height: 0.3rem;
   border-radius: 999px;
-  background: rgba(143, 184, 163, 0.5);
+  background: color-mix(in srgb, var(--accent-color) 80%, transparent);
 }
 
 .prose ol {
@@ -1291,7 +1408,7 @@ select {
 }
 
 .prose blockquote {
-  border-left: 3px solid rgba(143, 184, 163, 0.35);
+  border-left: 3px solid color-mix(in srgb, var(--accent-color) 45%, transparent);
   padding: 0.1rem 0 0.1rem 1.25rem;
   margin: 2rem 0;
   color: #9aa3a0;
@@ -1308,17 +1425,24 @@ select {
   margin: 3.5rem 0;
 }
 
-/* display:block + overflow-x makes the table its own scroll container on
-   narrow screens; nowrap headers otherwise clip right-hand columns. */
-.prose table {
-  display: block;
-  width: 100%;
+/* The scroll container is the wrapper, not the table (see
+   rehypeFocusableScrollRegions in astro.config.mjs). A display:block table
+   makes its row groups shrink-wrap independently, so thead and tbody resolve
+   separate column widths and headers stop sitting over their columns; the
+   table stays a real table and overflows the wrapper instead. */
+.prose .table-scroll {
   overflow-x: auto;
-  border-collapse: collapse;
   margin: 2rem 0;
-  font-size: 0.92rem;
   border: 1px solid var(--line);
   border-radius: 10px;
+}
+
+.prose table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 0.92rem;
 }
 
 .prose thead {
@@ -1338,7 +1462,7 @@ select {
 
 .prose td {
   padding: 0.7rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--line);
   vertical-align: top;
   color: #b8bfbc;
 }
@@ -1348,7 +1472,7 @@ select {
 }
 
 .prose tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--color-text-base) 4%, transparent);
 }
 
 .prose figure {
@@ -1666,11 +1790,7 @@ select {
 }
 
 /* Give the editorial system a real desktop composition. */
-@media (min-width: 961px) {
-  .editorial-shell {
-    width: min(calc(100% - 4rem), 1120px);
-  }
-
+@media (width >= 960px) {
   .editorial-shell .hero-surface {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(19rem, 24rem);

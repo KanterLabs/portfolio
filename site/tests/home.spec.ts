@@ -173,6 +173,32 @@ test.describe('homepage', () => {
     expect(featuredTitle).toBeGreaterThan(supportingTitle * 1.2);
   });
 
+  test('editorial CTAs are left-aligned, not centred in their box', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'mobile is where the full-width box makes centring visible');
+
+    await page.goto('/');
+
+    const heroParagraph = page.locator('.hero-surface p').first();
+    const heroParagraphBox = await heroParagraph.boundingBox();
+    expect(heroParagraphBox).not.toBeNull();
+
+    const heroCta = page.getByRole('link', { name: 'View Selected Work' });
+    await expect(heroCta).toHaveCSS('justify-content', 'flex-start');
+    const heroCtaBox = await heroCta.boundingBox();
+    expect(heroCtaBox).not.toBeNull();
+    expect(Math.abs(heroCtaBox!.x - heroParagraphBox!.x)).toBeLessThanOrEqual(2);
+
+    const contactCta = page.getByRole('link', { name: 'Email me' });
+    await contactCta.scrollIntoViewIfNeeded();
+    await expect(contactCta).toHaveCSS('justify-content', 'flex-start');
+    const contactParagraph = page.locator('#contact p').first();
+    const contactParagraphBox = await contactParagraph.boundingBox();
+    const contactCtaBox = await contactCta.boundingBox();
+    expect(contactParagraphBox).not.toBeNull();
+    expect(contactCtaBox).not.toBeNull();
+    expect(Math.abs(contactCtaBox!.x - contactParagraphBox!.x)).toBeLessThanOrEqual(2);
+  });
+
   test('theme follows system preference and persists manual selection', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Desktop-only theme validation');
 

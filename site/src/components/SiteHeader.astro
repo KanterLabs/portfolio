@@ -33,7 +33,7 @@ const {
     </a>
 
     {home ? (
-      <>
+      <div class="flex items-center gap-6 max-[780px]:gap-2">
         <nav class="flex items-center gap-6 max-[780px]:hidden" aria-label="Primary">
           {navItems.map((item) => (
             <a
@@ -58,9 +58,9 @@ const {
           <span class="sr-only">Toggle navigation</span>
         </button>
         <ThemeToggle />
-      </>
+      </div>
     ) : (
-      <>
+      <div class="flex items-center gap-6 max-[780px]:gap-2">
         <a
           href={backHref}
           class="inline-flex items-center gap-2 min-h-11 text-text-muted hover:text-text-base transition-colors duration-[180ms] text-sm font-medium"
@@ -71,7 +71,7 @@ const {
           {backLabel}
         </a>
         <ThemeToggle />
-      </>
+      </div>
     )}
   </div>
 

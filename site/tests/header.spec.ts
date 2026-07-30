@@ -54,6 +54,41 @@ test.describe('site header', () => {
   // Tailwind v4 max-[780px] = (width < 780px): 780 is the first desktop
   // width and 779 the last mobile one. Every rule on this breakpoint must
   // agree, or a nav-less dead zone opens between the two modes.
+  test('desktop right-hand controls are grouped at the right, not floating mid-header', async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, 'desktop-only control grouping check');
+
+    await page.goto('/');
+    const headerInner = page.locator('[data-site-header] .header-inner');
+    const headerInnerBox = (await headerInner.boundingBox())!;
+    const nav = page.locator('nav[aria-label="Primary"]');
+    const navBox = (await nav.boundingBox())!;
+    const themeToggle = page.locator('[data-theme-toggle]');
+    const themeToggleBox = (await themeToggle.boundingBox())!;
+
+    expect(themeToggleBox.x - (navBox.x + navBox.width)).toBeLessThan(40);
+    expect(navBox.x).toBeGreaterThan(headerInnerBox.x + headerInnerBox.width * 0.5);
+
+    await page.goto('/projects/hostlet');
+    const backLink = page.locator('[data-site-header]').getByRole('link', { name: 'Selected work' });
+    const backLinkBox = (await backLink.boundingBox())!;
+    const caseThemeToggleBox = (await page.locator('[data-theme-toggle]').boundingBox())!;
+    expect(caseThemeToggleBox.x - (backLinkBox.x + backLinkBox.width)).toBeLessThan(40);
+  });
+
+  test('mobile hamburger and theme toggle sit adjacent at the right edge', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'mobile-only control grouping check');
+
+    await page.goto('/');
+    const mobileToggle = page.locator('.mobile-toggle');
+    const mobileToggleBox = (await mobileToggle.boundingBox())!;
+    const themeToggleBox = (await page.locator('[data-theme-toggle]').boundingBox())!;
+
+    expect(themeToggleBox.x - (mobileToggleBox.x + mobileToggleBox.width)).toBeLessThan(20);
+  });
+
   test('no navigation dead zone at the 779/780px boundary', async ({ page, isMobile }) => {
     test.skip(isMobile === true, 'needs viewport resizing');
     await page.goto('/');
