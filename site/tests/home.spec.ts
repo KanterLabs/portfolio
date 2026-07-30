@@ -8,14 +8,18 @@ test.describe('homepage', () => {
     await page.goto('/');
     const primaryNav = page.locator('nav[aria-label="Primary"]');
 
-    await expect(page).toHaveTitle('Shane Kanterman | Linux Infrastructure and Web Projects');
-    await expect(page.getByRole('heading', { name: 'Building Linux infrastructure and web projects that are designed to ship.' })).toBeVisible();
+    await expect(page).toHaveTitle('Shane Kanterman | Infrastructure and Platform Projects');
+    await expect(
+      page.getByRole('heading', {
+        name: 'Building Linux platforms and deployment tooling—from bare metal to CI/CD.',
+      }),
+    ).toBeVisible();
     await expect(
       page.getByRole('heading', { level: 3, name: 'KanterLabs Homelab Platform' }),
     ).toBeVisible();
     await expect(page.getByText('Featured case study')).toBeVisible();
 
-    await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'About' }).click(), 'about');
+    await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Experience' }).click(), 'about');
     await page.goto('/');
     await expectHashLinkToReachSection(
       page,
@@ -28,16 +32,16 @@ test.describe('homepage', () => {
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Skills' }).click(), 'skills');
     await page.goto('/');
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Contact' }).click(), 'contact', {
-      maxTop: 420,
+      maxTop: 460,
     });
     await page.goto('/');
     await expectHashLinkToReachSection(
       page,
-      () => page.getByRole('link', { name: 'View Case Studies' }).click(),
+      () => page.getByRole('link', { name: 'View Selected Work' }).click(),
       'projects',
     );
 
-    await expect(page.getByRole('link', { name: 'Resume' }).first()).toHaveAttribute('href', '/Kanterman_Resume.pdf');
+    await expect(page.getByRole('link', { name: 'Resume' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'LinkedIn' }).first()).toHaveAttribute(
       'href',
       'https://www.linkedin.com/in/shane-kanterman-4511a2234',
@@ -53,7 +57,7 @@ test.describe('homepage', () => {
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://shanekanterman.dev/');
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      'Portfolio site for Shane Kanterman featuring Linux infrastructure, cloud deployment, and web projects shaped by hands-on operations experience.',
+      'Infrastructure and platform portfolio for Shane Kanterman featuring Linux systems, deployment tooling, ephemeral CI, and hands-on data center operations.',
     );
 
     await expect(page.getByLabel('Site footer')).toContainText('Build');
@@ -109,7 +113,7 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     const titleLinks = page.locator('.project-row-title a');
-    await expect(titleLinks).toHaveCount(4);
+    await expect(titleLinks).toHaveCount(3);
     for (const href of await titleLinks.evaluateAll((links) => links.map((l) => l.getAttribute('href')))) {
       expect(href).toMatch(/^\/projects\/.+/);
     }
@@ -119,6 +123,30 @@ test.describe('homepage', () => {
     await expect(
       page.getByRole('heading', { level: 1, name: 'KanterLabs Homelab Platform' }),
     ).toBeVisible();
+  });
+
+  test('selected work precedes experience and uses the intended project order', async ({ page }) => {
+    await page.goto('/');
+
+    const sectionOrder = await page.locator('main > section').evaluateAll((sections) =>
+      sections.map((section) => section.id).filter(Boolean),
+    );
+    expect(sectionOrder.slice(0, 3)).toEqual(['top', 'projects', 'about']);
+
+    const titles = await page
+      .locator('#projects .project-row-title')
+      .allTextContents();
+    expect(titles.map((title) => title.trim())).toEqual([
+      'KanterLabs Homelab Platform',
+      'Hostlet Self-Hosted Deployment Panel',
+      'Portfolio Infrastructure Deployment',
+    ]);
+
+    await expect(page.getByRole('link', { name: 'Read experience notes' })).toHaveAttribute(
+      'href',
+      '/projects/data-center-operations',
+    );
+    await expect(page.getByText('June 2025 – Present')).toBeVisible();
   });
 
   test('featured case study is visually distinct from supporting rows', async ({ page }) => {

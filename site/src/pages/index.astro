@@ -11,46 +11,48 @@ import { getCollection } from 'astro:content';
 
 const allProjects = await getCollection('projects');
 const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
-const featuredProject = sorted.find((project) => project.data.featured)!;
-const supportingProjects = sorted.filter((project) => !project.data.featured);
+const portfolioProjects = sorted.filter((project) => project.data.kind === 'project');
+const featuredProject = portfolioProjects.find((project) => project.data.featured)!;
+const supportingProjects = portfolioProjects.filter((project) => !project.data.featured);
+const dataCenterExperience = sorted.find((entry) => entry.data.kind === 'experience')!;
 
 const navItems = [
-  { label: 'About', href: '#about' },
-  { label: 'Architecture', href: '#architecture' },
   { label: 'Projects', href: '#projects' },
+  { label: 'Experience', href: '#about' },
+  { label: 'Architecture', href: '#architecture' },
   { label: 'Skills', href: '#skills' },
   { label: 'Contact', href: '#contact' },
 ];
 
 const capabilityGroups = [
   {
-    name: 'Deploy and Operate',
-    description: 'Provision Linux systems, serve applications, and keep deployments understandable and reliable.',
-    items: ['Linux', 'Nginx', 'Cloudflare', 'Proxmox', 'Tailscale', 'PXE Boot'],
+    name: 'Systems and Networking',
+    description: 'Provision, connect, and troubleshoot Linux systems across physical and virtual infrastructure.',
+    items: ['Linux', 'Proxmox', 'Nginx', 'Caddy', 'Cloudflare', 'Tailscale', 'PXE Boot'],
   },
   {
-    name: 'Build and Ship',
-    description: 'Frontend and scripting work tied directly to deployment, automation, and maintainable delivery.',
-    items: ['Astro', 'HTML', 'CSS', 'JavaScript', 'Python', 'Git'],
+    name: 'Platform and Delivery',
+    description: 'Build repeatable delivery paths with isolated CI, container workflows, health checks, and rollback.',
+    items: ['GitHub Actions', 'k3s', 'ARC', 'Docker', 'GHCR', 'Atomic Releases'],
   },
   {
-    name: 'Troubleshoot and Maintain',
-    description: 'Operational habits shaped by real systems work, from hardware issues to deployment workflows.',
-    items: ['GitHub Actions', 'SSH', 'Virtualization', 'Windows', 'Containers'],
+    name: 'Software and Data',
+    description: 'Write the application and automation code that makes infrastructure practical to operate.',
+    items: ['Rust', 'TypeScript', 'Next.js', 'Python', 'PostgreSQL', 'Git', 'Astro'],
   },
 ];
 
 const systemSummary = [
-  { label: 'Edge', value: 'Cloudflare and Caddy handle DNS, TLS, and public routing.' },
-  { label: 'Origin', value: 'An unprivileged Kantercloud LXC serves static files privately.' },
-  { label: 'Application', value: 'Astro ships as a static build with low operational overhead.' },
-  { label: 'Delivery', value: 'GitHub Actions ships atomic releases over ephemeral Tailscale access.' },
+  { label: 'Operations', value: 'Current data center work deploying and troubleshooting production servers.' },
+  { label: 'Platform', value: 'A two-site Proxmox estate with isolated public and private workloads.' },
+  { label: 'Delivery', value: 'Ephemeral CI runners, atomic releases, health checks, and retained rollback paths.' },
+  { label: 'Product', value: 'Rust and Next.js deployment tooling for self-hosted applications.' },
 ];
 
 const heroMetrics = [
-  { value: 'Full strict', label: 'Verified origin TLS' },
-  { value: '5 releases', label: 'Fast retained rollback' },
-  { value: 'Static Astro', label: 'Low-complexity runtime' },
+  { value: '2 sites', label: 'Proxmox platform' },
+  { value: '1–3 runners', label: 'Ephemeral CI capacity' },
+  { value: 'Rust + Next.js', label: 'Hostlet control plane' },
 ];
 
 const profilePoints = [
@@ -66,6 +68,8 @@ const experienceCards = [
     body:
       'Live data center work: rack-and-stack, OS installs (Linux, Windows, Proxmox), PXE imaging, hardware diagnostics, and deployment documentation.',
     period: 'June 2025 – Present',
+    href: `/projects/${dataCenterExperience.id}`,
+    linkLabel: 'Read experience notes',
   },
   {
     eyebrow: 'Southern Connecticut State University',
@@ -73,6 +77,8 @@ const experienceCards = [
     body:
       'Building skills in software engineering, operating systems, and networking. Active member of the university football program.',
     period: 'Sept. 2023 – May 2027',
+    href: '',
+    linkLabel: '',
   },
   {
     eyebrow: 'How I work',
@@ -80,6 +86,8 @@ const experienceCards = [
     body:
       'I prefer simple, reliable systems with clear deployment paths. I care about how software fails, how it is maintained, and how its infrastructure can stay lean without sacrificing reliability.',
     period: '',
+    href: '',
+    linkLabel: '',
   },
 ];
 
@@ -95,7 +103,6 @@ const certifications = [
 const githubUrl = 'https://github.com/ShaneKanterman04';
 const linkedInUrl = 'https://www.linkedin.com/in/shane-kanterman-4511a2234';
 const emailUrl = 'mailto:shanekanterman04@gmail.com';
-const resumeUrl = '/Kanterman_Resume.pdf';
 
 const siteUrl = Astro.site?.toString() ?? 'https://shanekanterman.dev';
 
@@ -106,7 +113,7 @@ const structuredData = [
     name: 'Shane Kanterman',
     url: siteUrl,
       description:
-        'Portfolio site for Shane Kanterman featuring Linux infrastructure, cloud deployment, and web projects with hands-on operations experience.',
+        'Infrastructure and platform portfolio for Shane Kanterman featuring Linux systems, deployment tooling, ephemeral CI, and hands-on data center operations.',
   },
   {
     '@context': 'https://schema.org',
@@ -121,22 +128,26 @@ const structuredData = [
     },
     knowsAbout: [
       'Linux administration',
-      'Cloud deployment',
+      'Platform engineering',
+      'Deployment automation',
+      'Continuous integration',
       'Server deployment',
       'Data center operations',
-      'Infrastructure',
-      'Web development',
-      'Terraform',
+      'Network infrastructure',
+      'Proxmox',
+      'Kubernetes',
+      'Docker',
+      'Rust',
       'Nginx',
     ],
-    jobTitle: 'Computer Science Student',
+    jobTitle: 'Data Center Technician',
   },
 ];
 ---
 
 <BaseLayout
-  title="Shane Kanterman | Linux Infrastructure and Web Projects"
-  description="Portfolio site for Shane Kanterman featuring Linux infrastructure, cloud deployment, and web projects shaped by hands-on operations experience."
+  title="Shane Kanterman | Infrastructure and Platform Projects"
+  description="Infrastructure and platform portfolio for Shane Kanterman featuring Linux systems, deployment tooling, ephemeral CI, and hands-on data center operations."
   image="/og/portfolio-preview.png"
   imageAlt="Shane Kanterman portfolio preview"
   structuredData={structuredData}
@@ -151,39 +162,26 @@ const structuredData = [
       >
         <div>
           <p class="eyebrow hero-reveal hero-reveal-1">
-            Computer Science Student + Data Center Technician
+            Computer Science Student &middot; Data Center Technician
           </p>
           <h1
             class="hero-reveal hero-reveal-2 text-[clamp(2.6rem,4.5vw,4.2rem)] leading-[1.06] tracking-[-0.02em] mb-5 max-w-[14ch] font-extrabold overflow-wrap-break-word text-text-base"
           >
-            Building <span class="gradient-text">Linux infrastructure
-            and web projects</span> that are designed to ship.
+            Building <span class="gradient-text">Linux platforms
+            and deployment tooling</span>&mdash;from bare metal to CI/CD.
           </h1>
           <p class="hero-reveal hero-reveal-3 text-text-muted leading-[1.75] text-[1.04rem] max-w-[48rem]">
-            Computer Science student with hands-on data center operations experience in server
-            deployment, PXE imaging, Linux administration, and cloud infrastructure. Based
-            between Cranford, NJ and New Haven, CT.
+            Computer Science student and current InterServer Data Center Technician working
+            across server provisioning, Linux administration, networking, ephemeral CI, and
+            self-hosted infrastructure.
           </p>
 
           <div class="hero-reveal hero-reveal-4 flex flex-wrap gap-4 mt-8 max-[780px]:flex-col max-[780px]:items-stretch">
             <a class="btn btn-primary" href="#projects">
-              View Case Studies
+              View Selected Work
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
                 <path d="M7 17L17 7" />
                 <path d="M9 7h8v8" />
-              </svg>
-            </a>
-            <a
-              class="btn btn-secondary"
-              href={resumeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Resume
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
             </a>
             <a
@@ -208,7 +206,7 @@ const structuredData = [
         <GlassCard class="hero-reveal hero-reveal-5 sticky top-28 flex flex-col gap-8 p-8 max-[960px]:static" hover={false}>
           <div>
             <h2 class="mb-4 text-text-soft font-mono text-[0.78rem] font-bold tracking-[0.14em] uppercase">
-              How this site runs
+              Proof at a glance
             </h2>
             <ul class="grid gap-4 p-0 list-none">
               {systemSummary.map((item) => (
@@ -237,13 +235,36 @@ const structuredData = [
 
       <AnimatedSection
         class="observe-animate pt-28 pb-8 max-[960px]:pt-[5.25rem] max-[960px]:pb-6 max-[780px]:pt-14 max-[780px]:pb-4"
+        id="projects"
+        delay={1}
+      >
+        <SectionIntro
+          eyebrow="Selected work"
+          title="Platforms and delivery systems built for real operation."
+          body="These case studies focus on the boundaries, failure modes, and release decisions behind the work—not just the finished interface."
+          class="mb-11"
+        />
+
+        <div class="grid gap-5">
+          <ProjectCard project={featuredProject} featured={true} />
+
+          <div class="grid grid-cols-2 gap-5 max-[960px]:grid-cols-1">
+            {supportingProjects.map((project) => (
+              <ProjectCard project={project} />
+            ))}
+          </div>
+        </div>
+      </AnimatedSection>
+
+      <AnimatedSection
+        class="observe-animate pt-28 pb-8 max-[960px]:pt-[5.25rem] max-[960px]:pb-6 max-[780px]:pt-14 max-[780px]:pb-4"
         id="about"
         delay={1}
       >
         <SectionIntro
-          eyebrow="About"
-          title="From data center operations to software delivery."
-          body="I started with physical infrastructure work and carried those habits into software: keep systems simple, deploy them cleanly, and make them maintainable."
+          eyebrow="Experience"
+          title="From production hardware to platform delivery."
+          body="Physical infrastructure work shaped how I approach software: keep systems understandable, deploy them cleanly, and plan for how they fail."
         />
 
         <div
@@ -266,8 +287,8 @@ const structuredData = [
               Where I am headed
             </h3>
             <p class="text-text-muted leading-[1.75] text-[1.04rem] mb-3">
-              Looking for junior software, infrastructure, and platform roles where application
-              work overlaps with Linux, deployment, and operational ownership.
+              Looking for junior infrastructure and platform roles where Linux, networking,
+              deployment automation, and operational ownership meet.
             </p>
             <p class="text-text-muted leading-[1.6] text-[0.96rem]">
               Cranford, NJ and New Haven, CT.
@@ -288,6 +309,12 @@ const structuredData = [
               </div>
               <h3 class="text-[1.12rem] leading-[1.3] font-bold text-text-base m-0">{card.title}</h3>
               <p class="text-text-muted leading-[1.7] text-[0.95rem] m-0">{card.body}</p>
+              {card.href && (
+                <a class="text-link w-fit text-[0.9rem]" href={card.href}>
+                  {card.linkLabel}
+                  <span aria-hidden="true">↗</span>
+                </a>
+              )}
             </GlassCard>
           ))}
         </div>
@@ -373,29 +400,6 @@ const structuredData = [
 
       <AnimatedSection
         class="observe-animate pt-28 pb-8 max-[960px]:pt-[5.25rem] max-[960px]:pb-6 max-[780px]:pt-14 max-[780px]:pb-4"
-        id="projects"
-        delay={1}
-      >
-        <SectionIntro
-          eyebrow="Projects"
-          title="Projects that connect software work to operations and deployment."
-          body="Each case study focuses on the decisions, constraints, and responsibilities behind the work, not just the finished interface."
-          class="mb-11"
-        />
-
-        <div class="grid gap-5">
-          <ProjectCard project={featuredProject} featured={true} />
-
-          <div class="grid grid-cols-2 gap-5 max-[960px]:grid-cols-1">
-            {supportingProjects.map((project) => (
-              <ProjectCard project={project} />
-            ))}
-          </div>
-        </div>
-      </AnimatedSection>
-
-      <AnimatedSection
-        class="observe-animate pt-28 pb-8 max-[960px]:pt-[5.25rem] max-[960px]:pb-6 max-[780px]:pt-14 max-[780px]:pb-4"
         id="skills"
         delay={1}
       >
@@ -441,11 +445,11 @@ const structuredData = [
             <h2
               class="text-[clamp(2rem,4.1vw,3rem)] leading-[1.08] tracking-[-0.02em] mb-5 font-extrabold text-text-base max-[780px]:text-[clamp(1.9rem,8vw,2.6rem)]"
             >
-              Looking for early-career software, infrastructure, and platform opportunities.
+              Looking for early-career infrastructure and platform opportunities.
             </h2>
             <p class="text-text-muted leading-[1.75] text-[1.04rem] mb-3">
-              Most interested in roles where software delivery overlaps with Linux, deployment,
-              and systems ownership.
+              Most interested in roles where Linux systems, networking, deployment automation,
+              and software delivery share the same operational owner.
             </p>
             <p class="text-text-soft text-[0.88rem]">shanekanterman04@gmail.com &middot; Cranford, NJ / New Haven, CT</p>
           </div>
@@ -453,19 +457,6 @@ const structuredData = [
           <div class="contact-link-grid max-[780px]:w-full">
             <a
               class="btn btn-primary max-[780px]:w-full"
-              href={resumeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Resume
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-            </a>
-            <a
-              class="btn btn-secondary max-[780px]:w-full"
               href={emailUrl}
             >
               Email me
@@ -494,7 +485,7 @@ const structuredData = [
   </div>
 
   <script>
-    const sectionIds = ['about', 'architecture', 'projects', 'skills', 'contact'];
+    const sectionIds = ['projects', 'about', 'architecture', 'skills', 'contact'];
     const sectionLinks = Array.from(document.querySelectorAll('[data-nav-link]'));
 
     const setActiveSection = (sectionId) => {
