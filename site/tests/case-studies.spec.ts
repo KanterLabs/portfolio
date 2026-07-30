@@ -140,6 +140,32 @@ test.describe('case studies', () => {
     await expect(dialog).not.toBeVisible();
   });
 
+  test('metadata row has no decorative empty spans and CSS-generated separators', async ({ page }) => {
+    await page.goto('/projects/hostlet');
+
+    const items = page.locator('.case-meta > *');
+    await expect(items).toHaveCount(4);
+
+    const texts = await items.evaluateAll((els) => els.map((el) => (el.textContent ?? '').trim()));
+    for (const text of texts) {
+      expect(text.length, `case-meta item "${text}" must not be empty`).toBeGreaterThan(0);
+    }
+
+    const secondBeforeContent = await items.nth(1).evaluate((el) => getComputedStyle(el, '::before').content);
+    expect(secondBeforeContent).toBe('"·"');
+  });
+
+  test('the stack row renders middot separators between entries', async ({ page }) => {
+    await page.goto('/projects/hostlet');
+
+    const stackItems = page.locator('.stack-list > *');
+    const count = await stackItems.count();
+    expect(count).toBeGreaterThan(1);
+
+    const separatorContent = await stackItems.nth(1).evaluate((el) => getComputedStyle(el, '::before').content);
+    expect(separatorContent).toBe('"·"');
+  });
+
   test('public case-study assets do not expose private network identifiers', async ({
     page,
     request,

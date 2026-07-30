@@ -9,22 +9,29 @@ import rehypeSlug from 'rehype-slug';
 const siteUrl = 'https://shanekanterman.dev';
 
 /**
- * Markdown tables render as display:block scroll containers on narrow
- * screens; a scrollable region must be keyboard-focusable (WCAG 2.1.1,
- * axe scrollable-region-focusable).
+ * Markdown tables pan horizontally on narrow screens. The table itself must
+ * stay `display: table` so thead and tbody resolve one set of column widths,
+ * so the scroll container is a wrapper around it — and a scrollable region
+ * must be keyboard-focusable (WCAG 2.1.1, axe scrollable-region-focusable).
  */
 function rehypeFocusableScrollRegions() {
-  const walk = (node, callback) => {
-    callback(node);
-    (node.children ?? []).forEach((child) => walk(child, callback));
-  };
-  return (tree) => {
-    walk(tree, (node) => {
-      if (node.type === 'element' && node.tagName === 'table') {
-        node.properties = { ...node.properties, tabIndex: 0 };
+  const wrapTables = (node) => {
+    const children = node.children ?? [];
+    children.forEach((child, index) => {
+      if (child.type !== 'element') return;
+      if (child.tagName === 'table') {
+        children[index] = {
+          type: 'element',
+          tagName: 'div',
+          properties: { className: ['table-scroll'], tabIndex: 0 },
+          children: [child],
+        };
+        return;
       }
+      wrapTables(child);
     });
   };
+  return (tree) => wrapTables(tree);
 }
 
 export default defineConfig({

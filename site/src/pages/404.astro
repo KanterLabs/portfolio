@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import GlassCard from '../components/GlassCard.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 
 const siteUrl = Astro.site?.toString() ?? 'https://shanekanterman.dev';
 const pageUrl = new URL('/404/', siteUrl).toString();
@@ -20,25 +19,26 @@ const structuredData = {
   description="The page you requested could not be found. Browse infrastructure and web project case studies instead."
   structuredData={structuredData}
 >
-  <main class="min-h-screen px-4 py-10 flex items-center justify-center" id="main-content">
-    <GlassCard class="w-full max-w-[42rem] p-8 md:p-10 text-center" hover={false}>
-      <div class="flex justify-end mb-5">
-        <ThemeToggle />
+  <div class="page-shell relative z-10 pb-24">
+    <SiteHeader backHref="/" backLabel="Home" />
+
+    <main id="main-content" class="pt-10 max-[780px]:pt-6 min-h-[60vh]">
+      <div class="max-w-[42rem]">
+        <p class="eyebrow">404</p>
+        <h1 class="text-[length:var(--step-title)] leading-[1.05] tracking-[-0.02em] mb-5 font-extrabold text-text-base">
+          Page not found.
+        </h1>
+        <p class="text-text-muted leading-[1.75] text-[1.04rem] mb-8 max-w-[34rem]">
+          The page you requested is not here. You can return to the portfolio homepage, review project case studies, or connect on LinkedIn.
+        </p>
+        <div class="flex flex-wrap gap-4 max-[640px]:flex-col max-[640px]:items-stretch">
+          <a class="btn btn-primary" href="/">Go home</a>
+          <a class="btn btn-secondary" href="/#projects">View projects</a>
+          <a class="btn btn-secondary" href="https://www.linkedin.com/in/shane-kanterman-4511a2234" target="_blank" rel="noopener noreferrer">
+            LinkedIn
+          </a>
+        </div>
       </div>
-      <p class="eyebrow">404</p>
-      <h1 class="text-[clamp(2.2rem,5vw,3.5rem)] leading-[1.05] tracking-[-0.02em] mb-5 font-extrabold text-text-base">
-        Page not found.
-      </h1>
-      <p class="text-text-muted leading-[1.75] text-[1.04rem] mb-8 max-w-[34rem] mx-auto">
-        The page you requested is not here. You can return to the portfolio homepage, review project case studies, or connect on LinkedIn.
-      </p>
-      <div class="flex flex-wrap gap-4 justify-center max-[640px]:flex-col">
-        <a class="btn btn-primary" href="/">Go home</a>
-        <a class="btn btn-secondary" href="/#projects">View projects</a>
-        <a class="btn btn-secondary" href="https://www.linkedin.com/in/shane-kanterman-4511a2234" target="_blank" rel="noopener noreferrer">
-          LinkedIn
-        </a>
-      </div>
-    </GlassCard>
-  </main>
+    </main>
+  </div>
 </BaseLayout>

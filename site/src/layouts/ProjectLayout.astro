@@ -90,27 +90,24 @@ const structuredData = {
     aria-hidden="true"
   ></div>
 
-  <div class="relative z-10 w-[min(calc(100%-2rem),1240px)] mx-auto pb-24">
+  <div class="page-shell relative z-10 pb-24">
     <SiteHeader backHref={returnHref} backLabel={isExperience ? 'Experience' : 'Selected work'} />
 
     <main class="pt-10 max-[780px]:pt-6" id="main-content">
-      <div class="max-w-[860px] mx-auto mb-12 max-[780px]:mb-7">
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-7 max-[780px]:mb-4">
-          <span class="text-text-soft text-[0.78rem] font-semibold tracking-[0.16em] uppercase">
+      <div>
+        <div class="case-meta mb-7 max-[780px]:mb-4">
+          <span class="eyebrow">
             {contentLabel}
           </span>
-          <span class="w-px h-3.5 bg-line-strong" aria-hidden="true"></span>
           <span class="text-text-soft text-[0.82rem]">{formatted}</span>
-          <span class="w-px h-3.5 bg-line-strong" aria-hidden="true"></span>
           <span class:list={['inline-flex items-center gap-1.5 text-[0.8rem] font-medium', statusClass[status]]}>
             <span class="project-status-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
             {statusLabel[status]}
           </span>
-          <span class="w-px h-3.5 bg-line-strong" aria-hidden="true"></span>
           <span class="text-text-soft text-[0.82rem]">~{readingTime} min read</span>
         </div>
 
-        <h1 class="text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.05] tracking-[-0.02em] font-extrabold mb-5 max-w-[22ch] text-text-base max-[780px]:mb-3">
+        <h1 class="text-[length:var(--step-title)] leading-[1.05] tracking-[-0.02em] font-extrabold mb-5 max-w-[22ch] text-text-base [overflow-wrap:break-word]">
           {title}
         </h1>
 
@@ -118,7 +115,7 @@ const structuredData = {
           {summary}
         </p>
 
-        <div class="flex flex-wrap gap-2 mb-8 max-[780px]:mb-5">
+        <div class="stack-list mb-8">
           {stack.map((item) => (
             <StackBadge label={item} />
           ))}
@@ -126,15 +123,15 @@ const structuredData = {
 
         <div class="project-detail-facts mb-8 max-[780px]:mb-5">
           <div>
-            <p class="project-proof-label">Role</p>
+            <p class="field-label">Role</p>
             <p class="project-proof-copy">{role}</p>
           </div>
           <div>
-            <p class="project-proof-label">Scope</p>
+            <p class="field-label">Scope</p>
             <p class="project-proof-copy">{scope}</p>
           </div>
           <div>
-            <p class="project-proof-label">Outcome</p>
+            <p class="field-label">Outcome</p>
             <p class="project-proof-copy">{keyOutcome}</p>
           </div>
         </div>
@@ -153,37 +150,12 @@ const structuredData = {
             ))}
           </div>
         )}
-
-        <div class="mt-8 border-t border-line max-[780px]:mt-6"></div>
       </div>
 
-      <div class="article-body max-w-[860px] mx-auto flex gap-16 items-start">
-        {tocItems.length > 0 && (
-          <aside class="toc-sidebar hidden lg:block w-[200px] flex-shrink-0 sticky top-[8rem] self-start">
-            <p class="text-[0.7rem] font-semibold tracking-[0.14em] uppercase text-text-soft mb-3">
-              On this page
-            </p>
-            <nav aria-label="Table of contents">
-              <ul class="grid gap-0.5 p-0 list-none">
-                {tocItems.map((item) => (
-                  <li>
-                    <a
-                      href={`#${item.slug}`}
-                      class="toc-link block py-1.5 px-2 rounded-md text-[0.82rem] text-text-soft hover:text-text-base transition-colors duration-[180ms] leading-snug"
-                      data-heading={item.slug}
-                    >
-                      {item.text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </aside>
-        )}
-
-        <div class="min-w-0 flex-1">
+      <div class="case-body">
+        <div class="case-prose">
           {tocItems.length > 0 && (
-            <details class="lg:hidden mb-8 glass p-0 overflow-hidden w-full" data-toc-details>
+            <details class="mb-8 glass p-0 overflow-hidden w-full" data-toc-details>
               <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-[0.82rem] font-semibold text-text-muted select-none list-none">
                 <span class="flex items-center gap-2">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -214,13 +186,36 @@ const structuredData = {
             </details>
           )}
 
-          <div class="prose min-w-0 flex-1">
+          <div class="prose">
             <slot />
           </div>
         </div>
+
+        {tocItems.length > 0 && (
+          <aside class="toc-sidebar">
+            <p class="field-label mb-3">
+              On this page
+            </p>
+            <nav aria-label="Table of contents">
+              <ul class="grid gap-0.5 p-0 list-none">
+                {tocItems.map((item) => (
+                  <li>
+                    <a
+                      href={`#${item.slug}`}
+                      class="toc-link block py-1.5 px-2 rounded-md text-[0.82rem] text-text-soft hover:text-text-base transition-colors duration-[180ms] leading-snug"
+                      data-heading={item.slug}
+                    >
+                      {item.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </aside>
+        )}
       </div>
 
-      <div class="max-w-[860px] mx-auto mt-20 pt-8 border-t border-line">
+      <div class="case-footer">
         <a
           href={returnHref}
           class="inline-flex items-center gap-2 min-h-11 text-text-muted hover:text-text-base transition-colors duration-[180ms] font-medium"

@@ -9,15 +9,29 @@ function luminance([r, g, b]: number[]): number {
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 }
 
-function parseColor(color: string): { rgb: number[]; alpha: number } | null {
-  const match = color.match(/rgba?\(([^)]+)\)/);
-  if (!match) return null;
-  const parts = match[1].split(',').map((p) => parseFloat(p));
-  return { rgb: parts.slice(0, 3), alpha: parts.length === 4 ? parts[3] : 1 };
+export function parseColor(color: string): { rgb: number[]; alpha: number } | null {
+  const rgbMatch = color.match(/rgba?\(([^)]+)\)/);
+  if (rgbMatch) {
+    const parts = rgbMatch[1].split(',').map((p) => parseFloat(p));
+    return { rgb: parts.slice(0, 3), alpha: parts.length === 4 ? parts[3] : 1 };
+  }
+
+  // Chrome resolves color-mix(in srgb, ...) to the CSS Color 4 functional
+  // notation `color(srgb r g b [/ a])`, with r/g/b as 0–1 floats rather
+  // than rgb()'s 0–255 integers.
+  const colorFnMatch = color.match(/color\(srgb ([^)]+)\)/);
+  if (colorFnMatch) {
+    const [channels, alphaPart] = colorFnMatch[1].split('/').map((p) => p.trim());
+    const rgb = channels.split(/\s+/).map((p) => parseFloat(p) * 255);
+    const alpha = alphaPart !== undefined ? parseFloat(alphaPart) : 1;
+    return { rgb, alpha };
+  }
+
+  return null;
 }
 
 /** Composite `fg` with alpha over an opaque `bg`. */
-function composite(fg: number[], alpha: number, bg: number[]): number[] {
+export function composite(fg: number[], alpha: number, bg: number[]): number[] {
   return fg.map((c, i) => Math.round(c * alpha + bg[i] * (1 - alpha)));
 }
 
@@ -30,8 +44,11 @@ export function getContrastRatio(foreground: number[], background: number[]): nu
 /**
  * Resolve the effective (composited) background color behind an element by
  * walking up the tree collecting background-colors until one is opaque.
+ * Exported so callers that need to composite an element's own background
+ * (e.g. a bullet marker or a table-row hover state) against the page
+ * beneath it — not just text color against background — can reuse it.
  */
-async function effectiveBackground(page: Page, selector: string): Promise<number[]> {
+export async function effectiveBackground(page: Page, selector: string): Promise<number[]> {
   const stack = await page.evaluate((sel) => {
     const el = document.querySelector(sel);
     if (!el) return null;
