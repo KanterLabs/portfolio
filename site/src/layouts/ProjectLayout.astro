@@ -10,7 +10,11 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, stack, status, date, links, heroImage, socialImage, role, scope, keyOutcome } = project.data;
+const { title, summary, stack, status, date, links, heroImage, socialImage, role, scope, keyOutcome, kind } = project.data;
+const isExperience = kind === 'experience';
+const contentLabel = isExperience ? 'Experience Notes' : 'Case Study';
+const returnHref = isExperience ? '/#about' : '/#projects';
+const returnLabel = isExperience ? 'Back to experience' : 'Back to selected work';
 
 const formatted = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -87,13 +91,13 @@ const structuredData = {
   ></div>
 
   <div class="relative z-10 w-[min(calc(100%-2rem),1240px)] mx-auto pb-24">
-    <SiteHeader backHref="/#projects" backLabel="All projects" />
+    <SiteHeader backHref={returnHref} backLabel={isExperience ? 'Experience' : 'Selected work'} />
 
     <main class="pt-10 max-[780px]:pt-6" id="main-content">
       <div class="max-w-[860px] mx-auto mb-12 max-[780px]:mb-7">
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-7 max-[780px]:mb-4">
           <span class="text-text-soft text-[0.78rem] font-semibold tracking-[0.16em] uppercase">
-            Case Study
+            {contentLabel}
           </span>
           <span class="w-px h-3.5 bg-line-strong" aria-hidden="true"></span>
           <span class="text-text-soft text-[0.82rem]">{formatted}</span>
@@ -218,13 +222,13 @@ const structuredData = {
 
       <div class="max-w-[860px] mx-auto mt-20 pt-8 border-t border-line">
         <a
-          href="/#projects"
+          href={returnHref}
           class="inline-flex items-center gap-2 min-h-11 text-text-muted hover:text-text-base transition-colors duration-[180ms] font-medium"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
-          Back to all projects
+          {returnLabel}
         </a>
       </div>
     </main>

@@ -5,21 +5,29 @@ const caseStudies = [
     path: '/projects/multi-node-portfolio',
     title: 'Portfolio Infrastructure Deployment | Shane Kanterman',
     heading: 'Portfolio Infrastructure Deployment',
+    backLabel: 'Back to selected work',
+    backHref: '/#projects',
   },
   {
     path: '/projects/kanterlabs-homelab',
     title: 'KanterLabs Homelab Platform | Shane Kanterman',
     heading: 'KanterLabs Homelab Platform',
+    backLabel: 'Back to selected work',
+    backHref: '/#projects',
   },
   {
     path: '/projects/hostlet',
     title: 'Hostlet Self-Hosted Deployment Panel | Shane Kanterman',
     heading: 'Hostlet Self-Hosted Deployment Panel',
+    backLabel: 'Back to selected work',
+    backHref: '/#projects',
   },
   {
     path: '/projects/data-center-operations',
     title: 'InterServer Data Center Operations | Shane Kanterman',
     heading: 'InterServer Data Center Operations',
+    backLabel: 'Back to experience',
+    backHref: '/#about',
   },
 ];
 
@@ -33,7 +41,10 @@ test.describe('case studies', () => {
       await expect(page.getByText('Role').first()).toBeVisible();
       await expect(page.getByText('Scope').first()).toBeVisible();
       await expect(page.getByText('Outcome').first()).toBeVisible();
-      await expect(page.getByRole('link', { name: 'Back to all projects' })).toHaveAttribute('href', '/#projects');
+      await expect(page.getByRole('link', { name: entry.backLabel })).toHaveAttribute(
+        'href',
+        entry.backHref,
+      );
     });
   }
 
@@ -47,14 +58,36 @@ test.describe('case studies', () => {
     await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
   });
 
-  test('back to all projects returns to homepage projects anchor', async ({ page }) => {
+  test('back to selected work returns to homepage projects anchor', async ({ page }) => {
     await page.goto('/projects/kanterlabs-homelab');
-    await page.getByRole('link', { name: 'Back to all projects' }).click();
+    await page.getByRole('link', { name: 'Back to selected work' }).click();
 
     await expect
       .poll(async () => page.evaluate(() => window.location.hash))
       .toBe('#projects');
     await expect(page).toHaveURL(/#projects$/);
+  });
+
+  test('project source links use canonical repositories', async ({ page }) => {
+    await page.goto('/projects/hostlet');
+    await expect(page.getByRole('link', { name: 'View Hostlet repo' })).toHaveAttribute(
+      'href',
+      'https://github.com/KanterLabs/hostlet-core',
+    );
+
+    await page.goto('/projects/multi-node-portfolio');
+    await expect(page.getByRole('link', { name: 'View portfolio repo' })).toHaveAttribute(
+      'href',
+      'https://github.com/KanterLabs/portfolio',
+    );
+  });
+
+  test('data center experience reflects current employment', async ({ page }) => {
+    await page.goto('/projects/data-center-operations');
+
+    await expect(page.getByText('Experience Notes')).toBeVisible();
+    await expect(page.getByText(/since June 2025/)).toBeVisible();
+    await expect(page.getByText(/June through August 2025/)).toHaveCount(0);
   });
 
   test('legacy homelab route redirects to the new case study', async ({ page }) => {
