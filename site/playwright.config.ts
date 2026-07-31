@@ -7,7 +7,10 @@ export default defineConfig({
     timeout: 5_000,
   },
   fullyParallel: true,
-  reporter: [['list']],
+  // One retry so trace-on-first-retry can actually capture a trace, and an
+  // HTML report CI can upload on failure.
+  retries: 1,
+  reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: 'http://127.0.0.1:4321',
     trace: 'on-first-retry',

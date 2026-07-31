@@ -8,14 +8,18 @@ test.describe('homepage', () => {
     await page.goto('/');
     const primaryNav = page.locator('nav[aria-label="Primary"]');
 
-    await expect(page).toHaveTitle('Shane Kanterman | Linux Infrastructure and Web Projects');
-    await expect(page.getByRole('heading', { name: 'Building Linux infrastructure and web projects that are designed to ship.' })).toBeVisible();
+    await expect(page).toHaveTitle('Shane Kanterman | Infrastructure and Platform Projects');
+    await expect(
+      page.getByRole('heading', {
+        name: 'Building Linux platforms and deployment tooling—from bare metal to CI/CD.',
+      }),
+    ).toBeVisible();
     await expect(
       page.getByRole('heading', { level: 3, name: 'KanterLabs Homelab Platform' }),
     ).toBeVisible();
     await expect(page.getByText('Featured case study')).toBeVisible();
 
-    await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'About' }).click(), 'about');
+    await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Experience' }).click(), 'about');
     await page.goto('/');
     await expectHashLinkToReachSection(
       page,
@@ -28,16 +32,16 @@ test.describe('homepage', () => {
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Skills' }).click(), 'skills');
     await page.goto('/');
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Contact' }).click(), 'contact', {
-      maxTop: 420,
+      maxTop: 460,
     });
     await page.goto('/');
     await expectHashLinkToReachSection(
       page,
-      () => page.getByRole('link', { name: 'View Case Studies' }).click(),
+      () => page.getByRole('link', { name: 'View Selected Work' }).click(),
       'projects',
     );
 
-    await expect(page.getByRole('link', { name: 'Resume' }).first()).toHaveAttribute('href', '/Kanterman_Resume.pdf');
+    await expect(page.getByRole('link', { name: 'Resume' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'LinkedIn' }).first()).toHaveAttribute(
       'href',
       'https://www.linkedin.com/in/shane-kanterman-4511a2234',
@@ -53,7 +57,7 @@ test.describe('homepage', () => {
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://shanekanterman.dev/');
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      'Portfolio site for Shane Kanterman featuring Linux infrastructure, cloud deployment, and web projects shaped by hands-on operations experience.',
+      'Infrastructure and platform portfolio for Shane Kanterman featuring Linux systems, deployment tooling, ephemeral CI, and hands-on data center operations.',
     );
 
     await expect(page.getByLabel('Site footer')).toContainText('Build');
@@ -78,6 +82,121 @@ test.describe('homepage', () => {
     );
     await expectNoHorizontalOverflow(page);
     await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
+  });
+
+  test('every case-study row after the first has a divider line', async ({ page }) => {
+    await page.goto('/');
+
+    const rows = page.locator('#projects .project-row');
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(2);
+
+    for (let i = 0; i < count; i += 1) {
+      const border = await rows.nth(i).evaluate((el) => {
+        const style = getComputedStyle(el);
+        const alpha = style.borderTopColor.match(/rgba?\(([^)]+)\)/)?.[1].split(',')[3];
+        return {
+          width: parseFloat(style.borderTopWidth),
+          style: style.borderTopStyle,
+          alpha: alpha === undefined ? 1 : parseFloat(alpha),
+        };
+      });
+
+      if (i === 0) continue; // the featured row leads the list, no divider
+      expect(border.width, `row ${i} divider width`).toBeGreaterThanOrEqual(1);
+      expect(border.style, `row ${i} divider style`).toBe('solid');
+      expect(border.alpha, `row ${i} divider visibility`).toBeGreaterThan(0);
+    }
+  });
+
+  test('case-study titles link to their case studies', async ({ page }) => {
+    await page.goto('/');
+
+    const titleLinks = page.locator('.project-row-title a');
+    await expect(titleLinks).toHaveCount(3);
+    for (const href of await titleLinks.evaluateAll((links) => links.map((l) => l.getAttribute('href')))) {
+      expect(href).toMatch(/^\/projects\/.+/);
+    }
+
+    await titleLinks.first().click();
+    await expect(page).toHaveURL(/\/projects\/kanterlabs-homelab\/?$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'KanterLabs Homelab Platform' }),
+    ).toBeVisible();
+  });
+
+  test('selected work precedes experience and uses the intended project order', async ({ page }) => {
+    await page.goto('/');
+
+    const sectionOrder = await page.locator('main > section').evaluateAll((sections) =>
+      sections.map((section) => section.id).filter(Boolean),
+    );
+    expect(sectionOrder.slice(0, 3)).toEqual(['top', 'projects', 'about']);
+
+    const titles = await page
+      .locator('#projects .project-row-title')
+      .allTextContents();
+    expect(titles.map((title) => title.trim())).toEqual([
+      'KanterLabs Homelab Platform',
+      'Hostlet Self-Hosted Deployment Panel',
+      'Portfolio Infrastructure Deployment',
+    ]);
+
+    await expect(page.getByRole('link', { name: 'Read experience notes' })).toHaveAttribute(
+      'href',
+      '/projects/data-center-operations',
+    );
+    await expect(page.getByText('June 2025 – Present')).toBeVisible();
+  });
+
+  test('featured case study is visually distinct from supporting rows', async ({ page }) => {
+    await page.goto('/');
+
+    const featured = page.locator('.project-row-featured');
+    await expect(featured).toHaveCount(1);
+    await expect(featured.locator('.project-row-outcome')).toBeVisible();
+
+    const accent = await featured.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { width: parseFloat(style.borderLeftWidth), style: style.borderLeftStyle };
+    });
+    expect(accent.width).toBeGreaterThanOrEqual(2);
+    expect(accent.style).toBe('solid');
+
+    const featuredTitle = await featured
+      .locator('.project-row-title')
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    const supportingTitle = await page
+      .locator('.project-row:not(.project-row-featured) .project-row-title')
+      .first()
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    expect(featuredTitle).toBeGreaterThan(supportingTitle * 1.2);
+  });
+
+  test('editorial CTAs are left-aligned, not centred in their box', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'mobile is where the full-width box makes centring visible');
+
+    await page.goto('/');
+
+    const heroParagraph = page.locator('.hero-surface p').first();
+    const heroParagraphBox = await heroParagraph.boundingBox();
+    expect(heroParagraphBox).not.toBeNull();
+
+    const heroCta = page.getByRole('link', { name: 'View Selected Work' });
+    await expect(heroCta).toHaveCSS('justify-content', 'flex-start');
+    const heroCtaBox = await heroCta.boundingBox();
+    expect(heroCtaBox).not.toBeNull();
+    expect(Math.abs(heroCtaBox!.x - heroParagraphBox!.x)).toBeLessThanOrEqual(2);
+
+    const contactCta = page.getByRole('link', { name: 'Email me' });
+    await contactCta.scrollIntoViewIfNeeded();
+    await expect(contactCta).toHaveCSS('justify-content', 'flex-start');
+    const contactParagraph = page.locator('#contact p').first();
+    const contactParagraphBox = await contactParagraph.boundingBox();
+    const contactCtaBox = await contactCta.boundingBox();
+    expect(contactParagraphBox).not.toBeNull();
+    expect(contactCtaBox).not.toBeNull();
+    expect(Math.abs(contactCtaBox!.x - contactParagraphBox!.x)).toBeLessThanOrEqual(2);
   });
 
   test('theme follows system preference and persists manual selection', async ({ page, isMobile }) => {

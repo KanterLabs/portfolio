@@ -15,6 +15,10 @@ pnpm-debug.log*
 # Playwright output
 test-results/
 playwright-report/
+/*.png
+
+# UI iteration review screenshots (artifacts, not baselines)
+.ui-iterate/
 
 
 # environment variables

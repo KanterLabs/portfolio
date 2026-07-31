@@ -8,6 +8,32 @@ import rehypeSlug from 'rehype-slug';
 
 const siteUrl = 'https://shanekanterman.dev';
 
+/**
+ * Markdown tables pan horizontally on narrow screens. The table itself must
+ * stay `display: table` so thead and tbody resolve one set of column widths,
+ * so the scroll container is a wrapper around it — and a scrollable region
+ * must be keyboard-focusable (WCAG 2.1.1, axe scrollable-region-focusable).
+ */
+function rehypeFocusableScrollRegions() {
+  const wrapTables = (node) => {
+    const children = node.children ?? [];
+    children.forEach((child, index) => {
+      if (child.type !== 'element') return;
+      if (child.tagName === 'table') {
+        children[index] = {
+          type: 'element',
+          tagName: 'div',
+          properties: { className: ['table-scroll'], tabIndex: 0 },
+          children: [child],
+        };
+        return;
+      }
+      wrapTables(child);
+    });
+  };
+  return (tree) => wrapTables(tree);
+}
+
 export default defineConfig({
   site: siteUrl,
   redirects: {
@@ -19,6 +45,7 @@ export default defineConfig({
   integrations: [
     mdx({
       rehypePlugins: [
+        rehypeFocusableScrollRegions,
         rehypeSlug,
         [
           rehypeAutolinkHeadings,
@@ -26,8 +53,7 @@ export default defineConfig({
             behavior: 'append',
             properties: {
               className: ['heading-anchor'],
-              ariaHidden: 'true',
-              tabIndex: -1,
+              ariaLabel: 'Link to this section',
             },
             content: {
               type: 'element',
@@ -45,6 +71,15 @@ export default defineConfig({
     shikiConfig: {
       theme: 'github-dark-dimmed',
       wrap: false,
+      transformers: [
+        {
+          // The <code> element is the horizontal scroll container
+          // (.prose pre code) — same WCAG 2.1.1 requirement as tables.
+          code(node) {
+            node.properties.tabindex = '0';
+          },
+        },
+      ],
     },
   },
   vite: {

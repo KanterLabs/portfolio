@@ -13,6 +13,7 @@ const projects = defineCollection({
       role: z.string(),
       scope: z.string(),
       keyOutcome: z.string(),
+      kind: z.enum(['project', 'experience']).default('project'),
       featured: z.boolean().default(false),
       order: z.number(),
       stack: z.array(z.string()),

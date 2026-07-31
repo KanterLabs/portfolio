@@ -6,7 +6,8 @@ export async function expectHashLinkToReachSection(
   sectionId: string,
   options: { maxTop?: number; minTop?: number } = {},
 ) {
-  const { maxTop = 220, minTop = 0 } = options;
+  // Default budget: --header-offset (7rem = 112px) plus a small buffer.
+  const { maxTop = 140, minTop = 0 } = options;
 
   await trigger();
   await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe(`#${sectionId}`);
@@ -31,6 +32,16 @@ export async function expectHashLinkToReachSection(
   expect(top).not.toBeNull();
   expect(top!).toBeGreaterThanOrEqual(minTop);
   expect(top!).toBeLessThanOrEqual(maxTop);
+
+  // The section must land clear of the sticky header, not behind it.
+  const headerBottom = await page.evaluate(() => {
+    const header = document.querySelector('[data-site-header] .header-inner');
+    return header ? Math.round(header.getBoundingClientRect().bottom) : 0;
+  });
+  expect(
+    top!,
+    `section #${sectionId} top ${top} is behind the sticky header (bottom ${headerBottom})`
+  ).toBeGreaterThanOrEqual(headerBottom - 1);
 }
 
 export async function expectNoHorizontalOverflow(page: Page) {

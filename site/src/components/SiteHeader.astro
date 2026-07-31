@@ -21,24 +21,24 @@ const {
 } = Astro.props;
 ---
 
-<header class="site-header sticky top-0 z-20" id={home ? 'header' : undefined} data-site-header>
+<header class="site-header sticky top-0 z-20" data-site-header>
   <div
     class="header-inner flex items-center justify-between gap-4 py-5 border-b border-transparent transition-[background-color,border-color,padding] duration-[180ms] ease-out"
   >
-    <a class="inline-flex items-center gap-2.5 min-w-0" href={home ? '#top' : '/'} aria-label="Shane Kanterman home">
+    <a class="inline-flex items-center gap-2.5 min-w-0 min-h-11" href={home ? '#top' : '/'} aria-label="Shane Kanterman home">
       <strong class="text-[0.95rem] leading-tight text-text-base font-semibold">Shane Kanterman</strong>
       <span class="text-[0.82rem] leading-tight text-text-soft max-[780px]:hidden">
-        Infrastructure and Web Projects
+        Infrastructure and Platform Projects
       </span>
     </a>
 
     {home ? (
-      <>
+      <div class="flex items-center gap-6 max-[780px]:gap-2">
         <nav class="flex items-center gap-6 max-[780px]:hidden" aria-label="Primary">
           {navItems.map((item) => (
             <a
               href={item.href}
-              class="nav-link text-[0.9rem] text-text-muted hover:text-text-base transition-colors duration-[180ms]"
+              class="nav-link py-1 text-[0.9rem] text-text-muted hover:text-text-base transition-colors duration-[180ms]"
               data-nav-link={item.href.replace('#', '')}
             >
               {item.label}
@@ -58,20 +58,20 @@ const {
           <span class="sr-only">Toggle navigation</span>
         </button>
         <ThemeToggle />
-      </>
+      </div>
     ) : (
-      <>
+      <div class="flex items-center gap-6 max-[780px]:gap-2">
         <a
           href={backHref}
-          class="inline-flex items-center gap-2 text-text-muted hover:text-text-base transition-colors duration-[180ms] text-sm font-medium"
+          class="inline-flex items-center gap-2 min-h-11 text-text-muted hover:text-text-base transition-colors duration-[180ms] text-sm font-medium"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
           {backLabel}
         </a>
         <ThemeToggle />
-      </>
+      </div>
     )}
   </div>
 
@@ -85,7 +85,7 @@ const {
       {navItems.map((item) => (
         <a
           href={item.href}
-          class="nav-link block px-4 py-2.5 rounded-xl text-text-muted hover:text-text-base hover:bg-[rgba(255,255,255,0.04)] transition-colors duration-[180ms] text-[0.95rem]"
+          class="nav-link flex items-center min-h-11 px-4 py-2 rounded-xl text-text-muted hover:text-text-base hover:bg-[rgba(255,255,255,0.04)] transition-colors duration-[180ms] text-[0.95rem]"
           data-nav-link={item.href.replace('#', '')}
         >
           {item.label}
@@ -94,3 +94,92 @@ const {
     </nav>
   )}
 </header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+
+  if (header) {
+    let scrollFrame = 0;
+
+    const syncHeader = () => {
+      header.classList.toggle('is-scrolled', window.scrollY > 12);
+      scrollFrame = 0;
+    };
+
+    const requestHeaderSync = () => {
+      if (scrollFrame !== 0) return;
+      scrollFrame = window.requestAnimationFrame(syncHeader);
+    };
+
+    syncHeader();
+    window.addEventListener('scroll', requestHeaderSync, { passive: true });
+
+    const mobileToggle = header.querySelector<HTMLButtonElement>('.mobile-toggle');
+    const mobileNav = header.querySelector<HTMLElement>('[data-mobile-nav]');
+    // Complement of Tailwind's max-[780px] (= width < 780px)
+    const desktopBreakpoint = window.matchMedia('(width >= 780px)');
+
+    if (mobileToggle && mobileNav) {
+      const iconBars = mobileToggle.querySelectorAll<HTMLElement>('span:not(.sr-only)');
+
+      const renderMenuState = (open: boolean) => {
+        mobileToggle.setAttribute('aria-expanded', String(open));
+        mobileNav.classList.toggle('is-open', open);
+
+        if (open) {
+          iconBars[0]?.style.setProperty('transform', 'translateY(8px) rotate(45deg)');
+          iconBars[1]?.style.setProperty('opacity', '0');
+          iconBars[2]?.style.setProperty('transform', 'translateY(-8px) rotate(-45deg)');
+        } else {
+          iconBars[0]?.style.removeProperty('transform');
+          iconBars[1]?.style.removeProperty('opacity');
+          iconBars[2]?.style.removeProperty('transform');
+        }
+      };
+
+      const closeMenu = (restoreFocus = true) => {
+        renderMenuState(false);
+        if (restoreFocus) mobileToggle.focus();
+      };
+
+      renderMenuState(false);
+
+      mobileToggle.addEventListener('click', () => {
+        const shouldOpen = mobileToggle.getAttribute('aria-expanded') !== 'true';
+        renderMenuState(shouldOpen);
+
+        if (shouldOpen) {
+          mobileNav.querySelector('a')?.focus();
+        }
+      });
+
+      mobileNav.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          closeMenu(false);
+        });
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && mobileToggle.getAttribute('aria-expanded') === 'true') {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener('click', (event) => {
+        if (
+          mobileToggle.getAttribute('aria-expanded') === 'true' &&
+          event.target instanceof Node &&
+          !header.contains(event.target)
+        ) {
+          closeMenu(false);
+        }
+      });
+
+      desktopBreakpoint.addEventListener('change', (event) => {
+        if (event.matches) {
+          closeMenu(false);
+        }
+      });
+    }
+  }
+</script>

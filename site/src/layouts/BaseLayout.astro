@@ -37,7 +37,7 @@ const jsonLdItems = structuredData
 ---
 
 <!doctype html>
-<html lang="en" class="no-js">
+<html lang="en" class="no-js" data-theme={theme === 'dark' ? 'dark' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -87,12 +87,16 @@ const jsonLdItems = structuredData
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const sections = document.querySelectorAll<HTMLElement>('.observe-animate');
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-        if (sections.length === 0 || prefersReducedMotion || !('IntersectionObserver' in window)) {
+        const revealAll = () => {
           sections.forEach((section) => {
             section.classList.add('visible');
           });
+        };
+
+        if (sections.length === 0 || reducedMotionQuery.matches || !('IntersectionObserver' in window)) {
+          revealAll();
           return;
         }
 
@@ -109,6 +113,13 @@ const jsonLdItems = structuredData
 
         sections.forEach((section) => {
           observer.observe(section);
+        });
+
+        // Honor an OS-level reduced-motion switch mid-session too.
+        reducedMotionQuery.addEventListener('change', (event) => {
+          if (!event.matches) return;
+          observer.disconnect();
+          revealAll();
         });
       });
     </script>
