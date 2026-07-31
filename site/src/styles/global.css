@@ -15,7 +15,7 @@
   --color-bg-elevated: #121514;
   --color-text-base: #e6e8e7;
   --color-text-muted: #9aa3a0;
-  --color-text-soft: #6b736f;
+  --color-text-soft: #78837d; /* 4.9:1 on --color-bg; keep AA for small text */
   --color-accent: #8fb8a3;
   --color-accent-strong: #aecbbb;
   --color-line: rgba(255, 255, 255, 0.08);
@@ -31,12 +31,30 @@
   --line-strong: rgba(255, 255, 255, 0.16);
   --accent-color: #8fb8a3;
   --accent-ink: #0c0e0d;
-  --shadow: none;
-  --shadow-hover: none;
+  /* Sticky header ≈85px, plus the 20px translateY of the .observe-animate
+     reveal — anchor scrolls are computed from the pre-reveal rect, so the
+     section settles 20px higher than the scroll target. */
+  --header-offset: 7rem;
   --radius-lg: 20px;
   --radius-md: 16px;
   --radius-sm: 10px;
   --transition: 180ms ease;
+
+  /* One type ramp, shared by the homepage and the case-study layout. */
+  --step-display: clamp(2.7rem, 7vw, 5.2rem); /* homepage hero h1 only */
+  --step-title: clamp(2.4rem, 6.6vw, 3.4rem); /* case-study h1, 404 h1, contact h2 */
+  --step-section: clamp(1.8rem, 4.1vw, 2.5rem); /* homepage section h2 */
+  --step-heading: clamp(1.55rem, 3vw, 2.1rem); /* prose h2 */
+
+  /* One section rhythm, shared by the homepage and the case-study layout. */
+  --space-section: 4.5rem;
+}
+
+@media (width < 780px) {
+  :root {
+    --step-display: clamp(2.65rem, 13vw, 4rem);
+    --space-section: 3rem;
+  }
 }
 
 *,
@@ -162,25 +180,52 @@ select {
   border-color: rgba(143, 184, 163, 0.5);
 }
 
-/* ── Editorial layout primitives ── */
+/* ── Shared page frame ── */
 
-.editorial-shell {
+.page-shell {
   width: min(calc(100% - 2.5rem), 44rem);
   margin-inline: auto;
 }
 
+@media (width >= 960px) {
+  .page-shell {
+    width: min(calc(100% - 4rem), 1120px);
+  }
+}
+
+/* ── Editorial layout primitives ── */
+
 .section-block {
   padding-block: 4.5rem;
   border-top: 1px solid var(--line);
-  scroll-margin-top: 4.5rem;
+  scroll-margin-top: var(--header-offset);
 }
 
 .eyebrow {
   margin: 0 0 0.9rem;
-  color: #78837d;
+  color: var(--color-text-soft);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* One data-label style, shared by every "ROLE / SCOPE / OUTCOME"-style
+   micro-label on the homepage and in a case study. No margin here — this
+   rule is unlayered and would beat Tailwind's `mb-*` utilities (which live
+   in @layer utilities), silently clobbering every call site's spacing.
+   Preflight already zeroes margins on headings/paragraphs, so callers that
+   want a gap add their own `mb-*`. */
+.field-label,
+.project-proof-label,
+.system-summary-label,
+.system-node-label,
+.project-row-outcome-label,
+.label-row-term {
+  color: var(--color-text-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -209,26 +254,17 @@ select {
   padding: 5rem 0 4.5rem;
 }
 
-.editorial-shell .font-mono {
-  font-family: var(--font-family-sans);
-}
-
-.editorial-shell .hero-surface::before {
-  display: none;
-}
-
 .editorial-shell .hero-surface > div:first-child {
   max-width: 42rem;
 }
 
-.editorial-shell .hero-surface > .glass,
-.editorial-shell .proof-strip {
+.editorial-shell .hero-surface > .glass {
   display: none;
 }
 
 .editorial-shell .hero-surface h1 {
   max-width: none;
-  font-size: clamp(2.7rem, 7vw, 5.2rem);
+  font-size: var(--step-display);
   line-height: 1.02;
   letter-spacing: -0.055em;
 }
@@ -254,10 +290,16 @@ select {
   color: var(--accent-color);
 }
 
+.editorial-shell .hero-surface .btn,
+.editorial-shell #contact .btn {
+  justify-content: flex-start;
+  text-align: left;
+}
+
 .editorial-shell > main > .observe-animate {
-  padding: 4.5rem 0;
+  padding: var(--space-section) 0;
   border-top: 1px solid var(--line);
-  scroll-margin-top: 4.5rem;
+  scroll-margin-top: var(--header-offset);
 }
 
 .editorial-shell .observe-animate > .grid,
@@ -273,7 +315,12 @@ select {
   background: transparent;
 }
 
-.editorial-shell #about .glass:first-child {
+/* Only the literal first card of the section (the bio row) skips the rule,
+   so it doesn't duplicate the section's own top border. The experience
+   3-up row and the certifications row are later rows in the same section,
+   not the section's first item, so their first card keeps the default
+   .glass border-top and the hairline runs the full width of the row. */
+.editorial-shell #about > .grid:nth-of-type(2) > .glass:first-child {
   border-top: none;
 }
 
@@ -351,17 +398,9 @@ select {
   color: var(--color-text-base);
 }
 
-@media (max-width: 780px) {
+@media (width < 780px) {
   .editorial-shell .hero-surface {
     padding: 3.5rem 0 3rem;
-  }
-
-  .editorial-shell .hero-surface h1 {
-    font-size: clamp(2.65rem, 13vw, 4rem);
-  }
-
-  .editorial-shell > main > .observe-animate {
-    padding: 3rem 0;
   }
 
   .editorial-shell #about .grid.grid-cols-3 .glass,
@@ -394,11 +433,6 @@ select {
 }
 
 .label-row-term {
-  color: #6b736f;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   padding-top: 0.15rem;
 }
 
@@ -434,14 +468,6 @@ select {
 .system-summary-row:last-child {
   padding-bottom: 0;
   border-bottom: none;
-}
-
-.system-summary-label {
-  color: #6b736f;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 .system-summary-copy {
@@ -560,13 +586,6 @@ select {
   line-height: 1.5;
 }
 
-.system-node-label {
-  color: #6b736f;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
 
 .project-meta-badge {
   display: inline-flex;
@@ -590,8 +609,51 @@ select {
   padding-top: 0;
 }
 
+/* The supporting projects sit in a nested wrapper, so their first row is
+   also a :first-child — but it follows the featured row in the rendered
+   list and must keep its divider. */
+#projects .grid > .grid > .project-row:first-child {
+  border-top: 1px solid var(--line);
+  padding-top: 2rem;
+}
+
+/* The featured row breaks the flat list on purpose: an accent rule down
+   the left edge, accent eyebrow, larger headline, and the case study's
+   outcome pulled into the row. */
 .project-row-featured {
   padding-bottom: 2.5rem;
+  padding-left: 1.75rem;
+  border-left: 2px solid var(--accent-color);
+}
+
+.project-row-featured .eyebrow {
+  color: var(--accent-color);
+}
+
+.project-row-outcome {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  margin: 1.1rem 0 0;
+  max-width: 42rem;
+  color: var(--color-text-base);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.project-row-outcome-label {
+  flex: none;
+}
+
+@media (width < 780px) {
+  .project-row-featured {
+    padding-left: 1.1rem;
+  }
+
+  .project-row-outcome {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
 }
 
 .project-row-header {
@@ -628,7 +690,18 @@ select {
 }
 
 .project-row-featured .project-row-title {
-  font-size: 1.7rem;
+  font-size: clamp(1.8rem, 2.6vw, 2.3rem);
+}
+
+.project-row-title-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.project-row-title-link:hover,
+.project-row-title-link:focus-visible {
+  color: var(--accent-color);
 }
 
 .project-row-summary {
@@ -640,7 +713,7 @@ select {
 
 .project-row-stack {
   margin: 0.85rem 0 1rem;
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-size: 0.82rem;
 }
 
@@ -759,20 +832,12 @@ select {
 .project-detail-facts > div,
 .proof-inline-row {
   display: grid;
+  align-content: start;
   gap: 0.35rem;
   padding: 1rem;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: transparent;
-}
-
-.project-proof-label {
-  color: #6b736f;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin: 0;
 }
 
 .project-proof-copy {
@@ -784,6 +849,107 @@ select {
 
 .proof-inline-row {
   padding: 0.95rem 1rem;
+}
+
+/* ── Case-study layout ── */
+
+.case-body {
+  border-top: 1px solid var(--line);
+  margin-top: var(--space-section);
+  padding-top: var(--space-section);
+}
+
+.case-footer {
+  border-top: 1px solid var(--line);
+  margin-top: var(--space-section);
+  padding-top: var(--space-section);
+}
+
+.case-prose {
+  min-width: 0;
+}
+
+.toc-sidebar {
+  display: none;
+}
+
+[data-toc-details] {
+  display: block;
+}
+
+@media (width >= 960px) {
+  .case-body {
+    display: grid;
+    grid-template-columns: minmax(0, 42rem) 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .toc-sidebar {
+    display: block;
+    width: 14rem;
+    margin-left: auto;
+    position: sticky;
+    top: var(--header-offset);
+    align-self: start;
+  }
+
+  [data-toc-details] {
+    display: none;
+  }
+}
+
+/* Metadata row: the separator lives in the column gutter (absolutely
+   positioned, offset by half the gap) rather than travelling with the
+   following item. That way a wrapped line's first item starts flush on
+   the shared left edge instead of dangling a dot ahead of it — the
+   container clips anything that lands outside its own box. */
+.case-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.9rem;
+  row-gap: 0.35rem;
+  overflow: clip;
+}
+
+.case-meta > * {
+  margin: 0;
+  position: relative;
+}
+
+.case-meta > * + *::before {
+  content: '·';
+  position: absolute;
+  left: -0.5rem;
+  color: var(--color-text-soft);
+}
+
+/* Stack lists read as a list, not a run-on sentence. Same gutter-separator
+   treatment as .case-meta, so a wrapped entry never opens a line with a
+   stray middot at the shared left edge. */
+.stack-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 1rem;
+  row-gap: 0.4rem;
+  overflow: clip;
+  color: var(--color-text-soft);
+  font-size: 0.82rem;
+}
+
+.stack-list > * {
+  position: relative;
+  color: inherit;
+  font-size: inherit;
+}
+
+.stack-list > * + *::before {
+  content: '·';
+  position: absolute;
+  left: -0.55rem;
+  color: var(--color-text-soft);
 }
 
 .contact-link-grid {
@@ -831,11 +997,11 @@ select {
 }
 
 .project-status-archived {
-  color: #6b736f;
+  color: var(--color-text-soft);
 }
 
 .project-status-archived .project-status-dot {
-  background: #6b736f;
+  background: var(--color-text-soft);
 }
 
 .certification-row {
@@ -846,7 +1012,7 @@ select {
 .site-footer {
   padding: 4.5rem 1rem 1.5rem;
   text-align: center;
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-size: 0.88rem;
 }
 
@@ -857,7 +1023,7 @@ select {
 .site-footer-build {
   margin-top: 0.35rem;
   font-size: 0.8rem;
-  color: #565e59;
+  color: var(--color-text-soft);
 }
 
 .observe-animate {
@@ -897,13 +1063,54 @@ select {
   display: none !important;
 }
 
-@media (min-width: 781px) {
+/* Enlarge small tap targets on touch devices; negative margins keep the
+   visual layout roughly unchanged while the hit box grows. */
+@media (pointer: coarse) {
+  .text-link {
+    display: inline-flex;
+    align-items: center;
+    padding-block: 0.75rem;
+    margin-block: -0.45rem;
+  }
+
+  [data-toc-details] nav a {
+    padding-block: 0.75rem;
+  }
+
+  .prose h2 .heading-anchor,
+  .prose h3 .heading-anchor {
+    padding: 0.5rem;
+    margin: -0.5rem -0.2rem;
+  }
+
+  /* The editorial hero/contact CTAs are styled as underlined text rows
+     (min-height: 0). Grow the tap box upward; flex-end keeps the text
+     sitting on its underline. */
+  .editorial-shell .hero-surface .btn,
+  .editorial-shell #contact .btn {
+    min-height: 2.75rem;
+    align-items: flex-end;
+  }
+}
+
+/* The open panel overlays page content, so it needs a solid surface —
+   the .glass background is 2% white in dark mode. */
+.mobile-nav-panel {
+  background: var(--panel-strong);
+  border-color: var(--line-strong);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+/* Tailwind v4 max-[780px] compiles to (width < 780px), so desktop starts
+   at exactly 780px. Keep every rule on this breakpoint an exact
+   complement so no viewport width falls between nav modes. */
+@media (width >= 780px) {
   .mobile-nav-panel {
     display: none !important;
   }
 }
 
-@media (max-width: 780px) {
+@media (width < 780px) {
   .js .mobile-nav-panel {
     display: none;
   }
@@ -988,10 +1195,10 @@ select {
 }
 
 .prose h2 {
-  scroll-margin-top: 7rem;
+  scroll-margin-top: var(--header-offset);
   color: #e6e8e7;
   font-family: var(--font-family-sans);
-  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  font-size: var(--step-heading);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.15;
@@ -1008,6 +1215,13 @@ select {
   border-top: none;
 }
 
+@media (width < 780px) {
+  .prose h2 {
+    margin-top: 3rem;
+    padding-top: 1.25rem;
+  }
+}
+
 .prose h3 {
   scroll-margin-top: 7rem;
   color: #e6e8e7;
@@ -1021,7 +1235,7 @@ select {
 }
 
 .prose h4 {
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-family: var(--font-family-sans);
   font-size: 0.82rem;
   font-weight: 700;
@@ -1039,7 +1253,7 @@ select {
   opacity: 0;
   transition: opacity 180ms ease;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.55);
   font-size: 0.75em;
   font-weight: 400;
   vertical-align: middle;
@@ -1048,7 +1262,9 @@ select {
 .prose h2:hover > .heading-anchor,
 .prose h3:hover > .heading-anchor,
 .prose h2 > .heading-anchor:hover,
-.prose h3 > .heading-anchor:hover {
+.prose h3 > .heading-anchor:hover,
+.prose h2 > .heading-anchor:focus-visible,
+.prose h3 > .heading-anchor:focus-visible {
   opacity: 1;
 }
 
@@ -1079,13 +1295,13 @@ select {
   color: #aecbbb;
   text-decoration: underline;
   text-underline-offset: 3px;
-  text-decoration-color: rgba(143, 184, 163, 0.35);
+  text-decoration-color: color-mix(in srgb, var(--accent-color) 45%, transparent);
   transition: color 180ms ease, text-decoration-color 180ms ease;
 }
 
 .prose a:not(.heading-anchor):hover {
   color: #8fb8a3;
-  text-decoration-color: rgba(143, 184, 163, 0.7);
+  text-decoration-color: color-mix(in srgb, var(--accent-color) 75%, transparent);
 }
 
 .prose ul {
@@ -1109,7 +1325,7 @@ select {
   width: 0.3rem;
   height: 0.3rem;
   border-radius: 999px;
-  background: rgba(143, 184, 163, 0.5);
+  background: color-mix(in srgb, var(--accent-color) 80%, transparent);
 }
 
 .prose ol {
@@ -1131,7 +1347,7 @@ select {
   position: absolute;
   left: 0;
   top: 0;
-  color: #6b736f;
+  color: var(--color-text-soft);
   font-weight: 700;
   font-size: 0.9em;
   font-variant-numeric: tabular-nums;
@@ -1173,7 +1389,7 @@ select {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .prose pre code {
@@ -1192,7 +1408,7 @@ select {
 }
 
 .prose blockquote {
-  border-left: 3px solid rgba(143, 184, 163, 0.35);
+  border-left: 3px solid color-mix(in srgb, var(--accent-color) 45%, transparent);
   padding: 0.1rem 0 0.1rem 1.25rem;
   margin: 2rem 0;
   color: #9aa3a0;
@@ -1209,16 +1425,24 @@ select {
   margin: 3.5rem 0;
 }
 
-.prose table {
-  display: block;
-  width: 100%;
+/* The scroll container is the wrapper, not the table (see
+   rehypeFocusableScrollRegions in astro.config.mjs). A display:block table
+   makes its row groups shrink-wrap independently, so thead and tbody resolve
+   separate column widths and headers stop sitting over their columns; the
+   table stays a real table and overflows the wrapper instead. */
+.prose .table-scroll {
   overflow-x: auto;
-  border-collapse: collapse;
   margin: 2rem 0;
-  font-size: 0.92rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  overflow: hidden;
+}
+
+.prose table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 0.92rem;
 }
 
 .prose thead {
@@ -1238,7 +1462,7 @@ select {
 
 .prose td {
   padding: 0.7rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--line);
   vertical-align: top;
   color: #b8bfbc;
 }
@@ -1248,7 +1472,7 @@ select {
 }
 
 .prose tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--color-text-base) 4%, transparent);
 }
 
 .prose figure {
@@ -1266,7 +1490,7 @@ select {
 }
 
 .callout-label {
-  color: var(--accent-strong);
+  color: var(--color-accent-strong);
 }
 
 .callout-tip {
@@ -1315,8 +1539,22 @@ select {
   font-weight: 600;
 }
 
-.theme-icon-moon {
+/* Fixed-size in-flow slot; both icons stack inside it so the hidden one
+   never leaves a gap and the visible one can't drift over the label. */
+.theme-icon-stack {
+  position: relative;
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+
+.theme-icon {
   position: absolute;
+  inset: 0;
+}
+
+.theme-icon-moon {
   opacity: 0;
   transform: rotate(-25deg) scale(0.7);
   transition: opacity var(--transition), transform var(--transition);
@@ -1338,7 +1576,7 @@ select {
   transform: rotate(0) scale(1);
 }
 
-@media (max-width: 780px) {
+@media (width < 780px) {
   .theme-toggle-label {
     display: none;
   }
@@ -1374,6 +1612,38 @@ select {
   background: #f7f8f6;
 }
 
+/* No-JS fallback: a verbatim mirror of the [data-theme="light"] variable
+   block above — keep the two in sync. JS always sets data-theme before
+   paint, so this only applies with scripts disabled and an OS light
+   preference. Pages that lock the theme server-render data-theme="dark"
+   and are excluded by :not([data-theme]). */
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) {
+    color-scheme: light;
+    --color-bg: #f7f8f6;
+    --color-bg-elevated: #ffffff;
+    --color-text-base: #17201b;
+    --color-text-muted: #55625a;
+    --color-text-soft: #66716b;
+    --color-accent: #47725c;
+    --color-accent-strong: #365b48;
+    --color-line: rgba(23, 32, 27, 0.12);
+    --color-line-strong: rgba(23, 32, 27, 0.2);
+    --panel: rgba(255, 255, 255, 0.72);
+    --panel-strong: #ffffff;
+    --panel-soft: #eef1ed;
+    --line: rgba(23, 32, 27, 0.12);
+    --line-strong: rgba(23, 32, 27, 0.2);
+    --accent-color: #47725c;
+    --accent-ink: #ffffff;
+  }
+
+  html:not([data-theme]) body {
+    color: var(--color-text-base);
+    background: var(--color-bg);
+  }
+}
+
 [data-theme="light"] .site-header.is-scrolled .header-inner {
   background: rgba(247, 248, 246, 0.94);
 }
@@ -1401,16 +1671,6 @@ select {
   background: rgba(23, 32, 27, 0.025);
 }
 
-[data-theme="light"] .eyebrow,
-[data-theme="light"] .label-row-term,
-[data-theme="light"] .system-summary-label,
-[data-theme="light"] .system-node-label,
-[data-theme="light"] .project-proof-label,
-[data-theme="light"] .site-footer,
-[data-theme="light"] .site-footer-build {
-  color: #66716b;
-}
-
 [data-theme="light"] .text-link,
 [data-theme="light"] .project-row-title,
 [data-theme="light"] .system-node strong,
@@ -1420,6 +1680,11 @@ select {
 [data-theme="light"] .prose strong,
 [data-theme="light"] .prose th {
   color: #17201b;
+}
+
+[data-theme="light"] .prose h2 .heading-anchor,
+[data-theme="light"] .prose h3 .heading-anchor {
+  color: rgba(23, 32, 27, 0.65);
 }
 
 [data-theme="light"] .text-link:hover,
@@ -1445,8 +1710,6 @@ select {
   color: #55625a;
 }
 
-[data-theme="light"] .project-row-stack,
-[data-theme="light"] .project-status-archived,
 [data-theme="light"] .project-status-progress,
 [data-theme="light"] .project-status-in-progress {
   color: #66716b;
@@ -1498,6 +1761,14 @@ select {
   background: rgba(23, 32, 27, 0.04);
 }
 
+[data-theme="light"] .prose em {
+  color: #46524a;
+}
+
+[data-theme="light"] .callout-warning .callout-label {
+  color: #7d5f1f;
+}
+
 [data-theme="light"] .toc-link-active {
   background: rgba(79, 125, 101, 0.09);
 }
@@ -1506,60 +1777,20 @@ select {
   background: #17201b !important;
 }
 
-[data-theme="light"] .infrastructure-stats strong {
-  color: #47725c;
-}
-
-[data-theme="light"] .infrastructure-stats span {
-  color: #17201b;
-}
-
-[data-theme="light"] .infrastructure-stats p,
-[data-theme="light"] .diagram-zoom-hint,
-[data-theme="light"] .diagram-dialog-caption {
-  color: #66716b;
-}
+/* .diagram-zoom-hint and .diagram-dialog-caption keep their dark-theme
+   colors in light mode on purpose: both sit on dark overlay surfaces. */
 
 [data-theme="light"] .diagram-trigger {
   background: #ffffff;
   border-color: var(--line);
 }
 
-[data-theme="light"] .infrastructure-stats strong {
-  color: #47725c !important;
-}
-
-[data-theme="light"] .infrastructure-stats span {
-  color: #17201b !important;
-}
-
-[data-theme="light"] .infrastructure-stats p,
-[data-theme="light"] figcaption.diagram-dialog-caption,
 [data-theme="light"] figure > figcaption {
   color: #55625a !important;
 }
 
-html:not([data-theme="light"]) .text-text-soft,
-html:not([data-theme="light"]) .eyebrow,
-html:not([data-theme="light"]) .label-row-term,
-html:not([data-theme="light"]) .system-summary-label,
-html:not([data-theme="light"]) .system-node-label,
-html:not([data-theme="light"]) .project-proof-label,
-html:not([data-theme="light"]) .site-footer,
-html:not([data-theme="light"]) .site-footer-build {
-  color: #78837d;
-}
-
-html:not([data-theme="light"]) .project-row-stack {
-  color: #78837d;
-}
-
 /* Give the editorial system a real desktop composition. */
-@media (min-width: 961px) {
-  .editorial-shell {
-    width: min(calc(100% - 4rem), 1120px);
-  }
-
+@media (width >= 960px) {
   .editorial-shell .hero-surface {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(19rem, 24rem);

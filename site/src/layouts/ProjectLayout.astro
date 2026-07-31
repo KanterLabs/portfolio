@@ -1,4 +1,5 @@
 ---
+import GithubSlugger from 'github-slugger';
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
@@ -9,7 +10,11 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, stack, status, date, links, heroImage, socialImage, role, scope, keyOutcome } = project.data;
+const { title, summary, stack, status, date, links, heroImage, socialImage, role, scope, keyOutcome, kind } = project.data;
+const isExperience = kind === 'experience';
+const contentLabel = isExperience ? 'Experience Notes' : 'Case Study';
+const returnHref = isExperience ? '/#about' : '/#projects';
+const returnLabel = isExperience ? 'Back to experience' : 'Back to selected work';
 
 const formatted = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -31,17 +36,14 @@ const statusClass: Record<string, string> = {
 const wordCount = project.body?.split(/\s+/).filter(Boolean).length ?? 0;
 const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
+// Same slugger rehype-slug uses, so TOC hrefs always match the ids it
+// stamps on the rendered headings (incl. duplicate "-1" suffixing).
 const headingMatches = project.body?.matchAll(/^##\s+(.+)$/gm) ?? [];
 const tocItems: { text: string; slug: string }[] = [];
+const slugger = new GithubSlugger();
 for (const match of headingMatches) {
   const text = match[1].trim();
-  const slug = text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-  tocItems.push({ text, slug });
+  tocItems.push({ text, slug: slugger.slug(text) });
 }
 
 const projectUrl = Astro.site ? new URL(`/projects/${project.id}/`, Astro.site).toString() : undefined;
@@ -88,27 +90,24 @@ const structuredData = {
     aria-hidden="true"
   ></div>
 
-  <div class="relative z-10 w-[min(calc(100%-2rem),1240px)] mx-auto pb-24">
-    <SiteHeader backHref="/#projects" backLabel="All projects" />
+  <div class="page-shell relative z-10 pb-24">
+    <SiteHeader backHref={returnHref} backLabel={isExperience ? 'Experience' : 'Selected work'} />
 
     <main class="pt-10 max-[780px]:pt-6" id="main-content">
-      <div class="max-w-[860px] mx-auto mb-12 max-[780px]:mb-7">
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-7 max-[780px]:mb-4">
-          <span class="text-text-soft text-[0.78rem] font-semibold tracking-[0.16em] uppercase">
-            Case Study
+      <div>
+        <div class="case-meta mb-7 max-[780px]:mb-4">
+          <span class="eyebrow">
+            {contentLabel}
           </span>
-          <span class="w-px h-3.5 bg-line-strong" aria-hidden="true"></span>
           <span class="text-text-soft text-[0.82rem]">{formatted}</span>
-          <span class="w-px h-3.5 bg-line-strong" aria-hidden="true"></span>
           <span class:list={['inline-flex items-center gap-1.5 text-[0.8rem] font-medium', statusClass[status]]}>
             <span class="project-status-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
             {statusLabel[status]}
           </span>
-          <span class="w-px h-3.5 bg-line-strong" aria-hidden="true"></span>
           <span class="text-text-soft text-[0.82rem]">~{readingTime} min read</span>
         </div>
 
-        <h1 class="text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.05] tracking-[-0.02em] font-extrabold mb-5 max-w-[22ch] text-text-base max-[780px]:mb-3">
+        <h1 class="text-[length:var(--step-title)] leading-[1.05] tracking-[-0.02em] font-extrabold mb-5 max-w-[22ch] text-text-base [overflow-wrap:break-word]">
           {title}
         </h1>
 
@@ -116,7 +115,7 @@ const structuredData = {
           {summary}
         </p>
 
-        <div class="flex flex-wrap gap-2 mb-8 max-[780px]:mb-5">
+        <div class="stack-list mb-8">
           {stack.map((item) => (
             <StackBadge label={item} />
           ))}
@@ -124,15 +123,15 @@ const structuredData = {
 
         <div class="project-detail-facts mb-8 max-[780px]:mb-5">
           <div>
-            <p class="project-proof-label">Role</p>
+            <p class="field-label">Role</p>
             <p class="project-proof-copy">{role}</p>
           </div>
           <div>
-            <p class="project-proof-label">Scope</p>
+            <p class="field-label">Scope</p>
             <p class="project-proof-copy">{scope}</p>
           </div>
           <div>
-            <p class="project-proof-label">Outcome</p>
+            <p class="field-label">Outcome</p>
             <p class="project-proof-copy">{keyOutcome}</p>
           </div>
         </div>
@@ -142,7 +141,7 @@ const structuredData = {
             {links.map((link) => (
               <a href={link.href} target="_blank" rel="noopener noreferrer" class="btn btn-secondary text-sm">
                 {link.label}
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" y1="14" x2="21" y2="3" />
@@ -151,14 +150,50 @@ const structuredData = {
             ))}
           </div>
         )}
-
-        <div class="mt-8 border-t border-line max-[780px]:mt-6"></div>
       </div>
 
-      <div class="article-body max-w-[860px] mx-auto flex gap-16 items-start">
+      <div class="case-body">
+        <div class="case-prose">
+          {tocItems.length > 0 && (
+            <details class="mb-8 glass p-0 overflow-hidden w-full" data-toc-details>
+              <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-[0.82rem] font-semibold text-text-muted select-none list-none">
+                <span class="flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="15" y2="12" />
+                    <line x1="3" y1="18" x2="18" y2="18" />
+                  </svg>
+                  On this page
+                </span>
+                <svg class="toc-chevron w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </summary>
+              <nav class="px-5 pb-4 border-t border-line pt-3" aria-label="On this page">
+                <ul class="grid gap-1 p-0 list-none">
+                  {tocItems.map((item) => (
+                    <li>
+                      <a
+                        href={`#${item.slug}`}
+                        class="block py-1.5 text-[0.85rem] text-text-muted hover:text-text-base transition-colors duration-[180ms]"
+                      >
+                        {item.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </details>
+          )}
+
+          <div class="prose">
+            <slot />
+          </div>
+        </div>
+
         {tocItems.length > 0 && (
-          <aside class="toc-sidebar hidden lg:block w-[200px] flex-shrink-0 sticky top-[8rem] self-start">
-            <p class="text-[0.7rem] font-semibold tracking-[0.14em] uppercase text-text-soft mb-3">
+          <aside class="toc-sidebar">
+            <p class="field-label mb-3">
               On this page
             </p>
             <nav aria-label="Table of contents">
@@ -178,55 +213,17 @@ const structuredData = {
             </nav>
           </aside>
         )}
-
-        <div class="min-w-0 flex-1">
-          {tocItems.length > 0 && (
-            <details class="lg:hidden mb-8 glass p-0 overflow-hidden w-full" data-toc-details>
-              <summary class="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer text-[0.82rem] font-semibold text-text-muted select-none list-none">
-                <span class="flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <line x1="3" y1="12" x2="15" y2="12" />
-                    <line x1="3" y1="18" x2="18" y2="18" />
-                  </svg>
-                  On this page
-                </span>
-                <svg class="toc-chevron w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </summary>
-              <nav class="px-5 pb-4 border-t border-line pt-3" aria-label="Table of contents">
-                <ul class="grid gap-1 p-0 list-none">
-                  {tocItems.map((item) => (
-                    <li>
-                      <a
-                        href={`#${item.slug}`}
-                        class="block py-1.5 text-[0.85rem] text-text-muted hover:text-text-base transition-colors duration-[180ms]"
-                      >
-                        {item.text}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            </details>
-          )}
-
-          <div class="prose min-w-0 flex-1">
-            <slot />
-          </div>
-        </div>
       </div>
 
-      <div class="max-w-[860px] mx-auto mt-20 pt-8 border-t border-line">
+      <div class="case-footer">
         <a
-          href="/#projects"
-          class="inline-flex items-center gap-2 text-text-muted hover:text-text-base transition-colors duration-[180ms] font-medium"
+          href={returnHref}
+          class="inline-flex items-center gap-2 min-h-11 text-text-muted hover:text-text-base transition-colors duration-[180ms] font-medium"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
-          Back to all projects
+          {returnLabel}
         </a>
       </div>
     </main>

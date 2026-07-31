@@ -8,7 +8,12 @@ test.describe('visual coverage', () => {
     await page.screenshot({ path: screenshot, fullPage: true, type: 'png' });
     await testInfo.attach('home', { path: screenshot, contentType: 'image/png' });
 
-    await expect(page.getByRole('heading', { level: 1, name: 'Building Linux infrastructure and web projects that are designed to ship.' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Building Linux platforms and deployment tooling—from bare metal to CI/CD.',
+      }),
+    ).toBeVisible();
   });
 
   for (const entry of [

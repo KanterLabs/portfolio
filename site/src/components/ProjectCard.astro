@@ -25,9 +25,17 @@ const statusLabel: Record<(typeof project.data.status), string> = {
   </div>
 
   <h3 class="project-row-title">
-    {project.data.title}
+    <a href={`/projects/${project.id}`} class="project-row-title-link">
+      {project.data.title}
+    </a>
   </h3>
   <p class="project-row-summary">{project.data.summary}</p>
+  {featured && project.data.keyOutcome && (
+    <p class="project-row-outcome">
+      <span class="project-row-outcome-label">Outcome</span>
+      {project.data.keyOutcome}
+    </p>
+  )}
   <p class="project-row-stack">{project.data.stack.join(' · ')}</p>
   <a href={`/projects/${project.id}`} class="text-link">
     {featured ? 'Read deployment case study' : 'See project breakdown'}

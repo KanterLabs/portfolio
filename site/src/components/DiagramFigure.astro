@@ -9,8 +9,9 @@ interface Props {
 
 const { src, alt, caption, wide = false } = Astro.props;
 
-// Unique id so multiple diagrams on one page don't collide
-const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
+// Unique id so multiple diagrams on one page don't collide; derived from src
+// so ids are stable across builds
+const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
 ---
 
 <figure
@@ -92,7 +93,6 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
     border-radius: var(--radius-md);
     background: var(--panel);
     border: 1px solid var(--line);
-    box-shadow: var(--shadow);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
   }
@@ -119,7 +119,12 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
     margin: 0;
     padding: 0;
     border: none;
-    background: transparent;
+    /* The scrim lives on the dialog itself (it spans the viewport), not
+       on ::backdrop — tools like axe can't composite ::backdrop, so a
+       transparent dialog reads as caption-on-page-background. */
+    background: rgba(4, 9, 18, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -127,9 +132,7 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
   }
 
   .diagram-dialog::backdrop {
-    background: rgba(4, 9, 18, 0.88);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: transparent;
   }
 
   /* hidden state — dialog[open] is set by JS */
@@ -171,7 +174,7 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
 
   /* ── Caption ── */
   .diagram-dialog-caption {
-    color: #7c8a81;
+    color: #9aa9a0; /* AA on the dialog scrim even over a light body */
     font-size: 0.82rem;
     text-align: center;
     line-height: 1.5;
@@ -186,8 +189,8 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: 999px;
     border: 1px solid rgba(148, 163, 184, 0.22);
     background: rgba(10, 18, 32, 0.82);
@@ -228,7 +231,6 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
       const inner = dialog.querySelector('.diagram-dialog-inner');
       if (inner && !inner.contains(e.target as Node)) {
         dialog.close();
-        document.body.style.overflow = '';
       }
     });
 
@@ -236,17 +238,15 @@ const id = `diagram-${Math.random().toString(36).slice(2, 8)}`;
     const img = dialog.querySelector<HTMLImageElement>('.diagram-dialog-img');
     img?.addEventListener('click', () => {
       dialog.close();
-      document.body.style.overflow = '';
     });
 
     // Close button
     const closeBtn = dialog.querySelector<HTMLButtonElement>(`[data-close-dialog="${dialogId}"]`);
     closeBtn?.addEventListener('click', () => {
       dialog.close();
-      document.body.style.overflow = '';
     });
 
-    // Escape is handled natively by <dialog> — just restore scroll
+    // Every close path (incl. native Escape) fires 'close' — restore scroll here
     dialog.addEventListener('close', () => {
       document.body.style.overflow = '';
     });
