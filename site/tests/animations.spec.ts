@@ -4,7 +4,10 @@ test('homepage exposes deliberate motion hooks', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.locator('.hero-reveal')).toHaveCount(5);
-  await expect(page.locator('.project-row')).toHaveCount(3);
+  await expect(page.locator('.project-entry')).toHaveCount(3);
+  await expect(page.locator('.system-diagram-strip')).toHaveCount(3);
+  await expect(page.locator('.project-card .system-diagram-strip')).toHaveCount(2);
+  await expect(page.locator('.project-showcase .system-diagram-strip')).toHaveCount(1);
   await expect(page.locator('.architecture-boot-node')).toHaveCount(3);
   await expect(page.locator('.architecture-boot-connector')).toHaveCount(2);
 });

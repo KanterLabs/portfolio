@@ -1,0 +1,76 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  system: CollectionEntry<'projects'>['data']['system'];
+  variant: 'panel' | 'strip';
+  labelledBy?: string;
+}
+
+const { system, variant, labelledBy } = Astro.props;
+
+const chainNodes = system ? system.tiers.flatMap((tier) => tier.nodes) : [];
+---
+
+{system && variant === 'panel' && (
+  <div
+    class="system-diagram system-diagram-panel"
+    role="group"
+    aria-label={labelledBy ? undefined : system.caption}
+    aria-labelledby={labelledBy}
+  >
+    {system.tiers.map((tier, tierIndex) => (
+      <Fragment>
+        {tierIndex > 0 && (
+          <div class="system-diagram-connector" aria-hidden="true">
+            <span></span>
+          </div>
+        )}
+        <div
+          class:list={[
+            'system-diagram-tier',
+            tier.nodes.length === 2 && 'system-diagram-tier-split',
+          ]}
+        >
+          {tier.nodes.map((node) => (
+            <div class:list={['system-node', node.kind === 'accent' && 'system-node-accented']}>
+              {node.label && <span class="system-node-label">{node.label}</span>}
+              <strong>{node.title}</strong>
+              {node.detail && <span class="system-node-copy">{node.detail}</span>}
+            </div>
+          ))}
+        </div>
+      </Fragment>
+    ))}
+    {system.footer && (
+      <div class="system-diagram-footer">
+        {system.footer.map((item) => (
+          <div>
+            <span class="system-node-label">{item.label}</span>
+            <strong>{item.title}</strong>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
+
+{system && variant === 'strip' && (
+  <ol
+    class="system-diagram system-diagram-strip"
+    role="list"
+    aria-label={labelledBy ? undefined : system.caption}
+    aria-labelledby={labelledBy}
+  >
+    {chainNodes.map((node, nodeIndex) => (
+      <li class="system-strip-node">
+        {nodeIndex > 0 && (
+          <span class="system-strip-arrow" aria-hidden="true">&rarr;</span>
+        )}
+        <span class:list={['system-strip-chip', node.kind === 'accent' && 'system-strip-chip-accent']}>
+          {node.title}
+        </span>
+      </li>
+    ))}
+  </ol>
+)}

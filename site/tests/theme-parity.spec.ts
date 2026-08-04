@@ -6,10 +6,10 @@ import { composite, effectiveBackground, getContrastRatio, parseColor } from './
 // literal (rgba(255,255,255,.05) etc.) was written against the dark
 // palette and silently disappears in light mode.
 
-async function setTheme(page: Page, theme: 'light' | 'dark') {
+async function setTheme(page: Page, theme: 'light' | 'dark', path = '/projects/hostlet') {
   await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
   await page.addInitScript(() => localStorage.clear());
-  await page.goto('/projects/hostlet');
+  await page.goto(path);
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
 }
 
@@ -97,3 +97,69 @@ test('.prose td row separators are visible and differ between themes', async ({ 
   // same literal" — the rgba(255,255,255,.05)-on-white bug this round fixed.
   expect(values.light, 'light vs dark td border-bottom-color must differ').not.toBe(values.dark);
 });
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`plate recess is visible in ${theme}`, async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The diagram plate is hidden below 960px, same precedent as ArchitectureSnapshot');
+    await setTheme(page, theme, '/');
+
+    const plateBg = await effectiveBackground(page, '.project-showcase-diagram');
+    const cardBg = await effectiveBackground(page, '.project-showcase');
+
+    const diverges = plateBg.some((channel, i) => Math.abs(channel - cardBg[i]) >= 2);
+    expect(
+      diverges,
+      `plate rgb(${plateBg.join(',')}) vs card rgb(${cardBg.join(',')}) must differ by >=2 in a channel`,
+    ).toBe(true);
+  });
+
+  test(`accent strip chip clears AA in ${theme}`, async ({ page }) => {
+    await setTheme(page, theme, '/');
+
+    // Scope to a supporting card: its strip is always visible, unlike the
+    // featured showcase's strip which steps aside at >=960px.
+    const chip = page.locator('.project-card .system-strip-chip-accent').first();
+    await expect(chip).toBeVisible();
+
+    const { color: raw, ownBg } = await chip.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { color: style.color, ownBg: style.backgroundColor };
+    });
+    const parsed = parseColor(raw);
+    expect(parsed, `unparseable color ${raw}`).not.toBeNull();
+    const parsedOwnBg = parseColor(ownBg);
+    expect(parsedOwnBg, `unparseable background ${ownBg}`).not.toBeNull();
+
+    // effectiveBackground(selector) composites the element's OWN
+    // background in last, so read it from the parent to avoid compositing
+    // the chip's translucent wash into the "behind" value twice.
+    const behindBg = await effectiveBackground(
+      page,
+      '.project-card .system-strip-node:has(.system-strip-chip-accent)',
+    );
+    const bg =
+      parsedOwnBg!.alpha > 0 ? composite(parsedOwnBg!.rgb, parsedOwnBg!.alpha, behindBg) : behindBg;
+    const text = parsed!.alpha < 1 ? composite(parsed!.rgb, parsed!.alpha, bg) : parsed!.rgb;
+
+    const ratio = getContrastRatio(text, bg);
+    expect(ratio, `accent chip ${raw} on rgb(${bg.join(',')}) is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test(`diagram connector stays visible in ${theme}`, async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The diagram plate is hidden below 960px, same precedent as ArchitectureSnapshot');
+    await setTheme(page, theme, '/');
+
+    const raw = await page
+      .locator('.system-diagram-connector span')
+      .first()
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    const parsed = parseColor(raw);
+    expect(parsed, `unparseable color ${raw}`).not.toBeNull();
+
+    const plateBg = await effectiveBackground(page, '.project-showcase-diagram');
+    const line = parsed!.alpha < 1 ? composite(parsed!.rgb, parsed!.alpha, plateBg) : parsed!.rgb;
+
+    const ratio = getContrastRatio(line, plateBg);
+    expect(ratio, `connector ${raw} on rgb(${plateBg.join(',')}) is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(3);
+  });
+}

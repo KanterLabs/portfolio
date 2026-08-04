@@ -220,7 +220,7 @@ select {
 .project-proof-label,
 .system-summary-label,
 .system-node-label,
-.project-row-outcome-label,
+.project-outcome-label,
 .label-row-term {
   color: var(--color-text-soft);
   font-size: 0.72rem;
@@ -353,15 +353,6 @@ select {
 
 .editorial-shell #architecture .grid > .glass:first-child {
   border-top: none;
-}
-
-.editorial-shell #projects .grid,
-.editorial-shell #projects .grid > .grid {
-  display: block;
-}
-
-.editorial-shell #projects .glass {
-  padding: 0;
 }
 
 .editorial-shell #skills .glass {
@@ -562,6 +553,7 @@ select {
 .system-node {
   width: 100%;
   display: grid;
+  align-content: start;
   gap: 0.35rem;
   padding: 1rem;
   border: 1px solid var(--line);
@@ -599,71 +591,92 @@ select {
   font-weight: 600;
 }
 
-.project-row {
-  padding-block: 2rem;
-  border-top: 1px solid var(--line);
+/* ── Projects: featured showcase + supporting system cards ──
+   Bespoke classes only (no `grid`/`flex`/`glass` utilities in the markup)
+   so the editorial-shell flattening rules never match inside #projects.
+   Every color is a runtime token or a color-mix of tokens, so the light
+   theme and its no-JS mirror need no additional entries. */
+/* Wider than the card grid's gap at every width, so "one featured, two
+   supporting" reads from the whitespace on phones too. */
+.project-collection {
+  display: grid;
+  gap: 2rem;
 }
 
-.project-row:first-child {
-  border-top: none;
-  padding-top: 0;
+.project-card-grid {
+  display: grid;
+  gap: 1.25rem;
 }
 
-/* The supporting projects sit in a nested wrapper, so their first row is
-   also a :first-child — but it follows the featured row in the rendered
-   list and must keep its divider. */
-#projects .grid > .grid > .project-row:first-child {
-  border-top: 1px solid var(--line);
-  padding-top: 2rem;
+.project-showcase,
+.project-card {
+  display: grid;
+  align-content: start;
+  gap: 0.85rem;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  transition:
+    border-color var(--transition),
+    background-color var(--transition);
 }
 
-/* The featured row breaks the flat list on purpose: an accent rule down
-   the left edge, accent eyebrow, larger headline, and the case study's
-   outcome pulled into the row. */
-.project-row-featured {
-  padding-bottom: 2.5rem;
-  padding-left: 1.75rem;
+/* Supporting cards additionally stretch as flex columns so their CTA can
+   be pinned to a shared bottom baseline with `margin-top: auto` below. */
+.project-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.project-showcase:hover,
+.project-showcase:focus-within,
+.project-card:hover,
+.project-card:focus-within {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--color-text-base) 4%, var(--panel));
+}
+
+/* The featured showcase keeps the accent rule down the left edge. */
+.project-showcase {
   border-left: 2px solid var(--accent-color);
 }
 
-.project-row-featured .eyebrow {
+.project-showcase .eyebrow {
   color: var(--accent-color);
 }
 
-.project-row-outcome {
+.project-showcase-body {
   display: flex;
-  align-items: baseline;
-  gap: 0.65rem;
-  margin: 1.1rem 0 0;
+  flex-direction: column;
+  gap: 1.15rem;
   max-width: 42rem;
-  color: var(--color-text-base);
-  font-size: 0.95rem;
-  line-height: 1.6;
 }
 
-.project-row-outcome-label {
-  flex: none;
+.project-showcase-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
 }
 
-@media (width < 780px) {
-  .project-row-featured {
-    padding-left: 1.1rem;
-  }
-
-  .project-row-outcome {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
+.project-system-caption {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
 }
 
-.project-row-header {
+.project-card-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.7rem;
 }
 
-.project-row-header .eyebrow {
+.project-card-header .eyebrow {
   margin: 0;
 }
 
@@ -680,41 +693,251 @@ select {
   border-radius: 50%;
 }
 
-.project-row-title {
-  margin: 0 0 0.6rem;
-  color: #e6e8e7;
+.project-title {
+  margin: 0;
+  color: var(--color-text-base);
   font-size: 1.35rem;
   line-height: 1.25;
   letter-spacing: -0.02em;
   font-weight: 650;
 }
 
-.project-row-featured .project-row-title {
-  font-size: clamp(1.8rem, 2.6vw, 2.3rem);
+.project-title-featured {
+  font-size: clamp(1.9rem, 2.8vw, 2.45rem);
 }
 
-.project-row-title-link {
+/* The narrative column carries its share of the showcase's height, one
+   step up from the supporting cards' shared type scale. */
+.project-showcase .project-summary {
+  font-size: 1.05rem;
+}
+
+.project-showcase .project-outcome {
+  font-size: 1rem;
+}
+
+.project-title-link {
   color: inherit;
   text-decoration: none;
   transition: color var(--transition);
 }
 
-.project-row-title-link:hover,
-.project-row-title-link:focus-visible {
+.project-title-link:hover,
+.project-title-link:focus-visible {
   color: var(--accent-color);
 }
 
-.project-row-summary {
+.project-showcase:hover .project-title,
+.project-showcase:focus-within .project-title,
+.project-card:hover .project-title,
+.project-card:focus-within .project-title {
+  color: var(--accent-color);
+}
+
+.project-summary {
   max-width: 42rem;
   margin: 0;
-  color: #9aa3a0;
+  color: var(--color-text-muted);
   line-height: 1.7;
 }
 
-.project-row-stack {
-  margin: 0.85rem 0 1rem;
+.project-outcome {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  margin: 0;
+  max-width: 42rem;
+  color: var(--color-text-base);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.project-outcome-label {
+  flex: none;
+}
+
+.project-stack {
+  margin: 0;
   color: var(--color-text-soft);
   font-size: 0.82rem;
+}
+
+.project-card .text-link {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.project-showcase .text-link span,
+.project-card .text-link span {
+  display: inline-block;
+  transition: transform var(--transition);
+}
+
+.project-showcase:hover .text-link span,
+.project-showcase:focus-within .text-link span,
+.project-card:hover .text-link span,
+.project-card:focus-within .text-link span {
+  transform: translate(3px, -3px);
+}
+
+/* Featured system-diagram panel: desktop-only, same precedent as the
+   hero glass card and ArchitectureSnapshot (both hidden below 960px). */
+.project-showcase-diagram {
+  display: none;
+}
+
+/* System diagram — panel variant (shares the .system-node family with
+   ArchitectureSnapshot; scoped sizing keeps it compact in the panel). */
+.system-diagram-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.system-diagram-tier {
+  display: grid;
+}
+
+.system-diagram-tier-split {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.system-diagram-panel .system-node {
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-sm);
+}
+
+.system-diagram-panel .system-node strong {
+  font-size: 0.9rem;
+}
+
+.system-diagram-panel .system-node-copy {
+  font-size: 0.78rem;
+}
+
+.system-node-accented {
+  border-color: color-mix(in srgb, var(--accent-color) 45%, transparent);
+}
+
+.system-node-accented .system-node-label {
+  color: var(--accent-color);
+}
+
+.system-diagram-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 0.9rem;
+}
+
+/* --color-text-soft is calibrated for ~4.9:1 against --color-bg (see its
+   definition), and the recessed plate is derived from --color-bg — so
+   this is the token that keeps the connector legible on the recess in
+   both themes, where --line-strong (tuned for hairlines on --panel)
+   reads at under 2:1. */
+.system-diagram-connector span {
+  width: 1px;
+  flex: 1;
+  background: var(--color-text-soft);
+}
+
+/* Downward caret terminator: turns the hairline stub into a directional
+   flow indicator instead of a floating dash. */
+.system-diagram-connector::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--color-text-soft);
+}
+
+/* The separator rule needs its own air above it (margin on the preceding
+   tier), or it reads as a doubled node border when the panel is exactly
+   full and `margin-top: auto` computes to zero. */
+.system-diagram-panel > .system-diagram-tier:has(+ .system-diagram-footer) {
+  margin-bottom: 0.9rem;
+}
+
+.system-diagram-footer {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.system-diagram-footer > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.system-diagram-footer strong {
+  color: var(--color-text-base);
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+/* System diagram — strip variant (compact node chain in supporting cards). */
+.system-diagram-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.system-strip-node {
+  display: inline-flex;
+  align-items: center;
+}
+
+.system-strip-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.34rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--color-text-base);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.system-strip-chip-accent {
+  border-color: color-mix(in srgb, var(--accent-color) 45%, transparent);
+  background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+  color: var(--accent-color);
+}
+
+/* Matches the chip's box model (padding-block, border, line-height) so
+   the arrow's rendered top lines up exactly with the chip it precedes,
+   instead of two different-height inline boxes centering to different
+   baselines. */
+.system-strip-arrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.34rem 0.45rem;
+  border: 1px solid transparent;
+  color: var(--color-text-soft);
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+@media (width < 780px) {
+  .project-showcase,
+  .project-card {
+    padding: 1.15rem;
+  }
+
+  .project-outcome {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
 }
 
 /* Motion stays short, directional, and tied to meaningful content. */
@@ -739,28 +962,12 @@ select {
   }
 }
 
-.observe-animate.visible .project-row {
+.observe-animate.visible .project-entry {
   animation: editorial-reveal 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.observe-animate.visible .project-row:nth-child(2) { animation-delay: 70ms; }
-.observe-animate.visible .project-row:nth-child(3) { animation-delay: 140ms; }
-.observe-animate.visible .project-row:nth-child(4) { animation-delay: 210ms; }
-
-.project-row .text-link span {
-  display: inline-block;
-  transition: transform var(--transition);
-}
-
-.project-row:hover .text-link span,
-.project-row:focus-within .text-link span {
-  transform: translate(3px, -3px);
-}
-
-.project-row:hover .project-row-title,
-.project-row:focus-within .project-row-title {
-  color: var(--accent-color);
-}
+.observe-animate.visible .project-card-grid .project-entry:nth-child(1) { animation-delay: 90ms; }
+.observe-animate.visible .project-card-grid .project-entry:nth-child(2) { animation-delay: 180ms; }
 
 .architecture-boot-node,
 .architecture-boot-footer-item {
@@ -1672,7 +1879,6 @@ select {
 }
 
 [data-theme="light"] .text-link,
-[data-theme="light"] .project-row-title,
 [data-theme="light"] .system-node strong,
 [data-theme="light"] .architecture-footer strong,
 [data-theme="light"] .prose h2,
@@ -1699,7 +1905,6 @@ select {
   border-color: rgba(79, 125, 101, 0.5);
 }
 
-[data-theme="light"] .project-row-summary,
 [data-theme="light"] .project-proof-copy,
 [data-theme="light"] .system-summary-copy,
 [data-theme="light"] .system-node-copy,
@@ -1888,6 +2093,52 @@ select {
     display: grid;
     margin-top: 0;
   }
+
+  /* The showcase-to-row gap is deliberately larger than the card-to-card
+     gap so the section reads as "one featured, two supporting" from the
+     whitespace alone, not three boxes of equal weight. */
+  .editorial-shell #projects .project-collection {
+    gap: 2.75rem;
+  }
+
+  .editorial-shell #projects .project-showcase {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 25rem);
+    gap: 2.5rem;
+    align-items: stretch;
+    padding: 2rem;
+  }
+
+  /* Below 960px the strip in the narrative column is the diagram-carrying
+     artifact; at >=960px the recessed plate takes over and the strip
+     steps aside. */
+  .editorial-shell #projects .project-showcase .system-diagram-strip {
+    display: none;
+  }
+
+  /* A machined recess, not a second card: derived from --color-bg so it
+     reads as "sunk into" the panel behind it in both themes. */
+  .editorial-shell #projects .project-showcase-diagram {
+    display: block;
+    padding: 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  }
+
+  /* Nodes sit raised on the recess, restoring the card → recess → node
+     surface hierarchy the flat --panel-on--panel plate erased. */
+  .editorial-shell #projects .system-diagram-panel .system-node {
+    background: var(--panel);
+  }
+
+  .editorial-shell #projects .project-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.75rem;
+  }
+
+  .editorial-shell #projects .project-card {
+    padding: 1.75rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1909,7 +2160,7 @@ select {
   }
 
   .hero-reveal,
-  .observe-animate.visible .project-row,
+  .observe-animate.visible .project-entry,
   .architecture-boot-node,
   .architecture-boot-footer-item {
     opacity: 1;
