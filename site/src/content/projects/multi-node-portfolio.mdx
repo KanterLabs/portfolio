@@ -23,6 +23,18 @@ socialImage: /og/project-portfolio-infrastructure.png
 links:
   - label: View portfolio repo
     href: https://github.com/KanterLabs/portfolio
+system:
+  caption: GitHub Actions builds the static site, joins the tailnet as a short-lived node, and activates a commit-addressed release atomically on the private Nginx origin behind the shared Caddy edge.
+  tiers:
+    - nodes:
+        - title: GitHub Actions
+    - nodes:
+        - title: Tailnet deploy
+    - nodes:
+        - title: Atomic release
+          kind: accent
+    - nodes:
+        - title: Nginx origin
 ---
 
 import DiagramFigure from '../../components/DiagramFigure.astro';

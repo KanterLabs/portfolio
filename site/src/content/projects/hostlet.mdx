@@ -26,6 +26,18 @@ links:
     href: https://github.com/KanterLabs/hostlet-core
   - label: View v0.1.0 release
     href: https://github.com/ShaneKanterman04/Hostlet/releases/tag/v0.1.0
+system:
+  caption: The Rust API signs deploy jobs for a local agent, which builds the GitHub project into a Docker container and updates the Caddy route only after a health check passes.
+  tiers:
+    - nodes:
+        - title: GitHub repo
+    - nodes:
+        - title: Rust API
+          kind: accent
+    - nodes:
+        - title: Local agent
+    - nodes:
+        - title: Docker + Caddy
 ---
 
 import Callout from '../../components/Callout.astro';

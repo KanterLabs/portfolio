@@ -1,0 +1,18 @@
+---
+interface Props {
+  status: 'shipped' | 'in-progress' | 'archived';
+}
+
+const { status } = Astro.props;
+
+const statusLabel: Record<Props['status'], string> = {
+  shipped: 'Shipped',
+  'in-progress': 'In Progress',
+  archived: 'Archived',
+};
+---
+
+<span class:list={['project-status', `project-status-${status}`]}>
+  <span class="project-status-dot" aria-hidden="true"></span>
+  {statusLabel[status]}
+</span>
