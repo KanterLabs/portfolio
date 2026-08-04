@@ -29,6 +29,38 @@ const projects = defineCollection({
           }),
         )
         .optional(),
+      system: z
+        .object({
+          caption: z.string(),
+          tiers: z
+            .array(
+              z.object({
+                nodes: z
+                  .array(
+                    z.object({
+                      label: z.string().optional(),
+                      title: z.string(),
+                      detail: z.string().optional(),
+                      kind: z.enum(['default', 'accent']).default('default'),
+                    }),
+                  )
+                  .min(1)
+                  .max(2),
+              }),
+            )
+            .min(2)
+            .max(4),
+          footer: z
+            .array(
+              z.object({
+                label: z.string(),
+                title: z.string(),
+              }),
+            )
+            .max(3)
+            .optional(),
+        })
+        .optional(),
     }),
 });
 

@@ -24,6 +24,33 @@ socialImage: /og/project-homelab-platform.svg
 links:
   - label: View portfolio source
     href: https://github.com/KanterLabs/portfolio
+system:
+  caption: Public traffic enters through Cloudflare and private traffic through Tailscale Serve; both cross the shared Caddy edge VM into isolated public and private workload zones, while GitHub Actions jobs run in ephemeral ARC pods.
+  tiers:
+    - nodes:
+        - label: Public entry
+          title: Cloudflare
+          detail: DNS and public TLS
+        - label: Private entry
+          title: Tailscale Serve
+          detail: Tailnet-only HTTPS
+    - nodes:
+        - label: Shared edge
+          title: Edge VM · Caddy
+          detail: Routes each hostname to its zone
+          kind: accent
+    - nodes:
+        - label: Zone
+          title: Public workloads
+          detail: Portfolio and app platform
+        - label: Zone
+          title: Private workloads
+          detail: Tailnet-only apps
+  footer:
+    - label: CI
+      title: runs-on homelab → ephemeral ARC pod
+    - label: Secrets
+      title: Outside Git, injected at runtime
 ---
 
 import Callout from '../../components/Callout.astro';

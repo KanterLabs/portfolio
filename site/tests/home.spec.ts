@@ -1,5 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator } from '@playwright/test';
 import { expectHashLinkToReachSection, expectNoHorizontalOverflow } from './helpers/navigation';
+import { parseColor } from './helpers/contrast';
 
 test.describe('homepage', () => {
   test('desktop nav anchors and CTA targets work', async ({ page, isMobile }) => {
@@ -84,35 +85,64 @@ test.describe('homepage', () => {
     await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
   });
 
-  test('every case-study row after the first has a divider line', async ({ page }) => {
+  test('case studies render as bordered cards, not a flat list', async ({ page }) => {
     await page.goto('/');
 
-    const rows = page.locator('#projects .project-row');
-    const count = await rows.count();
-    expect(count).toBeGreaterThan(2);
+    const entries = page.locator('#projects .project-entry');
+    await expect(entries).toHaveCount(3);
 
-    for (let i = 0; i < count; i += 1) {
-      const border = await rows.nth(i).evaluate((el) => {
+    for (let i = 0; i < 3; i += 1) {
+      const chrome = await entries.nth(i).evaluate((el) => {
         const style = getComputedStyle(el);
-        const alpha = style.borderTopColor.match(/rgba?\(([^)]+)\)/)?.[1].split(',')[3];
+        const alphaOf = (color: string) => {
+          const parts = color.match(/rgba?\(([^)]+)\)/)?.[1].split(',');
+          if (!parts) return 0;
+          return parts[3] === undefined ? 1 : parseFloat(parts[3]);
+        };
         return {
-          width: parseFloat(style.borderTopWidth),
+          widths: [
+            parseFloat(style.borderTopWidth),
+            parseFloat(style.borderRightWidth),
+            parseFloat(style.borderBottomWidth),
+            parseFloat(style.borderLeftWidth),
+          ],
           style: style.borderTopStyle,
-          alpha: alpha === undefined ? 1 : parseFloat(alpha),
+          borderAlpha: alphaOf(style.borderTopColor),
+          radius: parseFloat(style.borderTopLeftRadius),
+          bgAlpha: alphaOf(style.backgroundColor),
         };
       });
 
-      if (i === 0) continue; // the featured row leads the list, no divider
-      expect(border.width, `row ${i} divider width`).toBeGreaterThanOrEqual(1);
-      expect(border.style, `row ${i} divider style`).toBe('solid');
-      expect(border.alpha, `row ${i} divider visibility`).toBeGreaterThan(0);
+      for (const width of chrome.widths) {
+        expect(width, `entry ${i} border width`).toBeGreaterThanOrEqual(1);
+      }
+      expect(chrome.style, `entry ${i} border style`).toBe('solid');
+      expect(chrome.borderAlpha, `entry ${i} border visibility`).toBeGreaterThan(0);
+      expect(chrome.radius, `entry ${i} corner radius`).toBeGreaterThanOrEqual(12);
+      expect(chrome.bgAlpha, `entry ${i} panel background`).toBeGreaterThan(0);
     }
+  });
+
+  test('cards respond to hover with a stronger border', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Hover treatment is a pointer affordance');
+
+    await page.goto('/');
+
+    const card = page.locator('#projects .project-card').first();
+    await card.scrollIntoViewIfNeeded();
+    const before = await card.evaluate((el) => getComputedStyle(el).borderTopColor);
+
+    await card.hover();
+    await expect(async () => {
+      const after = await card.evaluate((el) => getComputedStyle(el).borderTopColor);
+      expect(after).not.toBe(before);
+    }).toPass({ timeout: 2000 });
   });
 
   test('case-study titles link to their case studies', async ({ page }) => {
     await page.goto('/');
 
-    const titleLinks = page.locator('.project-row-title a');
+    const titleLinks = page.locator('.project-title a');
     await expect(titleLinks).toHaveCount(3);
     for (const href of await titleLinks.evaluateAll((links) => links.map((l) => l.getAttribute('href')))) {
       expect(href).toMatch(/^\/projects\/.+/);
@@ -134,7 +164,7 @@ test.describe('homepage', () => {
     expect(sectionOrder.slice(0, 3)).toEqual(['top', 'projects', 'about']);
 
     const titles = await page
-      .locator('#projects .project-row-title')
+      .locator('#projects .project-title')
       .allTextContents();
     expect(titles.map((title) => title.trim())).toEqual([
       'KanterLabs Homelab Platform',
@@ -149,28 +179,252 @@ test.describe('homepage', () => {
     await expect(page.getByText('June 2025 – Present')).toBeVisible();
   });
 
-  test('featured case study is visually distinct from supporting rows', async ({ page }) => {
+  test('featured case study is a showcase, not just another card', async ({ page, isMobile }) => {
     await page.goto('/');
 
-    const featured = page.locator('.project-row-featured');
-    await expect(featured).toHaveCount(1);
-    await expect(featured.locator('.project-row-outcome')).toBeVisible();
+    const showcase = page.locator('.project-showcase');
+    await expect(showcase).toHaveCount(1);
+    await expect(showcase.locator('.project-outcome')).toBeVisible();
 
-    const accent = await featured.evaluate((el) => {
+    const accent = await showcase.evaluate((el) => {
       const style = getComputedStyle(el);
       return { width: parseFloat(style.borderLeftWidth), style: style.borderLeftStyle };
     });
     expect(accent.width).toBeGreaterThanOrEqual(2);
     expect(accent.style).toBe('solid');
 
-    const featuredTitle = await featured
-      .locator('.project-row-title')
+    const featuredTitle = await showcase
+      .locator('.project-title')
       .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     const supportingTitle = await page
-      .locator('.project-row:not(.project-row-featured) .project-row-title')
+      .locator('.project-card .project-title')
       .first()
       .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     expect(featuredTitle).toBeGreaterThan(supportingTitle * 1.2);
+
+    const diagram = page.locator('.project-showcase-diagram');
+    const cards = page.locator('#projects .project-card');
+    const featuredStrip = showcase.locator('.system-diagram-strip');
+    const caption = showcase.locator('.project-system-caption');
+
+    await expect(caption).toBeVisible();
+    await expect(caption).toContainText('Public traffic enters through Cloudflare');
+
+    if (isMobile) {
+      // Below 960px the diagram panel is hidden (same precedent as the
+      // hero card and ArchitectureSnapshot) and cards stack vertically;
+      // the compact chip strip stands in as the sub-960px artifact.
+      await expect(diagram).toBeHidden();
+      await expect(featuredStrip).toBeVisible();
+
+      const first = await cards.nth(0).boundingBox();
+      const second = await cards.nth(1).boundingBox();
+      expect(first).not.toBeNull();
+      expect(second).not.toBeNull();
+      expect(Math.abs(first!.x - second!.x)).toBeLessThanOrEqual(2);
+      expect(second!.y).toBeGreaterThan(first!.y + first!.height - 1);
+    } else {
+      await expect(diagram).toBeVisible();
+      await expect(featuredStrip).toBeHidden();
+      expect(await diagram.locator('.system-node').count()).toBeGreaterThanOrEqual(5);
+
+      const body = await showcase.locator('.project-showcase-body').boundingBox();
+      const panel = await diagram.boundingBox();
+      expect(body).not.toBeNull();
+      expect(panel).not.toBeNull();
+      // The diagram panel is a real second column: right of the narrative
+      // and vertically overlapping it, not a stacked block.
+      expect(panel!.x).toBeGreaterThan(body!.x + body!.width - 1);
+      const overlap =
+        Math.min(body!.y + body!.height, panel!.y + panel!.height) -
+        Math.max(body!.y, panel!.y);
+      expect(overlap).toBeGreaterThan(0);
+      expect(body!.width).toBeGreaterThan(panel!.width);
+      expect(panel!.width).toBeGreaterThan(300);
+      expect(panel!.width).toBeLessThan(420);
+
+      // The two columns end flush: the CTA's bottom edge and the plate's
+      // bottom edge land on effectively the same line.
+      const cta = await showcase.locator('.text-link').boundingBox();
+      expect(cta).not.toBeNull();
+      expect(Math.abs(cta!.y + cta!.height - (panel!.y + panel!.height))).toBeLessThanOrEqual(10);
+
+      // The 220px void is gone: the footer hairline sits close behind the
+      // last piece of narrative copy, not floating in empty space.
+      const stack = await showcase.locator('.project-stack').boundingBox();
+      const footer = await showcase.locator('.project-showcase-footer').boundingBox();
+      expect(stack).not.toBeNull();
+      expect(footer).not.toBeNull();
+      expect(footer!.y - (stack!.y + stack!.height)).toBeLessThan(40);
+
+      const footerChrome = await showcase.locator('.project-showcase-footer').evaluate((el) => {
+        const style = getComputedStyle(el);
+        return {
+          style: style.borderTopStyle,
+          width: parseFloat(style.borderTopWidth),
+          color: style.borderTopColor,
+        };
+      });
+      expect(footerChrome.style).toBe('solid');
+      expect(footerChrome.width).toBeGreaterThanOrEqual(1);
+      const footerBorder = parseColor(footerChrome.color);
+      expect(footerBorder, `unparseable color ${footerChrome.color}`).not.toBeNull();
+      expect(footerBorder!.alpha).toBeGreaterThan(0);
+
+      // The showcase spans the collection; supporting cards split a row.
+      const showcaseBox = await showcase.boundingBox();
+      const first = await cards.nth(0).boundingBox();
+      const second = await cards.nth(1).boundingBox();
+      expect(showcaseBox).not.toBeNull();
+      expect(first).not.toBeNull();
+      expect(second).not.toBeNull();
+      expect(showcaseBox!.width).toBeGreaterThan(first!.width * 1.7);
+      expect(Math.abs(first!.y - second!.y)).toBeLessThanOrEqual(2);
+      expect(second!.x).toBeGreaterThan(first!.x + first!.width - 1);
+    }
+  });
+
+  test('split diagram tiers align their node rows', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The diagram plate is hidden below 960px');
+    await page.goto('/');
+
+    const splitTiers = page.locator('.project-showcase-diagram .system-diagram-tier-split');
+    const count = await splitTiers.count();
+    expect(count).toBeGreaterThan(0);
+
+    for (let i = 0; i < count; i += 1) {
+      const nodes = splitTiers.nth(i).locator('.system-node');
+      await expect(nodes).toHaveCount(2);
+
+      const [titleA, titleB] = await Promise.all([
+        nodes.nth(0).locator('strong').boundingBox(),
+        nodes.nth(1).locator('strong').boundingBox(),
+      ]);
+      expect(titleA).not.toBeNull();
+      expect(titleB).not.toBeNull();
+      expect(Math.abs(titleA!.y - titleB!.y)).toBeLessThanOrEqual(1);
+
+      const [labelA, labelB] = await Promise.all([
+        nodes.nth(0).locator('.system-node-label').boundingBox(),
+        nodes.nth(1).locator('.system-node-label').boundingBox(),
+      ]);
+      if (labelA && labelB) {
+        expect(Math.abs(labelA.y - labelB.y)).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  test('supporting cards carry system strips that describe each project', async ({ page, isMobile }) => {
+    await page.goto('/');
+
+    const expectStripIntegrity = async (strip: Locator, name: string) => {
+      await expect(strip, `${name} strip`).toBeVisible();
+
+      const label = await strip.getAttribute('aria-label');
+      const labelledBy = await strip.getAttribute('aria-labelledby');
+      if (labelledBy) {
+        const caption = page.locator(`#${labelledBy}`);
+        expect((await caption.textContent())?.trim().length ?? 0, `${name} strip caption`).toBeGreaterThan(20);
+      } else {
+        expect(label?.trim().length ?? 0, `${name} strip caption`).toBeGreaterThan(20);
+      }
+
+      const nodeCount = await strip.locator('li.system-strip-node').count();
+      expect(nodeCount, `${name} strip nodes`).toBeGreaterThanOrEqual(4);
+
+      const arrows = strip.locator('.system-strip-arrow');
+      await expect(arrows, `${name} strip arrows`).toHaveCount(nodeCount - 1);
+      for (const hidden of await arrows.evaluateAll((els) =>
+        els.map((el) => el.getAttribute('aria-hidden')),
+      )) {
+        expect(hidden).toBe('true');
+      }
+
+      const overflow = await strip.evaluate((el) => el.scrollWidth - el.clientWidth);
+      expect(overflow, `${name} strip overflow`).toBeLessThanOrEqual(1);
+
+      // The arrow always leads the chip it points at, inside the same
+      // <li>, so a wrapped line can never end on a naked arrow.
+      const items = await strip.locator('li.system-strip-node').evaluateAll((lis) =>
+        lis.map((li) => {
+          const arrow = li.querySelector('.system-strip-arrow');
+          const chip = li.querySelector('.system-strip-chip');
+          const firstIsArrow = li.firstElementChild?.classList.contains('system-strip-arrow') ?? false;
+          return {
+            firstIsArrow,
+            hasArrow: arrow !== null,
+            arrowRect: arrow ? arrow.getBoundingClientRect() : null,
+            chipRect: chip ? chip.getBoundingClientRect() : null,
+          };
+        }),
+      );
+
+      expect(items[0].hasArrow, `${name} first li has no arrow`).toBe(false);
+      for (let j = 1; j < items.length; j += 1) {
+        expect(items[j].firstIsArrow, `${name} li ${j} arrow is first child`).toBe(true);
+      }
+      for (const item of items) {
+        if (!item.arrowRect || !item.chipRect) continue;
+        expect(Math.abs(item.arrowRect.top - item.chipRect.top)).toBeLessThanOrEqual(2);
+        expect(item.arrowRect.right).toBeLessThanOrEqual(item.chipRect.left + 1);
+      }
+    };
+
+    const cards = page.locator('#projects .project-card');
+    await expect(cards).toHaveCount(2);
+    for (let i = 0; i < 2; i += 1) {
+      await expectStripIntegrity(cards.nth(i).locator('ol.system-diagram-strip'), `card ${i}`);
+    }
+
+    // Below 960px the featured card's strip is the diagram-carrying
+    // artifact — hold it to the same bar whenever it is the visible variant.
+    if (isMobile) {
+      await expectStripIntegrity(
+        page.locator('.project-showcase ol.system-diagram-strip'),
+        'featured',
+      );
+    }
+  });
+
+  test('supporting cards form a matched pair', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The two-up layout only exists at >=960px');
+    await page.goto('/');
+
+    const cards = page.locator('#projects .project-card');
+    await expect(cards).toHaveCount(2);
+
+    const [cta0, cta1] = await Promise.all([
+      cards.nth(0).locator('.text-link').boundingBox(),
+      cards.nth(1).locator('.text-link').boundingBox(),
+    ]);
+    expect(cta0).not.toBeNull();
+    expect(cta1).not.toBeNull();
+    expect(Math.abs(cta0!.y - cta1!.y)).toBeLessThanOrEqual(2);
+
+    const [box0, box1] = await Promise.all([cards.nth(0).boundingBox(), cards.nth(1).boundingBox()]);
+    expect(box0).not.toBeNull();
+    expect(box1).not.toBeNull();
+    expect(Math.abs(box0!.height - box1!.height)).toBeLessThanOrEqual(2);
+  });
+
+  test('the featured showcase is grouped apart from the supporting row', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The vertical/horizontal rhythm comparison only applies to the desktop grid');
+    await page.goto('/');
+
+    const showcaseBox = await page.locator('.project-showcase').boundingBox();
+    const gridBox = await page.locator('#projects .project-card-grid').boundingBox();
+    const cards = page.locator('#projects .project-card');
+    const [card0, card1] = await Promise.all([cards.nth(0).boundingBox(), cards.nth(1).boundingBox()]);
+    expect(showcaseBox).not.toBeNull();
+    expect(gridBox).not.toBeNull();
+    expect(card0).not.toBeNull();
+    expect(card1).not.toBeNull();
+
+    const verticalGap = gridBox!.y - (showcaseBox!.y + showcaseBox!.height);
+    const horizontalGap = card1!.x - (card0!.x + card0!.width);
+
+    expect(verticalGap).toBeGreaterThan(horizontalGap);
+    expect(verticalGap).toBeGreaterThan(24);
   });
 
   test('editorial CTAs are left-aligned, not centred in their box', async ({ page, isMobile }) => {

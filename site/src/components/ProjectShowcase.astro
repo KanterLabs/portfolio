@@ -1,0 +1,54 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ProjectStatus from './ProjectStatus.astro';
+import SystemDiagram from './SystemDiagram.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const captionId = `system-caption-${project.id}`;
+---
+
+<article class="project-showcase project-entry">
+  <div class="project-showcase-body">
+    <div class="project-card-header">
+      <p class="eyebrow">Featured case study</p>
+      <ProjectStatus status={project.data.status} />
+    </div>
+
+    <h3 class="project-title project-title-featured">
+      <a href={`/projects/${project.id}`} class="project-title-link">
+        {project.data.title}
+      </a>
+    </h3>
+    <p class="project-summary">{project.data.summary}</p>
+    {project.data.keyOutcome && (
+      <p class="project-outcome">
+        <span class="project-outcome-label">Outcome</span>
+        {project.data.keyOutcome}
+      </p>
+    )}
+    <SystemDiagram system={project.data.system} variant="strip" labelledBy={project.data.system ? captionId : undefined} />
+    <p class="project-stack">{project.data.stack.join(' · ')}</p>
+
+    <div class="project-showcase-footer">
+      {project.data.system && (
+        <p class="project-system-caption" id={captionId}>{project.data.system.caption}</p>
+      )}
+      <a href={`/projects/${project.id}`} class="text-link">
+        Read deployment case study
+        <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="project-showcase-diagram">
+    <SystemDiagram
+      system={project.data.system}
+      variant="panel"
+      labelledBy={project.data.system ? captionId : undefined}
+    />
+  </div>
+</article>

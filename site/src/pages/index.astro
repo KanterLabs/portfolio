@@ -4,6 +4,7 @@ import ArchitectureSnapshot from '../components/ArchitectureSnapshot.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import GlassCard from '../components/GlassCard.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import ProjectShowcase from '../components/ProjectShowcase.astro';
 import SectionIntro from '../components/SectionIntro.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
@@ -244,10 +245,10 @@ const structuredData = [
           class="mb-11"
         />
 
-        <div class="grid gap-5">
-          <ProjectCard project={featuredProject} featured={true} />
+        <div class="project-collection">
+          <ProjectShowcase project={featuredProject} />
 
-          <div class="grid grid-cols-2 gap-5 max-[960px]:grid-cols-1">
+          <div class="project-card-grid">
             {supportingProjects.map((project) => (
               <ProjectCard project={project} />
             ))}
