@@ -1,44 +1,31 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import ProjectStatus from './ProjectStatus.astro';
+import SystemDiagram from './SystemDiagram.astro';
 
 interface Props {
   project: CollectionEntry<'projects'>;
-  featured?: boolean;
 }
 
-const { project, featured = false } = Astro.props;
-
-const statusLabel: Record<(typeof project.data.status), string> = {
-  shipped: 'Shipped',
-  'in-progress': 'In Progress',
-  archived: 'Archived',
-};
+const { project } = Astro.props;
 ---
 
-<article class:list={['project-row', featured && 'project-row-featured']}>
-  <div class="project-row-header">
-    <p class="eyebrow">{featured ? 'Featured case study' : 'Case study'}</p>
-    <span class:list={['project-status', `project-status-${project.data.status}`]}>
-      <span class="project-status-dot" aria-hidden="true"></span>
-      {statusLabel[project.data.status]}
-    </span>
+<article class="project-card project-entry">
+  <div class="project-card-header">
+    <p class="eyebrow">Case study</p>
+    <ProjectStatus status={project.data.status} />
   </div>
 
-  <h3 class="project-row-title">
-    <a href={`/projects/${project.id}`} class="project-row-title-link">
+  <h3 class="project-title">
+    <a href={`/projects/${project.id}`} class="project-title-link">
       {project.data.title}
     </a>
   </h3>
-  <p class="project-row-summary">{project.data.summary}</p>
-  {featured && project.data.keyOutcome && (
-    <p class="project-row-outcome">
-      <span class="project-row-outcome-label">Outcome</span>
-      {project.data.keyOutcome}
-    </p>
-  )}
-  <p class="project-row-stack">{project.data.stack.join(' · ')}</p>
+  <p class="project-summary">{project.data.summary}</p>
+  <SystemDiagram system={project.data.system} variant="strip" />
+  <p class="project-stack">{project.data.stack.join(' · ')}</p>
   <a href={`/projects/${project.id}`} class="text-link">
-    {featured ? 'Read deployment case study' : 'See project breakdown'}
+    See project breakdown
     <span aria-hidden="true">↗</span>
   </a>
 </article>
