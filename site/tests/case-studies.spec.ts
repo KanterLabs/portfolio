@@ -199,7 +199,17 @@ test.describe('case studies', () => {
     const borderLeftWidth = await rail.evaluate((el) => parseFloat(getComputedStyle(el).borderLeftWidth));
     expect(borderLeftWidth).toBeGreaterThanOrEqual(1);
 
-    const hoverLink = page.locator('.toc-link').first();
+    // Scroll to force a heading into view so the IntersectionObserver marks
+    // a link active.
+    await page.locator('.prose h2').nth(1).scrollIntoViewIfNeeded();
+    const activeLink = page.locator('.toc-link-active');
+    await expect(activeLink).toHaveCount(1, { timeout: 5000 });
+    const activeShadow = await activeLink.evaluate((el) => getComputedStyle(el).boxShadow);
+    expect(activeShadow).not.toBe('none');
+
+    // Hover a link that is not the active one — the active tint would mask
+    // the hover background.
+    const hoverLink = page.locator('.toc-link:not(.toc-link-active)').last();
     const beforeBg = await hoverLink.evaluate((el) => getComputedStyle(el).backgroundColor);
     await hoverLink.hover();
     await expect(async () => {
@@ -208,14 +218,6 @@ test.describe('case studies', () => {
       expect(afterBg).not.toBe('rgba(0, 0, 0, 0)');
       expect(afterBg).not.toBe('transparent');
     }).toPass({ timeout: 2000 });
-
-    // Scroll to force a heading into view so the IntersectionObserver marks
-    // a link active.
-    await page.locator('.prose h2').nth(1).scrollIntoViewIfNeeded();
-    const activeLink = page.locator('.toc-link-active');
-    await expect(activeLink).toHaveCount(1, { timeout: 5000 });
-    const activeShadow = await activeLink.evaluate((el) => getComputedStyle(el).boxShadow);
-    expect(activeShadow).not.toBe('none');
   });
 
   test('public case-study assets do not expose private network identifiers', async ({
