@@ -453,7 +453,7 @@ test.describe('homepage', () => {
     expect(Math.abs(contactCtaBox!.x - contactParagraphBox!.x)).toBeLessThanOrEqual(2);
   });
 
-  test('theme follows system preference and persists manual selection', async ({ page, isMobile }) => {
+  test('theme defaults to system mode and cycles system, light, dark', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Desktop-only theme validation');
 
     await page.emulateMedia({ colorScheme: 'light' });
@@ -461,13 +461,40 @@ test.describe('homepage', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    // Fresh visit: system mode, resolved to the OS preference.
+    const html = page.locator('html');
+    await expect(html).toHaveAttribute('data-theme', 'light');
+    await expect(html).toHaveAttribute('data-theme-mode', 'system');
     const toggle = page.locator('[data-theme-toggle]');
-    await expect(toggle).toHaveAttribute('aria-label', 'Switch to dark theme');
+    await expect(toggle).toHaveAttribute('aria-label', 'Theme: system. Switch to light theme');
 
+    // System mode tracks OS preference changes live.
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+    await page.emulateMedia({ colorScheme: 'light' });
+    await expect(html).toHaveAttribute('data-theme', 'light');
+
+    // Explicit light: pinned, no longer follows the OS.
     await toggle.click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(html).toHaveAttribute('data-theme-mode', 'light');
+    await expect(toggle).toHaveAttribute('aria-label', 'Theme: light. Switch to dark theme');
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await expect(html).toHaveAttribute('data-theme', 'light');
+
+    // Explicit dark: persists across reloads.
+    await toggle.click();
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+    await expect(html).toHaveAttribute('data-theme-mode', 'dark');
     await page.reload();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+    await expect(html).toHaveAttribute('data-theme-mode', 'dark');
+
+    // Third click returns to system mode: storage cleared, OS wins again.
+    await toggle.click();
+    await expect(html).toHaveAttribute('data-theme-mode', 'system');
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+    expect(await page.evaluate(() => localStorage.getItem('portfolio-theme'))).toBeNull();
+    await page.emulateMedia({ colorScheme: 'light' });
+    await expect(html).toHaveAttribute('data-theme', 'light');
   });
 });
