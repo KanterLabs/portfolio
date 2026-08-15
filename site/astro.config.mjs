@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
+import { unified } from '@astrojs/markdown-remark';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
@@ -43,7 +44,12 @@ export default defineConfig({
     enabled: process.env.PLAYWRIGHT !== 'true',
   },
   integrations: [
-    mdx({
+    mdx(),
+    sitemap(),
+  ],
+  compressHTML: true,
+  markdown: {
+    processor: unified({
       rehypePlugins: [
         rehypeFocusableScrollRegions,
         rehypeSlug,
@@ -65,9 +71,6 @@ export default defineConfig({
         ],
       ],
     }),
-    sitemap(),
-  ],
-  markdown: {
     shikiConfig: {
       theme: 'github-dark-dimmed',
       wrap: false,
