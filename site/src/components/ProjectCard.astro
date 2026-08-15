@@ -23,7 +23,11 @@ const { project } = Astro.props;
   </h3>
   <p class="project-summary">{project.data.summary}</p>
   <SystemDiagram system={project.data.system} variant="strip" />
-  <p class="project-stack">{project.data.stack.join(' · ')}</p>
+  <p class="project-stack">
+    {project.data.stack.map((item) => (
+      <span> {item} </span>
+    ))}
+  </p>
   <a href={`/projects/${project.id}`} class="text-link">
     See project breakdown
     <span aria-hidden="true">↗</span>

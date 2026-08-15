@@ -130,13 +130,123 @@ test.describe('homepage', () => {
 
     const card = page.locator('#projects .project-card').first();
     await card.scrollIntoViewIfNeeded();
+    // Let the .project-entry entrance reveal (editorial-reveal, 520ms)
+    // finish settling before taking the "before" measurement, or its own
+    // in-flight transform reads as part of the hover delta.
+    await page.locator('#projects.observe-animate').evaluate(
+      (el) =>
+        new Promise<void>((resolve) => {
+          if (el.classList.contains('visible')) return resolve();
+          const observer = new MutationObserver(() => {
+            if (el.classList.contains('visible')) {
+              observer.disconnect();
+              resolve();
+            }
+          });
+          observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+        }),
+    );
+    await expect(async () => {
+      const transform = await card.evaluate((el) => getComputedStyle(el).transform);
+      expect(transform).toBe('matrix(1, 0, 0, 1, 0, 0)');
+    }).toPass({ timeout: 2000 });
+
     const before = await card.evaluate((el) => getComputedStyle(el).borderTopColor);
+    const beforeShadow = await card.evaluate((el) => getComputedStyle(el).boxShadow);
+    const beforeBox = await card.boundingBox();
+    expect(beforeBox).not.toBeNull();
 
     await card.hover();
     await expect(async () => {
       const after = await card.evaluate((el) => getComputedStyle(el).borderTopColor);
       expect(after).not.toBe(before);
     }).toPass({ timeout: 2000 });
+
+    const afterShadow = await card.evaluate((el) => getComputedStyle(el).boxShadow);
+    expect(afterShadow, 'hovered card box-shadow').not.toBe(beforeShadow);
+
+    const afterBox = await card.boundingBox();
+    expect(afterBox).not.toBeNull();
+    const lift = beforeBox!.y - afterBox!.y;
+    expect(lift, `card should lift 1.5-3px, moved ${lift}px`).toBeGreaterThanOrEqual(1.5);
+    expect(lift, `card should lift 1.5-3px, moved ${lift}px`).toBeLessThanOrEqual(3);
+  });
+
+  test('hover lift is disabled under prefers-reduced-motion', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Hover treatment is a pointer affordance');
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+
+    const card = page.locator('#projects .project-card').first();
+    await card.scrollIntoViewIfNeeded();
+    await card.hover();
+
+    await expect(async () => {
+      const transform = await card.evaluate((el) => getComputedStyle(el).transform);
+      expect(transform).toBe('none');
+    }).toPass({ timeout: 2000 });
+  });
+
+  test('supporting card stack rows never open a line with a separator', async ({ page }) => {
+    await page.goto('/');
+
+    const card = page.locator('#projects .project-card').first();
+    const stackItems = card.locator('.project-stack > *');
+    const count = await stackItems.count();
+    expect(count).toBeGreaterThan(1);
+
+    const separatorContent = await stackItems.nth(1).evaluate((el) => getComputedStyle(el, '::before').content);
+    expect(separatorContent).toBe('"·"');
+
+    // The separator lives entirely in ::before — a screen reader or a
+    // copy/paste only ever sees each entry's real text node, so it must
+    // carry its own whitespace or adjacent entries read as one run-on
+    // word ("ProxmoxVELinuxCaddy…").
+    const rawTexts = await stackItems.evaluateAll((els) => els.map((el) => el.textContent ?? ''));
+    for (const raw of rawTexts) {
+      expect(raw, `stack entry "${raw}" must carry its own whitespace so entries don't run together`).toMatch(
+        /^\s.+\s$/,
+      );
+    }
+
+    await page.setViewportSize({ width: 390, height: 900 });
+    const container = card.locator('.project-stack');
+    const containerBox = await container.boundingBox();
+    expect(containerBox).not.toBeNull();
+
+    const rects = await stackItems.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().left));
+    for (const left of rects) {
+      expect(left, 'stack entry left edge vs container left edge').toBeGreaterThanOrEqual(containerBox!.x - 0.5);
+    }
+  });
+
+  test('experience cards share one title-to-body rhythm', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'viewport-resizing test drives its own widths');
+
+    const measureGaps = async () => {
+      const cards = page.locator('#about .grid.grid-cols-3 .glass');
+      await expect(cards).toHaveCount(3);
+
+      const gaps: number[] = [];
+      for (let i = 0; i < 3; i += 1) {
+        const titleBox = await cards.nth(i).locator('h3').boundingBox();
+        const bodyBox = await cards.nth(i).locator('h3 + p').boundingBox();
+        expect(titleBox, `card ${i} title box`).not.toBeNull();
+        expect(bodyBox, `card ${i} body box`).not.toBeNull();
+        gaps.push(bodyBox!.y - (titleBox!.y + titleBox!.height));
+      }
+      return gaps;
+    };
+
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.goto('/');
+
+      const gaps = await measureGaps();
+      const spread = Math.max(...gaps) - Math.min(...gaps);
+      expect(spread, `title-to-body gap spread at ${width}px: ${gaps.join(', ')}`).toBeLessThanOrEqual(1);
+    }
   });
 
   test('case-study titles link to their case studies', async ({ page }) => {
@@ -311,6 +421,29 @@ test.describe('homepage', () => {
       if (labelA && labelB) {
         expect(Math.abs(labelA.y - labelB.y)).toBeLessThanOrEqual(1);
       }
+    }
+  });
+
+  test('architecture nodes and summary rule share one measure', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The two-column architecture layout is desktop-only');
+    await page.goto('/');
+
+    const footer = page.locator('#architecture .architecture-footer');
+    const footerBox = await footer.boundingBox();
+    expect(footerBox).not.toBeNull();
+
+    const nodes = page.locator('#architecture .architecture-snapshot .system-node-primary');
+    const nodeCount = await nodes.count();
+    expect(nodeCount).toBeGreaterThan(0);
+
+    for (let i = 0; i < nodeCount; i += 1) {
+      const nodeBox = await nodes.nth(i).boundingBox();
+      expect(nodeBox).not.toBeNull();
+      expect(Math.abs(nodeBox!.x - footerBox!.x), `node ${i} left edge`).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(nodeBox!.x + nodeBox!.width - (footerBox!.x + footerBox!.width)),
+        `node ${i} right edge`,
+      ).toBeLessThanOrEqual(1);
     }
   });
 
