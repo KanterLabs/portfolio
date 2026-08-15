@@ -166,6 +166,60 @@ test.describe('case studies', () => {
     expect(separatorContent).toBe('"·"');
   });
 
+  test('.case-body divider gap is a divider, not another section', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'viewport-resizing test drives its own widths');
+
+    for (const { width, expectedPadding } of [
+      { width: 1440, expectedPadding: 40 },
+      { width: 390, expectedPadding: 28 },
+    ]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.goto('/projects/hostlet');
+
+      const caseBody = page.locator('.case-body');
+      const { paddingTop, marginTop } = await caseBody.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { paddingTop: parseFloat(style.paddingTop), marginTop: parseFloat(style.marginTop) };
+      });
+
+      expect(paddingTop, `.case-body padding-top at ${width}px`).toBe(expectedPadding);
+      expect(paddingTop, `.case-body padding-top < margin-top at ${width}px`).toBeLessThan(marginTop);
+    }
+  });
+
+  test('the TOC rail has a left border and the active link carries an accent marker', async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, 'The sidebar TOC only exists at >=960px');
+    await page.goto('/projects/kanterlabs-homelab');
+
+    const rail = page.locator('.toc-sidebar nav ul');
+    await expect(rail).toBeVisible();
+    const borderLeftWidth = await rail.evaluate((el) => parseFloat(getComputedStyle(el).borderLeftWidth));
+    expect(borderLeftWidth).toBeGreaterThanOrEqual(1);
+
+    // Scroll to force a heading into view so the IntersectionObserver marks
+    // a link active.
+    await page.locator('.prose h2').nth(1).scrollIntoViewIfNeeded();
+    const activeLink = page.locator('.toc-link-active');
+    await expect(activeLink).toHaveCount(1, { timeout: 5000 });
+    const activeShadow = await activeLink.evaluate((el) => getComputedStyle(el).boxShadow);
+    expect(activeShadow).not.toBe('none');
+
+    // Hover a link that is not the active one — the active tint would mask
+    // the hover background.
+    const hoverLink = page.locator('.toc-link:not(.toc-link-active)').last();
+    const beforeBg = await hoverLink.evaluate((el) => getComputedStyle(el).backgroundColor);
+    await hoverLink.hover();
+    await expect(async () => {
+      const afterBg = await hoverLink.evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(afterBg).not.toBe(beforeBg);
+      expect(afterBg).not.toBe('rgba(0, 0, 0, 0)');
+      expect(afterBg).not.toBe('transparent');
+    }).toPass({ timeout: 2000 });
+  });
+
   test('public case-study assets do not expose private network identifiers', async ({
     page,
     request,

@@ -35,6 +35,7 @@ test.describe('theme toggle layout', () => {
       await page.evaluate((t) => {
         localStorage.setItem('portfolio-theme', t);
         document.documentElement.dataset.theme = t;
+        document.documentElement.dataset.themeMode = t;
       }, theme);
 
       const toggle = page.locator('.theme-toggle').first();
@@ -54,8 +55,9 @@ test.describe('theme toggle layout', () => {
       expect(stackBox.x).toBeGreaterThanOrEqual(toggleBox.x);
       expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(toggleBox.x + toggleBox.width + 0.5);
 
-      // The visible (untransformed) icon fills the slot exactly.
-      const visibleIcon = toggle.locator(theme === 'light' ? '.theme-icon-moon' : '.theme-icon-sun');
+      // The visible (untransformed) icon mirrors the selected mode and
+      // fills the slot exactly.
+      const visibleIcon = toggle.locator(theme === 'light' ? '.theme-icon-sun' : '.theme-icon-moon');
       const visibleBox = await box(visibleIcon);
       expect(Math.abs(visibleBox.x - stackBox.x)).toBeLessThanOrEqual(0.5);
       expect(Math.abs(visibleBox.y - stackBox.y)).toBeLessThanOrEqual(0.5);

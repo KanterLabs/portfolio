@@ -31,7 +31,11 @@ const captionId = `system-caption-${project.id}`;
       </p>
     )}
     <SystemDiagram system={project.data.system} variant="strip" labelledBy={project.data.system ? captionId : undefined} />
-    <p class="project-stack">{project.data.stack.join(' · ')}</p>
+    <p class="project-stack">
+      {project.data.stack.map((item) => (
+        <span> {item} </span>
+      ))}
+    </p>
 
     <div class="project-showcase-footer">
       {project.data.system && (

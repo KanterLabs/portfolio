@@ -34,6 +34,23 @@ jobs:
           [ "$HEAD_REF" = "beta" ]
           [ "$HEAD_REPOSITORY" = "$TARGET_REPOSITORY" ]
 
+  dependency-audit:
+    runs-on: homelab
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22.22.1"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Audit dependencies
+        run: npm audit --package-lock-only --audit-level=low
+
   build-and-test:
     runs-on: homelab
     env:
@@ -86,7 +103,7 @@ jobs:
         (github.ref_name == 'main' && vars.DEPLOY_ENABLED == 'true') ||
         (github.ref_name == 'beta' && vars.BETA_DEPLOY_ENABLED == 'true')
       )
-    needs: build-and-test
+    needs: [dependency-audit, build-and-test]
     runs-on: homelab
     timeout-minutes: 10
     environment:
