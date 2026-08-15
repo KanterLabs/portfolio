@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const port = process.env.PLAYWRIGHT_PORT ?? '4322';
+const baseURL = `http://127.0.0.1:${port}`;
+
 export default defineConfig({
   testDir: './tests',
   timeout: 30_000,
@@ -12,13 +15,13 @@ export default defineConfig({
   retries: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://127.0.0.1:4321',
+    baseURL,
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'npm run build && PLAYWRIGHT=true npm run preview -- --host 127.0.0.1 --port 4321',
-    url: 'http://127.0.0.1:4321',
-    reuseExistingServer: true,
+    command: `npm run build && PLAYWRIGHT=true ASTRO_PREVIEW_BACKGROUND=1 npm run preview -- --host 127.0.0.1 --port ${port}`,
+    url: baseURL,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [
