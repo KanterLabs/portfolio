@@ -1,0 +1,28 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /site
+    target-branch: beta
+    schedule:
+      interval: weekly
+    groups:
+      astro:
+        patterns:
+          - astro
+          - "@astrojs/*"
+      tailwind:
+        patterns:
+          - tailwindcss
+          - "@tailwindcss/*"
+      playwright:
+        patterns:
+          - "@playwright/*"
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: beta
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
