@@ -69,8 +69,14 @@ const jsonLdItems = structuredData
       const themeStorageKey = 'portfolio-theme';
       const savedTheme = localStorage.getItem(themeStorageKey);
       const systemTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-      const resolvedTheme = theme === 'dark' ? 'dark' : (savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : systemTheme);
+      const resolvedMode = theme === 'dark' ? 'dark' : (savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'system');
+      const resolvedTheme = resolvedMode === 'system' ? systemTheme : resolvedMode;
       document.documentElement.dataset.theme = resolvedTheme;
+      document.documentElement.dataset.themeMode = resolvedMode;
+      document.querySelector('meta[name="theme-color"]')?.setAttribute(
+        'content',
+        resolvedTheme === 'light' ? '#f7f8f6' : '#0c0e0d',
+      );
     </script>
     <script is:inline>
       document.documentElement.classList.remove('no-js');

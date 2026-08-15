@@ -1756,29 +1756,23 @@ select {
   flex: none;
 }
 
+/* The visible icon mirrors the selected mode: monitor for "follow the OS"
+   (also the pre-hydration/no-JS default), sun for light, moon for dark. */
 .theme-icon {
   position: absolute;
   inset: 0;
-}
-
-.theme-icon-moon {
   opacity: 0;
   transform: rotate(-25deg) scale(0.7);
   transition: opacity var(--transition), transform var(--transition);
 }
 
-.theme-icon-sun {
-  opacity: 1;
-  transform: rotate(0) scale(1);
-  transition: opacity var(--transition), transform var(--transition);
+.theme-icon-auto {
+  transform: scale(0.7);
 }
 
-[data-theme="light"] .theme-icon-sun {
-  opacity: 0;
-  transform: rotate(25deg) scale(0.7);
-}
-
-[data-theme="light"] .theme-icon-moon {
+html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-auto,
+[data-theme-mode="light"] .theme-icon-sun,
+[data-theme-mode="dark"] .theme-icon-moon {
   opacity: 1;
   transform: rotate(0) scale(1);
 }

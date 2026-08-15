@@ -31,12 +31,20 @@ test('motion is disabled when reduced motion is requested', async ({ page }) => 
   expect(motion.nodeTransform).toBe('none');
 });
 
-test('theme icons transition to match the active theme', async ({ page }) => {
+test('theme icons transition to match the selected mode', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.addInitScript(() => localStorage.clear());
   await page.goto('/');
 
   const toggle = page.locator('[data-theme-toggle]');
+  // Fresh visit follows the system, shown by the monitor icon.
+  await expect(page.locator('.theme-icon-auto')).toHaveCSS('opacity', '1');
+  await expect(page.locator('.theme-icon-sun')).toHaveCSS('opacity', '0');
+  await expect(page.locator('.theme-icon-moon')).toHaveCSS('opacity', '0');
+
+  await toggle.click();
+  await page.waitForTimeout(220);
+  await expect(page.locator('.theme-icon-auto')).toHaveCSS('opacity', '0');
   await expect(page.locator('.theme-icon-sun')).toHaveCSS('opacity', '1');
   await expect(page.locator('.theme-icon-moon')).toHaveCSS('opacity', '0');
 
