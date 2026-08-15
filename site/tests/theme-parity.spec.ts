@@ -106,10 +106,16 @@ for (const theme of ['light', 'dark'] as const) {
     const plateBg = await effectiveBackground(page, '.project-showcase-diagram');
     const cardBg = await effectiveBackground(page, '.project-showcase');
 
-    const diverges = plateBg.some((channel, i) => Math.abs(channel - cardBg[i]) >= 2);
+    // >=2 used to be satisfiable purely by effectiveBackground()'s
+    // per-step Math.round compounding two independent rounding errors
+    // into an artificial gap, even when the true (unrounded) composited
+    // difference was under 1.5 and the rendered pixel delta was 1. >=3 is
+    // above anything that rounding alone can manufacture from a near-zero
+    // true difference, so this only passes on real separation.
+    const diverges = plateBg.some((channel, i) => Math.abs(channel - cardBg[i]) >= 3);
     expect(
       diverges,
-      `plate rgb(${plateBg.join(',')}) vs card rgb(${cardBg.join(',')}) must differ by >=2 in a channel`,
+      `plate rgb(${plateBg.join(',')}) vs card rgb(${cardBg.join(',')}) must differ by >=3 in a channel`,
     ).toBe(true);
   });
 
@@ -162,4 +168,122 @@ for (const theme of ['light', 'dark'] as const) {
     const ratio = getContrastRatio(line, plateBg);
     expect(ratio, `connector ${raw} on rgb(${plateBg.join(',')}) is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(3);
   });
+
+  test(`--plate is distinguishable from --color-bg in ${theme}`, async ({ page }) => {
+    await setTheme(page, theme, '/');
+
+    const { plateRaw, bgRaw } = await page.evaluate(() => {
+      const style = getComputedStyle(document.documentElement);
+      return { plateRaw: style.getPropertyValue('--plate'), bgRaw: style.getPropertyValue('--color-bg') };
+    });
+
+    // --plate is a color-mix() expression, not a literal color — resolve it
+    // by painting it onto a throwaway element and reading back the
+    // computed (browser-resolved) backgroundColor. Two separate elements:
+    // reusing one element's `background` shorthand across two assignments
+    // makes Chromium serialize the second (plain) color as oklab() instead
+    // of rgb(), which parseColor doesn't handle.
+    const { plateResolved, bgResolved } = await page.evaluate(
+      ([plate, bg]) => {
+        const plateProbe = document.createElement('div');
+        plateProbe.style.backgroundColor = plate;
+        document.body.appendChild(plateProbe);
+        const plateResolved = getComputedStyle(plateProbe).backgroundColor;
+        plateProbe.remove();
+
+        const bgProbe = document.createElement('div');
+        bgProbe.style.backgroundColor = bg;
+        document.body.appendChild(bgProbe);
+        const bgResolved = getComputedStyle(bgProbe).backgroundColor;
+        bgProbe.remove();
+
+        return { plateResolved, bgResolved };
+      },
+      [plateRaw, bgRaw] as const,
+    );
+
+    const plateParsed = parseColor(plateResolved);
+    const bgParsed = parseColor(bgResolved);
+    expect(plateParsed, `unparseable --plate ${plateResolved}`).not.toBeNull();
+    expect(bgParsed, `unparseable --color-bg ${bgResolved}`).not.toBeNull();
+
+    const diverges = plateParsed!.rgb.some((channel, i) => Math.abs(channel - bgParsed!.rgb[i]) >= 3);
+    expect(
+      diverges,
+      `--plate rgb(${plateParsed!.rgb.join(',')}) vs --color-bg rgb(${bgParsed!.rgb.join(',')}) must differ by >=3 in a channel`,
+    ).toBe(true);
+  });
+
+  test(`.field-label on the plate clears 4.5:1 in ${theme}`, async ({ page }) => {
+    await setTheme(page, theme, '/projects/hostlet');
+
+    const label = page.locator('.project-detail-facts .field-label').first();
+    await expect(label).toBeVisible();
+
+    const raw = await label.evaluate((el) => getComputedStyle(el).color);
+    const parsed = parseColor(raw);
+    expect(parsed, `unparseable color ${raw}`).not.toBeNull();
+
+    const plateBg = await effectiveBackground(page, '.project-detail-facts > div');
+    const text = parsed!.alpha < 1 ? composite(parsed!.rgb, parsed!.alpha, plateBg) : parsed!.rgb;
+
+    const ratio = getContrastRatio(text, plateBg);
+    expect(
+      ratio,
+      `.field-label ${raw} on plate rgb(${plateBg.join(',')}) is ${ratio.toFixed(2)}:1`,
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  // Reverting --panel to its old translucent value, or restoring the
+  // deleted light-theme `background: transparent` override for the fact
+  // plates, would leave every other assertion in this file green — none
+  // of them read backgroundColor directly. These two do.
+  test(`.project-detail-facts fact plate has a non-transparent background in ${theme}`, async ({ page }) => {
+    await setTheme(page, theme, '/projects/hostlet');
+
+    const plate = page.locator('.project-detail-facts > div').first();
+    await expect(plate).toBeVisible();
+
+    const raw = await plate.evaluate((el) => getComputedStyle(el).backgroundColor);
+    const parsed = parseColor(raw);
+    expect(parsed, `unparseable color ${raw}`).not.toBeNull();
+    expect(parsed!.alpha, `.project-detail-facts > div backgroundColor ${raw} in ${theme}`).toBeGreaterThan(0);
+  });
 }
+
+test('.project-card is an opaque, shadowed surface in light theme', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await setTheme(page, 'light', '/');
+
+  const card = page.locator('#projects .project-card').first();
+  await expect(card).toBeVisible();
+
+  const { backgroundColor, boxShadow } = await card.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return { backgroundColor: style.backgroundColor, boxShadow: style.boxShadow };
+  });
+
+  const parsed = parseColor(backgroundColor);
+  expect(parsed, `unparseable color ${backgroundColor}`).not.toBeNull();
+  expect(parsed!.alpha, `.project-card backgroundColor ${backgroundColor} must be opaque`).toBe(1);
+  expect(parsed!.rgb, `.project-card backgroundColor ${backgroundColor} must be white`).toEqual([255, 255, 255]);
+
+  expect(boxShadow, '.project-card resting box-shadow').not.toBe('none');
+});
+
+test('--shadow-card is set and theme-specific', async ({ page }) => {
+  const values: Record<'light' | 'dark', string> = { light: '', dark: '' };
+
+  for (const theme of ['light', 'dark'] as const) {
+    await setTheme(page, theme, '/');
+
+    const raw = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--shadow-card').trim(),
+    );
+    expect(raw, `--shadow-card in ${theme}`).not.toBe('');
+    expect(raw, `--shadow-card in ${theme}`).not.toBe('none');
+    values[theme] = raw;
+  }
+
+  expect(values.light, 'light vs dark --shadow-card must differ').not.toBe(values.dark);
+});

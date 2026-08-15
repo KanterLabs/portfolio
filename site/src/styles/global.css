@@ -31,6 +31,31 @@
   --line-strong: rgba(255, 255, 255, 0.16);
   --accent-color: #8fb8a3;
   --accent-ink: #0c0e0d;
+  /* The single recessed-data surface for the whole site. Derived from
+     --color-text-base/--color-bg, so it resolves correctly in light mode
+     and its no-JS mirror with no per-theme override. 1.6% keeps
+     .field-label (0.72rem/700, needs 4.5:1) clearing ~4.6:1 against
+     --color-text-soft in both themes — do not raise this without
+     re-checking that contrast (see tests/theme-parity.spec.ts). */
+  --plate: color-mix(in srgb, var(--color-text-base) 1.6%, var(--color-bg));
+  /* A second, distinct recess for a plate that sits *inside* a --panel
+     card (the featured showcase diagram), rather than directly on
+     --color-bg (fact boxes, proof rows). --plate is derived upward from
+     --color-bg toward --color-text-base, which in dark lands right on
+     top of --panel itself (both are tiny lightenings of the same near-
+     black) and the card->recess step nearly disappears. This one is
+     derived downward from --color-bg instead, composited under whatever
+     panel currently sits behind it, so the recess reads as sunk *below*
+     the card in both themes, not flush with it. Do not point on-page
+     plates (fact boxes, proof rows) at this token — it is calibrated for
+     nesting inside a --panel, not for sitting on --color-bg. */
+  --plate-recess: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  /* Resting and raised elevation for the three card surfaces. Dark stays
+     a tight near-black contact shadow plus a soft wide one; light is
+     overridden below with the ink color at low alpha, wide enough to
+     separate an opaque white card from #f7f8f6. */
+  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.5), 0 18px 32px -16px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover: 0 1px 0 rgba(0, 0, 0, 0.55), 0 26px 44px -18px rgba(0, 0, 0, 0.55);
   /* Sticky header ≈85px, plus the 20px translateY of the .observe-animate
      reveal — anchor scrolls are computed from the pre-reveal rect, so the
      section settles 20px higher than the scroll target. */
@@ -391,7 +416,7 @@ select {
 
 @media (width < 780px) {
   .editorial-shell .hero-surface {
-    padding: 3.5rem 0 3rem;
+    padding: 1.25rem 0 3rem;
   }
 
   .editorial-shell #about .grid.grid-cols-3 .glass,
@@ -399,7 +424,14 @@ select {
     display: block;
   }
 
-  .editorial-shell #about .grid.grid-cols-3 .glass > p:last-child,
+  /* Targets the body paragraph by its position after the title, not by
+     grid-column:last-child — so it applies whether or not the card ends
+     in a trailing CTA link (see the >=960px twin rule below). */
+  .editorial-shell #about .grid.grid-cols-3 .glass > h3 {
+    margin-top: 0.3rem;
+  }
+
+  .editorial-shell #about .grid.grid-cols-3 .glass > h3 + p,
   .editorial-shell #skills .glass > p:nth-child(2),
   .editorial-shell #skills .glass > div {
     margin-top: 0.6rem;
@@ -561,9 +593,10 @@ select {
   background: transparent;
 }
 
-.system-node-primary {
-  max-width: 18rem;
-}
+/* The #architecture snapshot nodes carry no width cap: the tier fills its
+   column so the nodes and the DEPLOY/HEALTH/RECOVER summary rule beneath
+   them share one measure, matching the featured showcase diagram. Guarded
+   by the shared-measure assertion in tests/home.spec.ts. */
 
 .system-node strong,
 .architecture-footer strong {
@@ -617,9 +650,12 @@ select {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--panel);
+  box-shadow: var(--shadow-card);
   transition:
     border-color var(--transition),
-    background-color var(--transition);
+    background-color var(--transition),
+    box-shadow var(--transition),
+    transform var(--transition);
 }
 
 /* Supporting cards additionally stretch as flex columns so their CTA can
@@ -635,6 +671,14 @@ select {
 .project-card:focus-within {
   border-color: var(--line-strong);
   background: color-mix(in srgb, var(--color-text-base) 4%, var(--panel));
+  box-shadow: var(--shadow-card-hover);
+  /* !important is load-bearing: both selectors are also .project-entry,
+     which carries the editorial-reveal keyframe animation (fill-mode:
+     both). A CSS Animation's forwards-fill effect outranks any normal
+     author declaration in the cascade, including :hover — without
+     !important this transform is silently discarded once the entrance
+     animation has played, on every card past the first paint. */
+  transform: translateY(-2px) !important;
 }
 
 /* The featured showcase keeps the accent rule down the left edge. */
@@ -756,10 +800,11 @@ select {
   flex: none;
 }
 
+/* .project-stack shares its gutter-separator treatment byte-for-byte with
+   .stack-list below — folded into that shared selector list so the two
+   can't drift apart again. */
 .project-stack {
   margin: 0;
-  color: var(--color-text-soft);
-  font-size: 0.82rem;
 }
 
 .project-card .text-link {
@@ -1044,7 +1089,7 @@ select {
   padding: 1rem;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: transparent;
+  background: var(--plate);
 }
 
 .project-proof-copy {
@@ -1060,16 +1105,19 @@ select {
 
 /* ── Case-study layout ── */
 
+/* The space above the hairline stays the section rhythm; the space below
+   it is a divider gap, not another section — sized to match the weight of
+   a .prose h2 rule (padding-top: 1.5rem), not doubled to --space-section. */
 .case-body {
   border-top: 1px solid var(--line);
   margin-top: var(--space-section);
-  padding-top: var(--space-section);
+  padding-top: 2.5rem;
 }
 
 .case-footer {
   border-top: 1px solid var(--line);
   margin-top: var(--space-section);
-  padding-top: var(--space-section);
+  padding-top: 2.5rem;
 }
 
 .case-prose {
@@ -1078,6 +1126,19 @@ select {
 
 .toc-sidebar {
   display: none;
+}
+
+.toc-sidebar nav ul {
+  border-left: 1px solid var(--line);
+}
+
+.toc-link {
+  padding-left: 0.85rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.toc-link:hover {
+  background: color-mix(in srgb, var(--color-text-base) 5%, transparent);
 }
 
 [data-toc-details] {
@@ -1134,8 +1195,10 @@ select {
 
 /* Stack lists read as a list, not a run-on sentence. Same gutter-separator
    treatment as .case-meta, so a wrapped entry never opens a line with a
-   stray middot at the shared left edge. */
-.stack-list {
+   stray middot at the shared left edge. .project-stack (the project-card
+   and showcase stack rows) shares this rule verbatim. */
+.stack-list,
+.project-stack {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -1146,13 +1209,15 @@ select {
   font-size: 0.82rem;
 }
 
-.stack-list > * {
+.stack-list > *,
+.project-stack > * {
   position: relative;
   color: inherit;
   font-size: inherit;
 }
 
-.stack-list > * + *::before {
+.stack-list > * + *::before,
+.project-stack > * + *::before {
   content: '·';
   position: absolute;
   left: -0.55rem;
@@ -1324,6 +1389,11 @@ select {
 
   .js .mobile-nav-panel.is-open {
     display: block;
+  }
+
+  .case-body,
+  .case-footer {
+    padding-top: 1.75rem;
   }
 
   .project-proof-grid,
@@ -1689,6 +1759,7 @@ select {
 .toc-link-active {
   color: #8fb8a3 !important;
   background: rgba(143, 184, 163, 0.07);
+  box-shadow: inset 2px 0 0 var(--accent-color);
 }
 
 .callout {
@@ -1799,13 +1870,15 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
   --color-accent-strong: #365b48;
   --color-line: rgba(23, 32, 27, 0.12);
   --color-line-strong: rgba(23, 32, 27, 0.2);
-  --panel: rgba(255, 255, 255, 0.72);
+  --panel: #ffffff;
   --panel-strong: #ffffff;
   --panel-soft: #eef1ed;
   --line: rgba(23, 32, 27, 0.12);
   --line-strong: rgba(23, 32, 27, 0.2);
   --accent-color: #47725c;
   --accent-ink: #ffffff;
+  --shadow-card: 0 1px 0 rgba(23, 32, 27, 0.06), 0 18px 32px -16px rgba(23, 32, 27, 0.12);
+  --shadow-card-hover: 0 1px 0 rgba(23, 32, 27, 0.08), 0 26px 44px -18px rgba(23, 32, 27, 0.18);
 }
 
 [data-theme="light"] body {
@@ -1830,13 +1903,15 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
     --color-accent-strong: #365b48;
     --color-line: rgba(23, 32, 27, 0.12);
     --color-line-strong: rgba(23, 32, 27, 0.2);
-    --panel: rgba(255, 255, 255, 0.72);
+    --panel: #ffffff;
     --panel-strong: #ffffff;
     --panel-soft: #eef1ed;
     --line: rgba(23, 32, 27, 0.12);
     --line-strong: rgba(23, 32, 27, 0.2);
     --accent-color: #47725c;
     --accent-ink: #ffffff;
+    --shadow-card: 0 1px 0 rgba(23, 32, 27, 0.06), 0 18px 32px -16px rgba(23, 32, 27, 0.12);
+    --shadow-card-hover: 0 1px 0 rgba(23, 32, 27, 0.08), 0 26px 44px -18px rgba(23, 32, 27, 0.18);
   }
 
   html:not([data-theme]) body {
@@ -1934,10 +2009,7 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
   background: #9aa39d;
 }
 
-[data-theme="light"] .system-node,
-[data-theme="light"] .project-proof-grid > div,
-[data-theme="light"] .project-detail-facts > div,
-[data-theme="light"] .proof-inline-row {
+[data-theme="light"] .system-node {
   background: transparent;
 }
 
@@ -2012,6 +2084,7 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     background: var(--panel);
+    box-shadow: var(--shadow-card);
   }
 
   .editorial-shell #about > .grid,
@@ -2042,7 +2115,14 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
     display: block;
   }
 
-  .editorial-shell #about .grid.grid-cols-3 .glass > p:last-child {
+  /* Same fix as the <780px twin: key off the title, not last-child, so
+     the "Data Center Technician" card (which ends in a link) matches the
+     other two cards' title-to-body gap. */
+  .editorial-shell #about .grid.grid-cols-3 .glass > h3 {
+    margin-top: 0.3rem;
+  }
+
+  .editorial-shell #about .grid.grid-cols-3 .glass > h3 + p {
     margin-top: 0.6rem;
   }
 
@@ -2109,14 +2189,15 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
     display: none;
   }
 
-  /* A machined recess, not a second card: derived from --color-bg so it
-     reads as "sunk into" the panel behind it in both themes. */
+  /* A machined recess, not a second card: --plate-recess (not --plate —
+     see its definition comment) is derived from --color-bg so it reads
+     as "sunk into" the panel behind it in both themes. */
   .editorial-shell #projects .project-showcase-diagram {
     display: block;
     padding: 1.1rem;
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+    background: var(--plate-recess);
   }
 
   /* Nodes sit raised on the recess, restoring the card → recess → node
@@ -2165,5 +2246,13 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
   .architecture-boot-connector {
     transform: none;
     animation: none !important;
+  }
+
+  .project-showcase:hover,
+  .project-showcase:focus-within,
+  .project-card:hover,
+  .project-card:focus-within {
+    /* Beats the !important hover lift above — see its comment. */
+    transform: none !important;
   }
 }

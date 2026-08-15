@@ -122,6 +122,20 @@ test.describe('shared page frame', () => {
     }
   });
 
+  test('mobile hero h1 sits near the top of the document, not under a void', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'needs viewport resizing');
+
+    // Settle the hero-reveal entrance animation so the measured position is
+    // the rest layout, not a still-animating translateY(14px) offset.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto('/');
+
+    const h1 = page.locator('h1').first();
+    const top = await h1.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    expect(top, 'homepage h1 document-relative top at 390px').toBeLessThan(190);
+  });
+
   test('.field-label computes identically on the homepage and a case study', async ({ page }) => {
     await page.goto('/');
     const homeLabel = await page
