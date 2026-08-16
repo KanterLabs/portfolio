@@ -15,7 +15,7 @@ type ChatResponse = {
   status?: number;
 };
 
-type ChatResponseFactory = (request: ChatRequest, attempt: number) => ChatResponse;
+type ChatResponseFactory = (request: ChatRequest, attempt: number) => ChatResponse | Promise<ChatResponse>;
 
 function event(name: string, data: Record<string, unknown>): string {
   return `event: ${name}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -34,7 +34,7 @@ async function installChatRoute(page: Page, factory: ChatResponseFactory): Promi
     const request = route.request().postDataJSON() as ChatRequest;
     requests.push(request);
 
-    const response = factory(request, requests.length);
+    const response = await factory(request, requests.length);
     await route.fulfill({
       status: response.status ?? 200,
       headers: {
@@ -47,6 +47,14 @@ async function installChatRoute(page: Page, factory: ChatResponseFactory): Promi
   });
 
   return requests;
+}
+
+function createGate() {
+  let release!: () => void;
+  const promise = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  return { promise, release };
 }
 
 async function openChat(page: Page) {
@@ -168,6 +176,38 @@ test('assembles streamed deltas and renders only allowlisted source links', asyn
   await expect(sources).not.toContainText('Untrusted page');
 });
 
+test('marks the assistant message as streaming until the SSE response completes', async ({ page }) => {
+  const responseGate = createGate();
+  const requests = await installChatRoute(page, async () => {
+    await responseGate.promise;
+    return stream(event('delta', { delta: 'Gated response.' }), event('done', {}));
+  });
+
+  await page.goto('/');
+  await openChat(page);
+
+  await page.locator('[data-chat-input]').fill('Wait for the response.');
+  await page.locator('[data-chat-send]').click();
+  await waitForRequest(requests, 1);
+
+  const assistant = page.locator('[data-chat-transcript] .portfolio-chat-message-assistant').last();
+  await expect(assistant).toHaveAttribute('data-streaming', 'true');
+  await expect(page.locator('.portfolio-chat-starters')).toBeHidden();
+
+  const hasTypingIndicator = await assistant.evaluate((element) => {
+    const nodes = [element, ...Array.from(element.querySelectorAll<HTMLElement>('*'))];
+    const pseudoElements = nodes.flatMap((node) => [getComputedStyle(node, '::before'), getComputedStyle(node, '::after')]);
+    return pseudoElements.some(
+      (style) => style.display !== 'none' && style.content !== 'none',
+    );
+  });
+  expect(hasTypingIndicator).toBe(true);
+
+  responseGate.release();
+  await expect(assistant).toContainText('Gated response.');
+  await expect(assistant).not.toHaveAttribute('data-streaming');
+});
+
 test('keeps a long streamed assistant response in view', async ({ page }) => {
   const responseChunk = 'Shane builds reliable infrastructure with explicit boundaries and rollback paths. ';
   const longResponse = responseChunk.repeat(18);
@@ -194,8 +234,10 @@ test('keeps a long streamed assistant response in view', async ({ page }) => {
 });
 
 test('shows an SSE error and recovers on the next request', async ({ page }) => {
-  const requests = await installChatRoute(page, (_request, attempt) => {
+  const errorResponseGate = createGate();
+  const requests = await installChatRoute(page, async (_request, attempt) => {
     if (attempt === 1) {
+      await errorResponseGate.promise;
       return stream(event('error', { message: 'Temporary outage' }));
     }
 
@@ -212,6 +254,10 @@ test('shows an SSE error and recovers on the next request', async ({ page }) => 
   await input.fill('First attempt');
   await send.click();
   await waitForRequest(requests, 1);
+  const failedAssistant = page.locator('[data-chat-transcript] .portfolio-chat-message-assistant').last();
+  await expect(failedAssistant).toHaveAttribute('data-streaming', 'true');
+  errorResponseGate.release();
+  await expect(failedAssistant).not.toHaveAttribute('data-streaming');
   await expect(status).toContainText('Temporary outage');
 
   await input.fill('Retry after the outage');
@@ -219,6 +265,20 @@ test('shows an SSE error and recovers on the next request', async ({ page }) => 
   await waitForRequest(requests, 2);
   await expect(page.locator('[data-chat-transcript]')).toContainText('Recovered successfully.');
   await expect(status).not.toContainText('Temporary outage');
+});
+
+test('chat panel entry animation respects reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/');
+  const { panel } = await openChat(page);
+  await expect
+    .poll(() => panel.evaluate((element) => getComputedStyle(element).animationName))
+    .not.toBe('none');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
+  const reducedPanel = (await openChat(page)).panel;
+  await expect(reducedPanel).toHaveCSS('animation-name', 'none');
 });
 
 test('bounds request history after repeated messages', async ({ page }) => {
