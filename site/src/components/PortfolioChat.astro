@@ -135,6 +135,8 @@
       let requestSequence = 0;
       let isBusy = false;
       let lastFailedMessage = '';
+      let panelCloseTimer: number | undefined;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
       const setStatus = (message: string) => {
         status.textContent = message;
@@ -187,7 +189,42 @@
         article.append(paragraph);
         transcript.append(article);
         scrollTranscript();
-        return paragraph;
+        return { article, paragraph };
+      };
+
+      const createStreamRenderer = (paragraph: HTMLParagraphElement) => {
+        let frameId: number | undefined;
+        let renderedText = '';
+        let pendingText = '';
+
+        const paint = () => {
+          frameId = undefined;
+          if (!pendingText) return;
+          renderedText += pendingText;
+          pendingText = '';
+          paragraph.textContent = renderedText;
+          scrollTranscript();
+        };
+
+        return {
+          push(delta: string) {
+            pendingText += delta;
+            if (frameId === undefined) frameId = window.requestAnimationFrame(paint);
+          },
+          flush() {
+            if (frameId !== undefined) {
+              window.cancelAnimationFrame(frameId);
+              frameId = undefined;
+            }
+            paint();
+            return renderedText;
+          },
+          cancel() {
+            if (frameId !== undefined) window.cancelAnimationFrame(frameId);
+            frameId = undefined;
+            pendingText = '';
+          },
+        };
       };
 
       const renderSources = (items: unknown) => {
@@ -242,12 +279,36 @@
       };
 
       const setPanelOpen = (open: boolean) => {
-        panel.hidden = !open;
-        panel.setAttribute('aria-hidden', open ? 'false' : 'true');
-        launcher.setAttribute('aria-expanded', open ? 'true' : 'false');
-        root.classList.toggle('portfolio-chat-open', open);
+        if (panelCloseTimer !== undefined) {
+          window.clearTimeout(panelCloseTimer);
+          panelCloseTimer = undefined;
+        }
+
         if (open) {
+          root.classList.remove('portfolio-chat-closing');
+          panel.hidden = false;
+          panel.setAttribute('aria-hidden', 'false');
+          launcher.setAttribute('aria-expanded', 'true');
+          root.classList.add('portfolio-chat-open');
           window.requestAnimationFrame(() => input.focus());
+          return;
+        }
+
+        panel.setAttribute('aria-hidden', 'true');
+        launcher.setAttribute('aria-expanded', 'false');
+        root.classList.remove('portfolio-chat-open');
+
+        const finishClose = () => {
+          panel.hidden = true;
+          root.classList.remove('portfolio-chat-closing');
+          panelCloseTimer = undefined;
+        };
+
+        if (reducedMotion.matches) {
+          finishClose();
+        } else {
+          root.classList.add('portfolio-chat-closing');
+          panelCloseTimer = window.setTimeout(finishClose, 150);
         }
       };
 
@@ -390,12 +451,15 @@
         lastFailedMessage = '';
         renderSources([]);
         appendMessage('user', message);
-        const assistantParagraph = appendMessage('assistant');
+        const { article: assistantMessage, paragraph: assistantParagraph } = appendMessage('assistant');
+        assistantMessage.dataset.streaming = 'true';
         const controller = new AbortController();
         const sequence = ++requestSequence;
         activeController = controller;
         setBusy(true);
         setStatus('Thinking…');
+
+        let streamRenderer: ReturnType<typeof createStreamRenderer> | undefined;
 
         try {
           const response = await fetch('/api/chat', {
@@ -415,16 +479,14 @@
 
           if (!response.ok) throw new Error('The assistant is temporarily unavailable.');
 
-          let assistantText = '';
+          streamRenderer = createStreamRenderer(assistantParagraph);
           await readSse(
             response,
-            (delta) => {
-              assistantText += delta;
-              assistantParagraph.textContent = assistantText;
-              scrollTranscript();
-            },
+            (delta) => streamRenderer?.push(delta),
             (items) => renderSources(items),
           );
+          let assistantText = streamRenderer.flush();
+          assistantMessage.removeAttribute('data-streaming');
 
           if (!assistantText) {
             assistantText = 'I could not find an answer for that yet. Please try another question.';
@@ -437,7 +499,14 @@
             setStatus('Response complete.');
           }
         } catch (error) {
-          if (isAbortError(error) || sequence !== requestSequence) return;
+          streamRenderer?.cancel();
+          assistantMessage.removeAttribute('data-streaming');
+
+          if (isAbortError(error) || sequence !== requestSequence) {
+            if (!assistantParagraph.textContent) assistantMessage.remove();
+            return;
+          }
+
           assistantParagraph.textContent = 'I’m unavailable right now. Please try sending your question again.';
           scrollTranscript();
           lastFailedMessage = message;
@@ -513,7 +582,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.55rem;
-    min-height: 2.75rem;
+    min-height: 2.8125rem;
     padding: 0.65rem 0.95rem;
     border: 1px solid var(--chat-line-strong);
     border-radius: 999px;
@@ -564,6 +633,15 @@
     box-shadow: 0 1.25rem 4rem color-mix(in srgb, var(--color-bg, #0c0e0d) 48%, transparent);
   }
 
+  .portfolio-chat-panel:not([hidden]) {
+    animation: portfolio-chat-panel-in 180ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  .portfolio-chat-closing .portfolio-chat-panel {
+    pointer-events: none;
+    animation: portfolio-chat-panel-out 150ms ease both;
+  }
+
   .portfolio-chat-header {
     display: flex;
     align-items: flex-start;
@@ -594,8 +672,8 @@
     display: grid;
     flex: 0 0 auto;
     place-items: center;
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 2.8125rem;
+    height: 2.8125rem;
     margin: -0.35rem -0.35rem 0 0;
     border: 1px solid transparent;
     border-radius: 0.65rem;
@@ -641,10 +719,24 @@
     font-size: 0.84rem;
     line-height: 1.5;
     overflow-wrap: anywhere;
+    animation: portfolio-chat-message-in 160ms ease-out both;
   }
 
   .portfolio-chat-message p {
     margin: 0;
+  }
+
+  .portfolio-chat-message[data-streaming='true'] p::after {
+    display: inline-block;
+    width: 0.36rem;
+    height: 0.85em;
+    margin-left: 0.24rem;
+    border-radius: 1px;
+    background: currentColor;
+    vertical-align: -0.08em;
+    opacity: 0.42;
+    content: '';
+    animation: portfolio-chat-caret 900ms steps(2, end) infinite;
   }
 
   .portfolio-chat-message-user {
@@ -674,7 +766,7 @@
 
   .portfolio-chat-starter {
     width: 100%;
-    min-height: 2.75rem;
+    min-height: 2.8125rem;
     padding: 0.55rem 0.65rem;
     border: 1px solid var(--chat-line);
     border-radius: 0.6rem;
@@ -773,7 +865,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
-    min-height: 2.75rem;
+    min-height: 2.8125rem;
     padding: 0.55rem 0.8rem;
     border: 1px solid var(--chat-accent);
     border-radius: 0.65rem;
@@ -812,6 +904,47 @@
     border: 0;
   }
 
+  @keyframes portfolio-chat-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.45rem);
+    }
+  }
+
+  @keyframes portfolio-chat-panel-out {
+    to {
+      opacity: 0;
+      transform: translateY(0.3rem);
+    }
+  }
+
+  @keyframes portfolio-chat-sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.8rem);
+    }
+  }
+
+  @keyframes portfolio-chat-sheet-out {
+    to {
+      opacity: 0;
+      transform: translateY(0.55rem);
+    }
+  }
+
+  @keyframes portfolio-chat-message-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.25rem);
+    }
+  }
+
+  @keyframes portfolio-chat-caret {
+    50% {
+      opacity: 0.12;
+    }
+  }
+
   @media (width <= 640px) {
     .portfolio-chat-launcher {
       right: max(0.75rem, env(safe-area-inset-right));
@@ -832,13 +965,26 @@
       padding-bottom: env(safe-area-inset-bottom);
     }
 
+    .portfolio-chat-panel:not([hidden]) {
+      animation-name: portfolio-chat-sheet-in;
+    }
+
+    .portfolio-chat-closing .portfolio-chat-panel {
+      animation-name: portfolio-chat-sheet-out;
+    }
+
     .portfolio-chat-body {
       padding-inline: max(0.75rem, env(safe-area-inset-left)) max(0.75rem, env(safe-area-inset-right));
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .portfolio-chat-launcher {
+    .portfolio-chat-launcher,
+    .portfolio-chat-panel:not([hidden]),
+    .portfolio-chat-closing .portfolio-chat-panel,
+    .portfolio-chat-message,
+    .portfolio-chat-message[data-streaming='true'] p::after {
+      animation: none;
       transition: none;
     }
   }
