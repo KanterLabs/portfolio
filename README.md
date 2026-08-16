@@ -6,6 +6,8 @@ its Kantercloud production and Access-protected beta environments.
 ## Repository Structure
 
 - `site/`: Astro application, case studies, tests, and public assets
+- `chat-worker/`: beta Cloudflare Worker for the Luna-backed portfolio assistant
+- `chat-content/`: reviewed public facts and chatbot scope cases
 - `infrastructure/kantercloud/`: Nginx, firewall, SSH, atomic-release, and beta tunnel configuration
 - `infrastructure/archive/gcp/`: retired two-origin GCP design retained as migration history
 - `docs/`: current architecture and recovery checklist
@@ -43,6 +45,8 @@ and not sustained CPU-bound. See the
 for ARC, runner, and tier definitions.
 
 See `docs/architecture-design.md` and `docs/setup-checklist.md` for the topology, validation order, and rollback procedure.
+See `docs/chatbot-beta.md` for the beta chatbot boundary, OpenAI secret setup,
+validation, and rollback procedure.
 
 ## Beta promotion
 
