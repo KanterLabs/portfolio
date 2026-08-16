@@ -6,7 +6,7 @@
     aria-expanded="false"
     aria-controls="portfolio-chat-panel"
   >
-    <span class="portfolio-chat-launcher-mark" aria-hidden="true">+</span>
+    <span class="portfolio-chat-launcher-mark" aria-hidden="true">?</span>
     <span>Ask about Shane</span>
   </button>
 
@@ -21,13 +21,9 @@
     hidden
   >
     <div class="portfolio-chat-header">
-      <div class="portfolio-chat-header-copy">
-        <div class="portfolio-chat-kicker-row">
-          <p class="portfolio-chat-kicker"><span class="portfolio-chat-kicker-index" aria-hidden="true">01</span> Luna / portfolio system</p>
-          <span class="portfolio-chat-disclosure"><span class="portfolio-chat-disclosure-dot" aria-hidden="true"></span>AI-assisted · grounded</span>
-        </div>
+      <div>
+        <p class="portfolio-chat-kicker">Portfolio assistant</p>
         <h2 id="portfolio-chat-title">Ask about Shane</h2>
-        <p class="portfolio-chat-context"><span aria-hidden="true">MODE //</span> Projects, infrastructure, and contact.</p>
       </div>
       <button class="portfolio-chat-close" type="button" data-chat-close aria-label="Close portfolio assistant">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
@@ -39,10 +35,9 @@
     <div class="portfolio-chat-body">
       <div class="portfolio-chat-transcript" data-chat-transcript role="log" aria-live="polite" aria-relevant="additions text">
         <article class="portfolio-chat-message portfolio-chat-message-assistant">
-          <span class="portfolio-chat-message-label">Luna / assistant</span>
           <p>
-            I can route you to Shane's systems, platform work, and infrastructure experience.
-            Ask for a project, capability, or a way to connect.
+            I'm Shane's portfolio assistant—not Shane himself. Ask me about his projects,
+            infrastructure experience, or how to get in touch.
           </p>
         </article>
       </div>
@@ -51,13 +46,16 @@
         <p class="portfolio-chat-label">Try a question</p>
         <div class="portfolio-chat-starter-list">
           <button type="button" class="portfolio-chat-starter" data-chat-starter>
-            What he builds
+            What kinds of systems does Shane build?
           </button>
           <button type="button" class="portfolio-chat-starter" data-chat-starter>
-            Platform work
+            Tell me about Shane's platform projects.
           </button>
           <button type="button" class="portfolio-chat-starter" data-chat-starter>
-            Contact Shane
+            What is Shane's data center experience?
+          </button>
+          <button type="button" class="portfolio-chat-starter" data-chat-starter>
+            How can I contact Shane?
           </button>
         </div>
       </div>
@@ -69,30 +67,26 @@
 
       <form class="portfolio-chat-form" data-chat-form novalidate>
         <label class="portfolio-chat-visually-hidden" for="portfolio-chat-input">Your question</label>
-        <div class="portfolio-chat-composer">
-          <span class="portfolio-chat-composer-prompt" aria-hidden="true">›</span>
-          <textarea
-            id="portfolio-chat-input"
-            class="portfolio-chat-input"
-            data-chat-input
-            name="message"
-            rows="2"
-            maxlength="800"
-            autocomplete="off"
-            placeholder="Ask a question…"
-            required
-          ></textarea>
-          <button class="portfolio-chat-send" type="submit" data-chat-send aria-label="Send question">
+        <textarea
+          id="portfolio-chat-input"
+          class="portfolio-chat-input"
+          data-chat-input
+          name="message"
+          rows="2"
+          maxlength="800"
+          autocomplete="off"
+          placeholder="Ask a question…"
+          required
+        ></textarea>
+        <div class="portfolio-chat-form-row">
+          <span class="portfolio-chat-limit">800 character limit</span>
+          <button class="portfolio-chat-send" type="submit" data-chat-send>
             <span>Send</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
               <path d="M22 2L11 13" />
               <path d="M22 2l-7 20-4-9-9-4 20-7Z" />
             </svg>
           </button>
-        </div>
-        <div class="portfolio-chat-form-row">
-          <span class="portfolio-chat-limit">800 characters max</span>
-          <span class="portfolio-chat-command" aria-hidden="true">Enter ↵ to send</span>
         </div>
         <button class="portfolio-chat-retry" type="button" data-chat-retry hidden>Try sending again</button>
       </form>
@@ -190,12 +184,6 @@
         article.className = `portfolio-chat-message portfolio-chat-message-${role}`;
         const paragraph = document.createElement('p');
         paragraph.textContent = content;
-        if (role === 'assistant') {
-          const marker = document.createElement('span');
-          marker.className = 'portfolio-chat-message-label';
-          marker.textContent = 'Luna / assistant';
-          article.append(marker);
-        }
         article.append(paragraph);
         transcript.append(article);
         scrollTranscript();
@@ -485,12 +473,6 @@
           setStatus('Please keep your question under 800 characters.');
         }
       });
-      input.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
-          event.preventDefault();
-          form.requestSubmit();
-        }
-      });
       retryButton.addEventListener('click', () => {
         if (!lastFailedMessage) return;
         void submitMessage(lastFailedMessage);
@@ -509,24 +491,17 @@
 
 <style is:global>
   .portfolio-chat {
-    /* Keep Luna's surface intentionally dark in both site themes. */
-    --chat-surface: #0d1210;
-    --chat-surface-soft: #101913;
-    --chat-surface-raised: #16231b;
-    --chat-surface-recessed: #09100c;
-    --chat-text: #f3f1e8;
-    --chat-muted: #a9b9ab;
-    --chat-soft: #8da092;
-    --chat-line: rgba(174, 224, 187, 0.18);
-    --chat-line-strong: rgba(174, 224, 187, 0.32);
-    --chat-accent: #9cffad;
-    --chat-accent-strong: #c5ffd0;
-    --chat-accent-ink: #061009;
-    --chat-shadow: 0 1.5rem 3rem -1.4rem rgba(0, 0, 0, 0.78), 0 1px 0 rgba(203, 255, 211, 0.08);
-    position: relative;
+    --chat-surface: var(--panel-strong, #141816);
+    --chat-surface-soft: var(--panel-soft, #0f1210);
+    --chat-text: var(--color-text-base, #e6e8e7);
+    --chat-muted: var(--color-text-muted, #9aa3a0);
+    --chat-soft: var(--color-text-soft, #78837d);
+    --chat-line: var(--line, rgba(255, 255, 255, 0.08));
+    --chat-line-strong: var(--line-strong, rgba(255, 255, 255, 0.16));
+    --chat-accent: var(--accent-color, #8fb8a3);
+    --chat-accent-ink: var(--accent-ink, #0c0e0d);
     color: var(--chat-text);
-    color-scheme: dark;
-    font-family: var(--font-family-sans, Inter, ui-sans-serif, system-ui, sans-serif);
+    font-family: var(--font-family-sans);
   }
 
   .portfolio-chat-launcher {
@@ -537,20 +512,16 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    min-width: 2.875rem;
-    min-height: 2.875rem;
-    padding: 0.6rem 0.85rem;
+    gap: 0.55rem;
+    min-height: 2.75rem;
+    padding: 0.65rem 0.95rem;
     border: 1px solid var(--chat-line-strong);
-    border-radius: 0.72rem;
+    border-radius: 999px;
     color: var(--chat-text);
-    background: var(--chat-surface);
-    box-shadow: 0 0.8rem 1.7rem -1.15rem rgba(0, 0, 0, 0.82);
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 0.72rem;
+    background: color-mix(in srgb, var(--chat-surface) 92%, var(--chat-accent) 8%);
+    box-shadow: 0 0.75rem 2rem color-mix(in srgb, var(--color-bg, #0c0e0d) 38%, transparent);
+    font-size: 0.82rem;
     font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
     cursor: pointer;
     transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, opacity 180ms ease;
   }
@@ -558,148 +529,76 @@
   .portfolio-chat-launcher:hover {
     transform: translateY(-2px);
     border-color: var(--chat-accent);
-    background: var(--chat-surface-raised);
   }
 
   .portfolio-chat-open .portfolio-chat-launcher {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: translateY(0.35rem) scale(0.94);
   }
 
   .portfolio-chat-launcher-mark {
     display: grid;
     place-items: center;
-    width: 1.15rem;
-    height: 1.15rem;
-    border: 1px solid var(--chat-accent);
-    border-radius: 0.25rem;
-    color: var(--chat-accent);
-    font-size: 0.86rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-size: 0.72rem;
     line-height: 1;
   }
 
   .portfolio-chat-panel {
     position: fixed;
     right: max(1rem, env(safe-area-inset-right));
-    bottom: max(1rem, env(safe-area-inset-bottom));
+    bottom: max(4.75rem, calc(env(safe-area-inset-bottom) + 4.25rem));
     z-index: 55;
     display: flex;
     flex-direction: column;
-    width: min(calc(100vw - 2rem), 26.5rem);
-    min-height: 22rem;
-    max-height: min(30rem, calc(100dvh - 2rem));
+    width: min(calc(100vw - 2rem), 26rem);
+    max-height: min(80dvh, 42rem);
     overflow: hidden;
     border: 1px solid var(--chat-line-strong);
-    border-radius: 0.82rem;
+    border-radius: 1.15rem;
     background: var(--chat-surface);
-    box-shadow: var(--chat-shadow);
-    transform-origin: bottom right;
-  }
-
-  .portfolio-chat-panel[hidden] {
-    display: none;
-  }
-
-  .portfolio-chat-panel:not([hidden]) {
-    animation: portfolio-chat-panel-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    box-shadow: 0 1.25rem 4rem color-mix(in srgb, var(--color-bg, #0c0e0d) 48%, transparent);
   }
 
   .portfolio-chat-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.75rem;
-    flex: 0 0 auto;
-    padding: 0.78rem 0.9rem 0.72rem;
+    gap: 1rem;
+    padding: 1rem 1rem 0.9rem;
     border-bottom: 1px solid var(--chat-line);
-    background: linear-gradient(135deg, var(--chat-surface-raised), var(--chat-surface));
-  }
-
-  .portfolio-chat-header-copy {
-    min-width: 0;
-  }
-
-  .portfolio-chat-kicker-row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.35rem 0.6rem;
   }
 
   .portfolio-chat-kicker,
   .portfolio-chat-label {
     margin: 0;
     color: var(--chat-soft);
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 0.62rem;
+    font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.1em;
-    line-height: 1.3;
     text-transform: uppercase;
   }
 
-  .portfolio-chat-kicker {
-    color: var(--chat-accent);
-  }
-
-  .portfolio-chat-kicker-index {
-    display: inline-block;
-    margin-right: 0.3rem;
-    color: var(--chat-soft);
-    font-weight: 500;
-  }
-
-  .portfolio-chat-disclosure {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    color: var(--chat-muted);
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 0.59rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-  }
-
-  .portfolio-chat-disclosure-dot {
-    width: 0.38rem;
-    height: 0.38rem;
-    border-radius: 50%;
-    background: var(--chat-accent);
-    box-shadow: 0 0 0 0.18rem rgba(156, 255, 173, 0.14);
-  }
-
   .portfolio-chat-header h2 {
-    margin: 0.32rem 0 0;
+    margin: 0.28rem 0 0;
     color: var(--chat-text);
     font-size: 1.02rem;
-    letter-spacing: -0.015em;
     line-height: 1.25;
-  }
-
-  .portfolio-chat-context {
-    margin: 0.22rem 0 0;
-    color: var(--chat-soft);
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 0.62rem;
-    line-height: 1.35;
-  }
-
-  .portfolio-chat-context [aria-hidden] {
-    color: var(--chat-accent);
   }
 
   .portfolio-chat-close {
     display: grid;
     flex: 0 0 auto;
     place-items: center;
-    width: 2.875rem;
-    height: 2.875rem;
-    margin: -0.2rem -0.25rem 0 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: -0.35rem -0.35rem 0 0;
     border: 1px solid transparent;
-    border-radius: 0.45rem;
+    border-radius: 0.65rem;
     color: var(--chat-muted);
     background: transparent;
     cursor: pointer;
@@ -708,7 +607,6 @@
   .portfolio-chat-close:hover {
     border-color: var(--chat-line-strong);
     color: var(--chat-text);
-    background: var(--chat-surface-raised);
   }
 
   .portfolio-chat-body {
@@ -716,35 +614,32 @@
     flex: 1 1 auto;
     min-height: 0;
     flex-direction: column;
-    gap: 0.58rem;
-    padding: 0.7rem 0.9rem 0.85rem;
-    overflow: hidden;
+    gap: 0.8rem;
+    padding: 0.9rem;
+    overflow: auto;
     overscroll-behavior: contain;
   }
 
   .portfolio-chat-transcript {
     display: grid;
-    align-content: start;
-    flex: 1 1 auto;
-    min-height: 6rem;
-    gap: 0.5rem;
+    gap: 0.65rem;
+    min-height: 3.3rem;
+    max-height: min(42dvh, 22rem);
     overflow: auto;
-    padding: 0.1rem 0.15rem 0.1rem 0;
+    padding-right: 0.15rem;
     overscroll-behavior: contain;
-    scrollbar-gutter: stable;
   }
 
   .portfolio-chat-message {
     width: fit-content;
     max-width: 92%;
-    min-width: 0;
-    padding: 0.56rem 0.68rem;
+    padding: 0.65rem 0.75rem;
     border: 1px solid var(--chat-line);
-    border-radius: 0.56rem;
+    border-radius: 0.8rem;
     color: var(--chat-text);
     background: var(--chat-surface-soft);
-    font-size: 0.77rem;
-    line-height: 1.46;
+    font-size: 0.84rem;
+    line-height: 1.5;
     overflow-wrap: anywhere;
   }
 
@@ -752,36 +647,20 @@
     margin: 0;
   }
 
-  .portfolio-chat-message-label {
-    display: block;
-    margin-bottom: 0.28rem;
-    color: var(--chat-accent);
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 0.57rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    line-height: 1.2;
-    text-transform: uppercase;
-  }
-
   .portfolio-chat-message-user {
     justify-self: end;
-    border-color: rgba(156, 255, 173, 0.42);
-    background: var(--chat-surface-raised);
+    border-color: color-mix(in srgb, var(--chat-accent) 38%, var(--chat-line));
+    background: color-mix(in srgb, var(--chat-accent) 13%, var(--chat-surface));
   }
 
   .portfolio-chat-message-assistant {
     justify-self: start;
-    border-color: rgba(174, 224, 187, 0.3);
-    border-left: 2px solid var(--chat-accent);
-    background: #19261d;
-    border-top-left-radius: 0.25rem;
+    border-left: 2px solid color-mix(in srgb, var(--chat-accent) 62%, var(--chat-line));
   }
 
   .portfolio-chat-starters {
     display: grid;
-    flex: 0 0 auto;
-    gap: 0.36rem;
+    gap: 0.45rem;
   }
 
   .portfolio-chat-starters[hidden] {
@@ -790,32 +669,26 @@
 
   .portfolio-chat-starter-list {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.36rem;
+    gap: 0.4rem;
   }
 
   .portfolio-chat-starter {
     width: 100%;
-    min-width: 0;
-    min-height: 2.875rem;
-    padding: 0.45rem 0.38rem;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.65rem;
     border: 1px solid var(--chat-line);
-    border-radius: 0.48rem;
+    border-radius: 0.6rem;
     color: var(--chat-muted);
-    background: var(--chat-surface-raised);
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 0.66rem;
-    line-height: 1.3;
-    overflow-wrap: anywhere;
+    background: transparent;
+    font-size: 0.76rem;
+    line-height: 1.35;
     text-align: left;
     cursor: pointer;
-    transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
   }
 
   .portfolio-chat-starter:hover {
     border-color: var(--chat-accent);
     color: var(--chat-text);
-    background: #1b2d21;
   }
 
   .portfolio-chat-starter:disabled,
@@ -826,17 +699,14 @@
 
   .portfolio-chat-sources {
     display: grid;
-    flex: 0 0 auto;
-    gap: 0.35rem;
-    max-height: 4rem;
-    overflow: auto;
-    padding-top: 0.5rem;
+    gap: 0.4rem;
+    padding-top: 0.7rem;
     border-top: 1px solid var(--chat-line);
   }
 
   .portfolio-chat-source-list {
     display: grid;
-    gap: 0.2rem;
+    gap: 0.25rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -844,78 +714,41 @@
 
   .portfolio-chat-source-list a {
     color: var(--chat-accent);
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 0.67rem;
-    overflow-wrap: anywhere;
+    font-size: 0.78rem;
     text-decoration: underline;
     text-underline-offset: 0.15em;
   }
 
   .portfolio-chat-status {
-    flex: 0 0 auto;
-    min-height: 1rem;
+    min-height: 1.1rem;
     margin: 0;
     color: var(--chat-soft);
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 0.65rem;
-    line-height: 1.4;
+    font-size: 0.75rem;
+    line-height: 1.45;
   }
 
   .portfolio-chat-form {
     display: grid;
-    flex: 0 0 auto;
-    gap: 0.36rem;
-    margin-top: 0;
-    padding-top: 0.62rem;
-    border-top: 1px solid var(--chat-line);
-  }
-
-  .portfolio-chat-composer {
-    display: flex;
-    align-items: stretch;
-    gap: 0.3rem;
-    min-width: 0;
-    min-height: 3.4rem;
-    padding: 0.25rem;
-    border: 1px solid var(--chat-line-strong);
-    border-radius: 0.62rem;
-    background: var(--chat-surface-recessed);
-    box-shadow: inset 0 1px 0 rgba(174, 224, 187, 0.05);
-  }
-
-  .portfolio-chat-composer-prompt {
-    display: grid;
-    flex: 0 0 1.1rem;
-    place-items: center;
-    color: var(--chat-accent);
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 1.3rem;
-    line-height: 1;
+    gap: 0.55rem;
+    margin-top: auto;
   }
 
   .portfolio-chat-input {
-    flex: 1 1 auto;
     width: 100%;
-    min-width: 0;
-    min-height: 2.75rem;
-    max-height: 5.5rem;
+    min-height: 3rem;
+    max-height: 8rem;
     resize: vertical;
-    padding: 0.5rem 0.3rem;
-    border: 0;
+    padding: 0.7rem 0.75rem;
+    border: 1px solid var(--chat-line-strong);
+    border-radius: 0.7rem;
     color: var(--chat-text);
-    background: transparent;
-    font-size: 0.77rem;
-    line-height: 1.42;
+    background: var(--chat-surface-soft);
+    font-size: 0.84rem;
+    line-height: 1.45;
   }
 
   .portfolio-chat-input::placeholder {
     color: var(--chat-soft);
-  }
-
-  .portfolio-chat-input:focus {
-    border: 0;
-    outline: 0;
-    box-shadow: none;
   }
 
   .portfolio-chat-input:disabled {
@@ -923,61 +756,45 @@
     opacity: 0.65;
   }
 
-  .portfolio-chat-send {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    gap: 0.32rem;
-    min-width: 4.25rem;
-    min-height: 2.875rem;
-    padding: 0.5rem 0.65rem;
-    border: 1px solid var(--chat-accent);
-    border-radius: 0.48rem;
-    color: var(--chat-accent-ink);
-    background: var(--chat-accent);
-    font-size: 0.7rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
-  }
-
-  .portfolio-chat-send:hover:not(:disabled) {
-    border-color: var(--chat-accent-strong);
-    background: var(--chat-accent-strong);
-    transform: translateY(-1px);
-  }
-
   .portfolio-chat-form-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.6rem;
-    min-width: 0;
+    gap: 0.75rem;
   }
 
-  .portfolio-chat-limit,
-  .portfolio-chat-command {
+  .portfolio-chat-limit {
     color: var(--chat-soft);
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 0.59rem;
-    line-height: 1.35;
+    font-size: 0.68rem;
   }
 
-  .portfolio-chat-command {
-    color: var(--chat-muted);
-    text-align: right;
+  .portfolio-chat-send {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--chat-accent);
+    border-radius: 0.65rem;
+    color: var(--chat-accent-ink);
+    background: var(--chat-accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .portfolio-chat-send:hover:not(:disabled) {
+    background: var(--color-accent-strong, var(--chat-accent));
   }
 
   .portfolio-chat-retry {
     justify-self: start;
-    min-height: 2.875rem;
-    padding: 0.15rem 0.2rem;
+    padding: 0.15rem 0;
     border: 0;
     color: var(--chat-accent);
     background: transparent;
-    font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     text-decoration: underline;
     text-underline-offset: 0.15em;
     cursor: pointer;
@@ -995,18 +812,6 @@
     border: 0;
   }
 
-  @keyframes portfolio-chat-panel-in {
-    from {
-      opacity: 0;
-      transform: translateY(0.45rem) scale(0.985);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
   @media (width <= 640px) {
     .portfolio-chat-launcher {
       right: max(0.75rem, env(safe-area-inset-right));
@@ -1018,76 +823,23 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      min-height: 0;
-      max-height: min(36rem, 80dvh);
+      max-width: 100%;
+      max-height: 80dvh;
       border-right: 0;
       border-bottom: 0;
       border-left: 0;
-      border-radius: 0.9rem 0.9rem 0 0;
-      transform-origin: center bottom;
-    }
-
-    .portfolio-chat-header {
-      padding-inline: max(0.8rem, env(safe-area-inset-left)) max(0.8rem, env(safe-area-inset-right));
+      border-radius: 1.15rem 1.15rem 0 0;
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     .portfolio-chat-body {
-      padding: 0.65rem max(0.75rem, env(safe-area-inset-left)) max(0.8rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-right));
-    }
-  }
-
-  @media (width <= 360px) {
-    .portfolio-chat-header {
-      gap: 0.55rem;
-    }
-
-    .portfolio-chat-header h2 {
-      font-size: 0.96rem;
-    }
-
-    .portfolio-chat-starter-list {
-      gap: 0.28rem;
-    }
-
-    .portfolio-chat-starter {
-      padding-inline: 0.3rem;
-      font-size: 0.64rem;
-    }
-
-    .portfolio-chat-composer {
-      gap: 0.2rem;
-    }
-
-    .portfolio-chat-composer-prompt {
-      flex-basis: 0.9rem;
-    }
-
-    .portfolio-chat-send {
-      min-width: 3.9rem;
-      padding-inline: 0.48rem;
-    }
-
-    .portfolio-chat-send svg {
-      display: none;
-    }
-
-    .portfolio-chat-form-row {
-      gap: 0.4rem;
-    }
-
-    .portfolio-chat-limit,
-    .portfolio-chat-command {
-      font-size: 0.56rem;
+      padding-inline: max(0.75rem, env(safe-area-inset-left)) max(0.75rem, env(safe-area-inset-right));
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .portfolio-chat-panel:not([hidden]),
-    .portfolio-chat-launcher,
-    .portfolio-chat-starter,
-    .portfolio-chat-send {
+    .portfolio-chat-launcher {
       transition: none;
-      animation: none;
     }
   }
 </style>

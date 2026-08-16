@@ -132,27 +132,6 @@ test('starter prompts send the current page and visitor context', async ({ page 
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
   );
   await expect(page.locator('[data-chat-transcript]')).toContainText('Starter response.');
-  await expect(page.locator('.portfolio-chat-message-label').last()).toContainText('Luna');
-});
-
-test('Enter sends while Shift+Enter keeps a newline', async ({ page }) => {
-  const requests = await installChatRoute(page, () =>
-    stream(event('delta', { delta: 'Keyboard response.' }), event('done', {})),
-  );
-
-  await page.goto('/');
-  await openChat(page);
-
-  const input = page.locator('[data-chat-input]');
-  await input.fill('First line');
-  await input.press('Shift+Enter');
-  await input.type('Second line');
-  await expect(input).toHaveValue('First line\nSecond line');
-  expect(requests).toHaveLength(0);
-
-  await input.press('Enter');
-  const request = await waitForRequest(requests, 1);
-  expect(request.message).toBe('First line\nSecond line');
 });
 
 test('assembles streamed deltas and renders only allowlisted source links', async ({ page }) => {
@@ -190,14 +169,11 @@ test('assembles streamed deltas and renders only allowlisted source links', asyn
 });
 
 test('keeps a long streamed assistant response in view', async ({ page }) => {
-  const longResponse = 'Shane builds reliable infrastructure with explicit boundaries and rollback paths. '.repeat(18);
+  const responseChunk = 'Shane builds reliable infrastructure with explicit boundaries and rollback paths. ';
+  const longResponse = responseChunk.repeat(18);
   await installChatRoute(page, () =>
     stream(
-      ...Array.from({ length: 18 }, () =>
-        event('delta', {
-          delta: 'Shane builds reliable infrastructure with explicit boundaries and rollback paths. ',
-        }),
-      ),
+      ...Array.from({ length: 18 }, () => event('delta', { delta: responseChunk })),
       event('done', {}),
     ),
   );
