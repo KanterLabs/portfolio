@@ -149,9 +149,9 @@
         "lease expiry",
         "verified cleanup",
         "report-only",
-        "SSH host certificates"
+        "forwarding-only SSH jump"
       ],
-      "content": "Sandbox Factory is Shane's private-preview platform for requesting short-lived development workstations without exposing hypervisor credentials to the browser. An Access-protected static dashboard calls fixed same-origin workflows; a Go broker verifies identity, enforces quotas and idempotency, stores durable lifecycle state in PostgreSQL, and owns the scoped Proxmox path. New requests use one of four fixed Debian resource presets. The design includes adaptive sanitized telemetry, expiring SSH host certificates, lease expiry, serialized lifecycle work, and deletion that remains visible until the broker verifies the guest and managed storage are absent. The checked-in default is report-only, so live mutation remains gated behind explicit infrastructure acceptance checks."
+      "content": "Sandbox Factory is Shane's private-preview platform for requesting short-lived development workstations without exposing hypervisor credentials to the browser. An Access-protected static dashboard calls fixed same-origin workflows; a Go broker verifies identity, enforces quotas and idempotency, stores durable lifecycle state in PostgreSQL, and owns the scoped Proxmox path. New requests use one of four fixed Debian resource presets. The design includes adaptive sanitized telemetry, an isolated guest network with a forwarding-only SSH jump path, lease expiry, serialized lifecycle work, and deletion that remains visible until the broker verifies the guest and managed storage are absent. The checked-in default is report-only, so live mutation remains gated behind explicit infrastructure acceptance checks."
     },
     {
       "id": "portfolio-infrastructure",

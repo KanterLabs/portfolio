@@ -116,9 +116,9 @@ The workstation template includes a practical development toolchain—containers
 
 Cloudflare Access establishes the browser identity at the edge. The workflow layer checks the expected origin and request shape, then forwards the Access assertion to the broker. The broker verifies that assertion again, authenticates the workflow separately, and applies owner checks, rate limits, quotas, and idempotency before lifecycle work begins.
 
-SSH also needed a deliberate trust model because guest addresses are reused. Each clone creates unique host keys, while the broker signs the guest's public host key with a dedicated host certificate authority. Certificates name only that managed guest and expire no later than its lease. A sandbox cannot become ready—or accept a lease extension—until certificate installation and verification succeed.
+SSH also has a deliberate boundary. Guests sit on an isolated bridge rather than the management network, and the reviewed jump account is forwarding-only: it has no interactive shell and can reach only the managed guest range. Host firewall policy blocks guest access to management, metadata, private-network, peer-guest, IPv6, and non-IP paths while retaining the specific egress and jump paths the workstation needs.
 
-This replaces first-use trust prompts with short-lived, centrally reviewed host identity without copying a guest private key into the broker or a reusable template.
+The broker returns only the derived connection details for the managed guest. User credentials are never baked into the template, exposed through the dashboard, or stored in lifecycle telemetry.
 
 ## Lifecycle, Telemetry, and Cleanup
 
