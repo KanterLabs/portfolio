@@ -16,6 +16,14 @@ describe('curated knowledge retrieval', () => {
     expect(result[0]?.id).toBe('data-center-operations');
   });
 
+  it('selects Sandbox Factory from its page and project terms', () => {
+    const byRoute = retrieveKnowledge('How are disposable workstations created?', '/projects/sandbox-factory');
+    const byTopic = retrieveKnowledge('sandbox lease expiry and verified cleanup', '/');
+
+    expect(byRoute[0]?.id).toBe('sandbox-factory');
+    expect(byTopic[0]?.id).toBe('sandbox-factory');
+  });
+
   it('falls back to an approved profile entry for unknown questions', () => {
     const result = retrieveKnowledge('qzxv jklm', '/unknown');
     expect(result.map((entry) => entry.id)).toEqual(['profile']);

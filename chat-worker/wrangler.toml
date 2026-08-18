@@ -7,7 +7,7 @@ workers_dev = false
 APP_ENV = "development"
 ALLOWED_ORIGIN = "https://beta.shanekanterman.dev"
 OPENAI_MODEL = "gpt-5.6-luna"
-KNOWLEDGE_VERSION = "2026-08-16"
+KNOWLEDGE_VERSION = "2026-08-18"
 
 [env.beta]
 name = "portfolio-chat-beta"
@@ -18,4 +18,4 @@ route = { pattern = "beta.shanekanterman.dev/api/chat*", zone_name = "shanekante
 APP_ENV = "beta"
 ALLOWED_ORIGIN = "https://beta.shanekanterman.dev"
 OPENAI_MODEL = "gpt-5.6-luna"
-KNOWLEDGE_VERSION = "2026-08-16"
+KNOWLEDGE_VERSION = "2026-08-18"
