@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { getSiteBuildVersion } from '../lib/siteVersion';
+import PortfolioChat from '../components/PortfolioChat.astro';
 
 interface StructuredDataEntry {
   [key: string]: unknown;
@@ -14,6 +15,7 @@ interface Props {
   type?: 'website' | 'article';
   structuredData?: StructuredDataEntry | StructuredDataEntry[];
   theme?: 'system' | 'dark';
+  chatEnabled?: boolean;
 }
 
 const {
@@ -24,7 +26,10 @@ const {
   type = 'website',
   structuredData,
   theme = 'system',
+  chatEnabled = false,
 } = Astro.props;
+
+const shouldRenderChat = chatEnabled && import.meta.env.PUBLIC_CHAT_ENABLED === 'true';
 
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
 const socialImageUrl = Astro.site ? new URL(image, Astro.site).toString() : image;
@@ -86,6 +91,7 @@ const jsonLdItems = structuredData
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <slot />
+    {shouldRenderChat && <PortfolioChat />}
     <footer class="site-footer" aria-label="Site footer">
       <p>© {new Date().getFullYear()} Shane Kanterman. Built with Astro and deployed on Kantercloud.</p>
       <p class="site-footer-build">Build {siteBuildVersion}</p>

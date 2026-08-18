@@ -1,0 +1,180 @@
+{
+  "version": "2026-08-16",
+  "entries": [
+    {
+      "id": "profile",
+      "source": {
+        "title": "Shane Kanterman portfolio home",
+        "path": "site/src/pages/index.astro",
+        "href": "/"
+      },
+      "lastReviewed": "2026-08-16",
+      "topics": ["profile", "experience", "education", "contact"],
+      "keywords": [
+        "Shane Kanterman",
+        "computer science",
+        "student",
+        "InterServer",
+        "data center technician",
+        "Southern Connecticut State University",
+        "SCSU",
+        "football",
+        "Linux",
+        "networking"
+      ],
+      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. He is also an active member of the university football program. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with rack-and-stack work, Linux administration, server deployment, troubleshooting, and practical software delivery. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025)."
+    },
+    {
+      "id": "contact",
+      "source": {
+        "title": "Contact Shane",
+        "path": "site/src/pages/index.astro",
+        "href": "/#contact"
+      },
+      "lastReviewed": "2026-08-16",
+      "topics": ["contact", "email", "links"],
+      "keywords": [
+        "contact",
+        "email",
+        "reach Shane",
+        "GitHub",
+        "LinkedIn",
+        "professional inquiries"
+      ],
+      "content": "For professional inquiries, the public portfolio contact section lists Shane's email address: shanekanterman04@gmail.com. That section also provides his public GitHub and LinkedIn links."
+    },
+    {
+      "id": "skills-and-architecture",
+      "source": {
+        "title": "Portfolio architecture and skills",
+        "path": "site/src/pages/index.astro",
+        "href": "/#architecture"
+      },
+      "lastReviewed": "2026-08-16",
+      "topics": ["skills", "architecture", "delivery", "platform"],
+      "keywords": [
+        "Proxmox",
+        "Nginx",
+        "Caddy",
+        "Cloudflare",
+        "Tailscale",
+        "PXE Boot",
+        "GitHub Actions",
+        "k3s",
+        "Actions Runner Controller",
+        "ARC",
+        "Docker",
+        "GHCR",
+        "atomic releases",
+        "Rust",
+        "TypeScript",
+        "Next.js",
+        "Python",
+        "PostgreSQL",
+        "Astro"
+      ],
+      "content": "The portfolio groups Shane's capabilities into systems and networking, platform and delivery, and software and data. Publicly listed tools include Linux, Proxmox, Nginx, Caddy, Cloudflare, Tailscale, PXE Boot, GitHub Actions, k3s, Actions Runner Controller, Docker, GHCR, atomic releases, Rust, TypeScript, Next.js, Python, PostgreSQL, Git, and Astro. His architecture work emphasizes clear ingress boundaries, isolated workloads, ephemeral CI runners, health checks, atomic releases, and retained rollback paths."
+    },
+    {
+      "id": "kanterlabs-homelab",
+      "source": {
+        "title": "KanterLabs Homelab Platform",
+        "path": "site/src/content/projects/kanterlabs-homelab.mdx",
+        "href": "/projects/kanterlabs-homelab"
+      },
+      "lastReviewed": "2026-08-16",
+      "topics": ["project", "homelab", "platform", "networking", "ci"],
+      "keywords": [
+        "homelab",
+        "Proxmox",
+        "public ingress",
+        "private workloads",
+        "ephemeral CI",
+        "k3s",
+        "ARC",
+        "Actions Runner Controller",
+        "GitHub Actions",
+        "Caddy",
+        "Cloudflare",
+        "Tailscale",
+        "network policy",
+        "GHCR"
+      ],
+      "content": "The KanterLabs Homelab Platform turns a small collection of systems into an intentional platform. Its public case study describes separate public and private workload boundaries, a shared edge, and disposable GitHub Actions runner pods managed with Actions Runner Controller. It uses Proxmox, Linux, Caddy, Tailscale, k3s, Docker, and GHCR. The design keeps secrets outside Git and favors reviewed configuration, explicit operator checkpoints, bounded resources, and documented rollback paths."
+    },
+    {
+      "id": "hostlet",
+      "source": {
+        "title": "Hostlet Self-Hosted Deployment Panel",
+        "path": "site/src/content/projects/hostlet.mdx",
+        "href": "/projects/hostlet"
+      },
+      "lastReviewed": "2026-08-16",
+      "topics": ["project", "deployment", "rust", "docker", "product"],
+      "keywords": [
+        "Hostlet",
+        "Rust",
+        "Axum",
+        "Next.js",
+        "Docker",
+        "PostgreSQL",
+        "Caddy",
+        "GitHub OAuth",
+        "rollback",
+        "health checks",
+        "deployment logs",
+        "v0.1.0"
+      ],
+      "content": "Hostlet is a self-hosted deployment control panel for shipping GitHub projects to Docker on a machine Shane owns. It combines a Rust API and local deployment agent with a Next.js dashboard, PostgreSQL, Docker, Caddy, Cloudflare, and GitHub OAuth. The v0.1.0 local-machine beta includes deployment logs, health checks, rollback, encrypted app settings, public URL controls, and release packaging. The scope is deliberately local-only so reliability, cleanup, and security boundaries could be handled before remote agents."
+    },
+    {
+      "id": "portfolio-infrastructure",
+      "source": {
+        "title": "Portfolio Infrastructure Deployment",
+        "path": "site/src/content/projects/multi-node-portfolio.mdx",
+        "href": "/projects/multi-node-portfolio"
+      },
+      "lastReviewed": "2026-08-16",
+      "topics": ["project", "portfolio", "astro", "delivery", "cloudflare"],
+      "keywords": [
+        "Astro",
+        "static portfolio",
+        "Nginx",
+        "Caddy",
+        "Cloudflare",
+        "Proxmox",
+        "GitHub Actions",
+        "atomic delivery",
+        "rollback",
+        "Full strict TLS",
+        "private origin"
+      ],
+      "content": "The Portfolio Infrastructure Deployment case study describes a static Astro portfolio delivered through GitHub Actions to a private workload behind a shared Caddy edge. Cloudflare provides public TLS and routing, Nginx serves the generated site, and releases are activated atomically with retained rollback paths. The design keeps the runtime small while separating public ingress from the workload and validating the origin path."
+    },
+    {
+      "id": "data-center-operations",
+      "source": {
+        "title": "InterServer Data Center Operations",
+        "path": "site/src/content/projects/data-center-operations.mdx",
+        "href": "/projects/data-center-operations"
+      },
+      "lastReviewed": "2026-08-16",
+      "topics": ["experience", "data center", "hardware", "provisioning", "linux"],
+      "keywords": [
+        "InterServer",
+        "data center",
+        "rack-and-stack",
+        "PXE",
+        "Linux",
+        "Windows",
+        "Proxmox",
+        "hardware diagnostics",
+        "RAID",
+        "IPMI",
+        "iDRAC",
+        "server deployment"
+      ],
+      "content": "Shane's InterServer Data Center Technician experience covers rack-and-stack, cabling, Linux, Windows and Proxmox installation, PXE-based imaging, inventory checks, hardware diagnostics, failed-drive and memory troubleshooting, NIC and boot troubleshooting, and deployment documentation. The case study emphasizes evidence-based diagnosis, deliberate sequencing, communication, and operational care around live infrastructure."
+    }
+  ]
+}
