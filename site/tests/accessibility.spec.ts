@@ -5,6 +5,7 @@ import { expectMinTargetSizes } from './helpers/touchTargets';
 
 const themedRoutes = [
   '/',
+  '/projects/sandbox-factory',
   '/projects/multi-node-portfolio',
   '/projects/kanterlabs-homelab',
   '/projects/hostlet',

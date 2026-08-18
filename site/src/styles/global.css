@@ -629,8 +629,8 @@ select {
    so the editorial-shell flattening rules never match inside #projects.
    Every color is a runtime token or a color-mix of tokens, so the light
    theme and its no-JS mirror need no additional entries. */
-/* Wider than the card grid's gap at every width, so "one featured, two
-   supporting" reads from the whitespace on phones too. */
+/* Wider than the card grid's gap at every width, so the featured project
+   remains visually separate from the supporting work on phones too. */
 .project-collection {
   display: grid;
   gap: 2rem;
@@ -2207,7 +2207,7 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
   }
 
   .editorial-shell #projects .project-card-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.75rem;
   }
 

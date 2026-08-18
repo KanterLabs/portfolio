@@ -18,6 +18,7 @@ test.describe('visual coverage', () => {
 
   for (const entry of [
     ['/projects/kanterlabs-homelab', 'featured-homelab-case-study'],
+    ['/projects/sandbox-factory', 'sandbox-factory-case-study'],
     ['/projects/multi-node-portfolio', 'portfolio-infrastructure-case-study'],
     ['/projects/data-center-operations', 'datacenter-case-study'],
   ] as const) {

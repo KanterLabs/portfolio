@@ -89,9 +89,9 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     const entries = page.locator('#projects .project-entry');
-    await expect(entries).toHaveCount(3);
+    await expect(entries).toHaveCount(4);
 
-    for (let i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 4; i += 1) {
       const chrome = await entries.nth(i).evaluate((el) => {
         const style = getComputedStyle(el);
         const alphaOf = (color: string) => {
@@ -253,7 +253,7 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     const titleLinks = page.locator('.project-title a');
-    await expect(titleLinks).toHaveCount(3);
+    await expect(titleLinks).toHaveCount(4);
     for (const href of await titleLinks.evaluateAll((links) => links.map((l) => l.getAttribute('href')))) {
       expect(href).toMatch(/^\/projects\/.+/);
     }
@@ -278,6 +278,7 @@ test.describe('homepage', () => {
       .allTextContents();
     expect(titles.map((title) => title.trim())).toEqual([
       'KanterLabs Homelab Platform',
+      'Sandbox Factory',
       'Hostlet Self-Hosted Deployment Panel',
       'Portfolio Infrastructure Deployment',
     ]);
@@ -504,8 +505,8 @@ test.describe('homepage', () => {
     };
 
     const cards = page.locator('#projects .project-card');
-    await expect(cards).toHaveCount(2);
-    for (let i = 0; i < 2; i += 1) {
+    await expect(cards).toHaveCount(3);
+    for (let i = 0; i < 3; i += 1) {
       await expectStripIntegrity(cards.nth(i).locator('ol.system-diagram-strip'), `card ${i}`);
     }
 
@@ -519,25 +520,22 @@ test.describe('homepage', () => {
     }
   });
 
-  test('supporting cards form a matched pair', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'The two-up layout only exists at >=960px');
+  test('supporting cards form a matched row', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The multi-column layout only exists at >=960px');
     await page.goto('/');
 
     const cards = page.locator('#projects .project-card');
-    await expect(cards).toHaveCount(2);
+    await expect(cards).toHaveCount(3);
 
-    const [cta0, cta1] = await Promise.all([
-      cards.nth(0).locator('.text-link').boundingBox(),
-      cards.nth(1).locator('.text-link').boundingBox(),
-    ]);
-    expect(cta0).not.toBeNull();
-    expect(cta1).not.toBeNull();
-    expect(Math.abs(cta0!.y - cta1!.y)).toBeLessThanOrEqual(2);
-
-    const [box0, box1] = await Promise.all([cards.nth(0).boundingBox(), cards.nth(1).boundingBox()]);
-    expect(box0).not.toBeNull();
-    expect(box1).not.toBeNull();
-    expect(Math.abs(box0!.height - box1!.height)).toBeLessThanOrEqual(2);
+    const ctas = await Promise.all(
+      Array.from({ length: 3 }, (_, index) => cards.nth(index).locator('.text-link').boundingBox()),
+    );
+    const boxes = await Promise.all(
+      Array.from({ length: 3 }, (_, index) => cards.nth(index).boundingBox()),
+    );
+    for (const item of [...ctas, ...boxes]) expect(item).not.toBeNull();
+    expect(Math.max(...ctas.map((item) => item!.y)) - Math.min(...ctas.map((item) => item!.y))).toBeLessThanOrEqual(2);
+    expect(Math.max(...boxes.map((item) => item!.height)) - Math.min(...boxes.map((item) => item!.height))).toBeLessThanOrEqual(2);
   });
 
   test('the featured showcase is grouped apart from the supporting row', async ({ page, isMobile }) => {

@@ -1,0 +1,151 @@
+---
+title: Sandbox Factory
+summary: A private-first platform for creating short-lived development workstations through a browser without exposing hypervisor credentials or arbitrary infrastructure controls to the client.
+highlight: Turns disposable Proxmox guests into a bounded, auditable product workflow.
+impact: Brings sandbox requests, fixed resource profiles, lease expiry, telemetry, and verified cleanup into one reviewable control path.
+constraint: Keep every privileged action server-side and fail closed when identity, ownership, network policy, or deletion evidence does not match the managed contract.
+role: Platform designer, full-stack builder, and infrastructure operator.
+scope: Static dashboard, n8n gateway, Go broker, PostgreSQL state, Proxmox automation, network policy, workstation images, lifecycle tests, and CI.
+keyOutcome: Built a private-preview control plane whose safe default records lifecycle intent without mutating the hypervisor, while the enforced path remains gated behind explicit infrastructure acceptance checks.
+featured: false
+order: 2
+stack:
+  - Go
+  - PostgreSQL
+  - Proxmox VE
+  - n8n
+  - Cloudflare Access
+  - Nginx
+  - Bash
+  - GitHub Actions
+status: in-progress
+date: 2026-08-16
+system:
+  caption: An Access-protected dashboard calls fixed same-origin workflows; a policy-enforcing broker owns identity, lifecycle state, and the only scoped path to isolated Proxmox guests.
+  tiers:
+    - nodes:
+        - title: Browser dashboard
+    - nodes:
+        - title: Workflow gateway
+    - nodes:
+        - title: Go broker + PostgreSQL
+          kind: accent
+    - nodes:
+        - title: Isolated Proxmox guests
+  footer:
+    - label: Default
+      title: Report-only mutations
+    - label: Resources
+      title: Four fixed presets
+    - label: Cleanup
+      title: Verified absence
+---
+
+import Callout from '../../components/Callout.astro';
+
+## Overview
+
+Sandbox Factory is a private-first platform for requesting disposable development workstations from a browser. The useful part is not simply cloning a virtual machine. It is turning that privileged operation into a narrow product contract with authenticated requests, fixed resource profiles, durable lifecycle state, automatic expiry, observable progress, and cleanup that must prove the guest is gone.
+
+The project is a **private preview**, not a hosted public service. Its checked-in safety default is report-only: requests and audit state can be recorded, but the control plane does not mutate Proxmox until an operator explicitly enables the enforced path and completes the live infrastructure checks.
+
+<Callout type="note" title="Current status">
+  The application, workflow, broker, host-policy, and test layers are implemented as one reviewable system. A live deployment still requires independent checks for identity, credentials, network isolation, backup, rollback, and disposable-guest behavior.
+</Callout>
+
+## Why I Built It
+
+A development sandbox sounds like a simple automation task: choose a template, clone it, and return an address. That design becomes dangerous if the browser can choose hypervisor fields, hold infrastructure credentials, or delete a machine whose ownership is uncertain.
+
+I built Sandbox Factory to explore the harder version of the problem:
+
+- how to offer self-service without turning the UI into a generic Proxmox client
+- how to make retries safe when a browser or workflow times out
+- how to expire and delete guests without hiding incomplete cleanup
+- how to distribute workstation credentials without baking them into a reusable image
+- how to keep the default review environment non-mutating
+
+Those constraints shaped the product more than the dashboard did.
+
+## System Shape
+
+The platform separates the user-facing request path from the privileged infrastructure path.
+
+| Layer | Responsibility |
+|---|---|
+| Static dashboard | Creates named requests, shows inventory and telemetry, and exposes only reviewed lifecycle actions |
+| Workflow gateway | Validates method, origin, headers, identifiers, field allowlists, and fixed broker destinations |
+| Go broker | Verifies identity, enforces quotas and idempotency, serializes lifecycle work, and owns the Proxmox client |
+| PostgreSQL | Stores request state, resource snapshots, audit records, idempotency identity, and durable cleanup intent |
+| Proxmox foundation | Provides the immutable template, isolated guest network, scoped API permissions, jump path, and rollback assets |
+
+```text
+Access-protected browser
+          |
+          v
+Fixed same-origin workflows
+          |
+          v
+Go broker ---- PostgreSQL
+          |
+          v
+Scoped Proxmox API
+          |
+          v
+Isolated disposable guests
+```
+
+The browser never receives a hypervisor credential. Workflow routes forward normalized requests to constant internal destinations, and the broker derives machine identity, placement, networking, and resources from its reviewed profile instead of accepting arbitrary infrastructure input.
+
+## A Fixed Sandbox Contract
+
+Every new request selects one of four Debian workstation presets. The broker persists both the preset and its resource snapshot, so later lifecycle work does not depend on a mutable label.
+
+| Preset | vCPU | Memory | Disk |
+|---|---:|---:|---:|
+| Micro | 1 | 512 MiB | 16 GiB |
+| Small | 1 | 1 GiB | 16 GiB |
+| Standard | 2 | 2 GiB | 32 GiB |
+| Large | 4 | 4 GiB | 64 GiB |
+
+Callers cannot supply VM identifiers, bridges, storage pools, templates, or custom CPU and memory values. Larger disks are handled as a durable resize phase with an absolute target and exact verification, which makes a restart or retry less likely to grow the same disk twice.
+
+The workstation template includes a practical development toolchain—containers, language runtimes, editors, database clients, GitHub tooling, and diagnostics—but no user credentials. When credential bootstrap is explicitly enabled, the broker sends bounded inputs to one fixed, template-owned guest command. Those files live only on the disposable guest disk and leave with the guest.
+
+## Trust and Connection Design
+
+Cloudflare Access establishes the browser identity at the edge. The workflow layer checks the expected origin and request shape, then forwards the Access assertion to the broker. The broker verifies that assertion again, authenticates the workflow separately, and applies owner checks, rate limits, quotas, and idempotency before lifecycle work begins.
+
+SSH also needed a deliberate trust model because guest addresses are reused. Each clone creates unique host keys, while the broker signs the guest's public host key with a dedicated host certificate authority. Certificates name only that managed guest and expire no later than its lease. A sandbox cannot become ready—or accept a lease extension—until certificate installation and verification succeed.
+
+This replaces first-use trust prompts with short-lived, centrally reviewed host identity without copying a guest private key into the broker or a reusable template.
+
+## Lifecycle, Telemetry, and Cleanup
+
+Lifecycle operations are serialized so create, extend, release, reconcile, and delete cannot race each other inside one broker process. The dashboard uses adaptive, non-overlapping polling: transitional work refreshes quickly, stable inventory slows down, hidden tabs pause, and failures back off.
+
+Telemetry is intentionally smaller than raw hypervisor output. The browser receives sanitized power, uptime, CPU, memory, observation-time, and staleness fields. Reads are bounded and coalesced, and a temporarily unavailable guest can show a stale last observation instead of triggering overlapping upstream work.
+
+Deletion is treated as a proof problem, not a button response. The broker records cleanup intent, removes the managed guest and its unreferenced disks, then verifies that configuration, runtime state, pool membership, and storage volumes are absent. Only after that evidence does it remove the request and audit state. Ownership drift or incomplete proof remains visible as a retriable deleting state instead of silently erasing the record.
+
+## Safe Delivery
+
+The repository validates each layer without requiring a live hypervisor:
+
+- Go tests cover authentication, request contracts, idempotency, preset compatibility, telemetry, lifecycle recovery, and destructive-operation guards
+- a workflow validator checks inactive exports, constant destinations, credential references, input bounds, and response scrubbing
+- UI tests cover request reuse, polling behavior, rendering, and deletion state
+- shell tests check network, firewall, ACL, jump-account, template, backup, and rollback invariants
+- CI builds and smoke-tests the broker and UI images on isolated homelab runners
+
+Passing those checks proves the source contracts, not the live environment. Enforced mutations remain a separate deployment decision with their own acceptance matrix.
+
+## What It Shows
+
+Sandbox Factory is the clearest example in this portfolio of product work meeting infrastructure safety.
+
+- **Control-plane design:** a browser workflow backed by durable state and a privileged broker
+- **Security boundaries:** independent edge, workflow, broker, hypervisor, network, and SSH trust checks
+- **Failure-aware automation:** idempotent retries, serialized lifecycle work, durable intent, and explicit recovery phases
+- **Operational honesty:** report-only defaults and visible private-preview limits instead of a production-ready claim
+- **End-to-end ownership:** UI behavior, API contracts, database state, VM templates, host policy, tests, and CI designed together
