@@ -9,8 +9,10 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "deploy:dry-run": "wrangler deploy --dry-run --env beta",
-    "deploy": "wrangler deploy --env beta"
+    "deploy:dry-run": "wrangler deploy --dry-run --env beta && wrangler deploy --dry-run --env production",
+    "deploy": "npm run deploy:beta",
+    "deploy:beta": "wrangler deploy --env beta",
+    "deploy:production": "wrangler deploy --env production"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260816.1",

@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-16",
+  "version": "2026-08-18",
   "entries": [
     {
       "id": "profile",
@@ -126,6 +126,32 @@
         "v0.1.0"
       ],
       "content": "Hostlet is a self-hosted deployment control panel for shipping GitHub projects to Docker on a machine Shane owns. It combines a Rust API and local deployment agent with a Next.js dashboard, PostgreSQL, Docker, Caddy, Cloudflare, and GitHub OAuth. The v0.1.0 local-machine beta includes deployment logs, health checks, rollback, encrypted app settings, public URL controls, and release packaging. The scope is deliberately local-only so reliability, cleanup, and security boundaries could be handled before remote agents."
+    },
+    {
+      "id": "sandbox-factory",
+      "source": {
+        "title": "Sandbox Factory",
+        "path": "site/src/content/projects/sandbox-factory.mdx",
+        "href": "/projects/sandbox-factory"
+      },
+      "lastReviewed": "2026-08-18",
+      "topics": ["project", "sandbox", "virtualization", "control plane", "security"],
+      "keywords": [
+        "Sandbox Factory",
+        "development sandbox",
+        "disposable workstation",
+        "Go broker",
+        "PostgreSQL",
+        "Proxmox",
+        "n8n",
+        "Cloudflare Access",
+        "idempotency",
+        "lease expiry",
+        "verified cleanup",
+        "report-only",
+        "forwarding-only SSH jump"
+      ],
+      "content": "Sandbox Factory is Shane's private-preview platform for requesting short-lived development workstations without exposing hypervisor credentials to the browser. An Access-protected static dashboard calls fixed same-origin workflows; a Go broker verifies identity, enforces quotas and idempotency, stores durable lifecycle state in PostgreSQL, and owns the scoped Proxmox path. New requests use one of four fixed Debian resource presets. The design includes adaptive sanitized telemetry, an isolated guest network with a forwarding-only SSH jump path, lease expiry, serialized lifecycle work, and deletion that remains visible until the broker verifies the guest and managed storage are absent. The checked-in default is report-only, so live mutation remains gated behind explicit infrastructure acceptance checks."
     },
     {
       "id": "portfolio-infrastructure",
