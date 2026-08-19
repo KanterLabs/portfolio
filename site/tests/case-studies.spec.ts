@@ -2,6 +2,13 @@ import { test, expect } from '@playwright/test';
 
 const caseStudies = [
   {
+    path: '/projects/sandbox-factory',
+    title: 'Sandbox Factory | Shane Kanterman',
+    heading: 'Sandbox Factory',
+    backLabel: 'Back to selected work',
+    backHref: '/#projects',
+  },
+  {
     path: '/projects/multi-node-portfolio',
     title: 'Portfolio Infrastructure Deployment | Shane Kanterman',
     heading: 'Portfolio Infrastructure Deployment',
@@ -80,6 +87,15 @@ test.describe('case studies', () => {
       'href',
       'https://github.com/KanterLabs/portfolio',
     );
+  });
+
+  test('Sandbox Factory is presented as a bounded private preview', async ({ page }) => {
+    await page.goto('/projects/sandbox-factory');
+
+    await expect(page.getByText('In Progress').first()).toBeVisible();
+    await expect(page.getByText(/report-only/i).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Lifecycle, Telemetry, and Cleanup' })).toBeVisible();
+    await expect(page.locator('main')).not.toContainText(/\b10\.(?:\d{1,3}\.){2}\d{1,3}\b/);
   });
 
   test('data center experience reflects current employment', async ({ page }) => {
