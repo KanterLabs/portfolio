@@ -82,9 +82,9 @@ jobs:
       # Keep browser installation private to this job. The homelab runner's
       # shared cache can be pruned while parallel Playwright shards are active.
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
-      # The chatbot is beta-only until its public launch is approved. Pull
-      # requests into beta exercise the widget; main artifacts omit it.
-      PUBLIC_CHAT_ENABLED: ${{ (github.ref_name == 'beta' || github.base_ref == 'beta') && 'true' || 'false' }}
+      # The chatbot ships in every build; the Worker route for the matching
+      # hostname serves its API.
+      PUBLIC_CHAT_ENABLED: 'true'
     defaults:
       run:
         working-directory: site
@@ -143,23 +143,24 @@ jobs:
       - name: Check out deployment configuration
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Set up Node.js for Worker deployment
-        if: github.ref_name == 'beta' && inputs.rollback_sha == ''
+        if: inputs.rollback_sha == ''
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "22.22.1"
           cache: npm
           cache-dependency-path: chat-worker/package-lock.json
       - name: Install Worker dependencies
-        if: github.ref_name == 'beta' && inputs.rollback_sha == ''
+        if: inputs.rollback_sha == ''
         working-directory: chat-worker
         run: npm ci
-      - name: Deploy beta chat Worker
-        if: github.ref_name == 'beta' && inputs.rollback_sha == ''
+      - name: Deploy chat Worker
+        if: inputs.rollback_sha == ''
         working-directory: chat-worker
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: npm run deploy
+          WORKER_ENV: ${{ github.ref_name == 'beta' && 'beta' || 'production' }}
+        run: npm run "deploy:$WORKER_ENV"
       - name: Download build artifact
         if: inputs.rollback_sha == ''
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -200,6 +201,10 @@ jobs:
             --retry 5 --retry-delay 2 --retry-all-errors \
             https://shanekanterman.dev/healthz)
           [ "$response" = "ok" ]
+          chat_health=$(curl --fail --silent --show-error \
+            --retry 5 --retry-delay 2 --retry-all-errors \
+            https://shanekanterman.dev/api/chat/health)
+          printf '%s' "$chat_health" | grep -q '"service":"portfolio-chat"'
       - name: Verify beta Access gate
         if: github.ref_name == 'beta'
         run: |
