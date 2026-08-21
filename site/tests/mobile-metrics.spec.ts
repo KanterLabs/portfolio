@@ -28,8 +28,8 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
 
   expect(metrics.hasHorizontalOverflow).toBe(false);
   expect(metrics.scrollHeight).toBeLessThan(12000);
-  expect(metrics.h1).toContain('Building Linux platforms and deployment tooling');
-  expect(metrics.heroParagraph).toContain('current InterServer Data Center Technician');
+  expect(metrics.h1).toContain('I build Linux platforms');
+  expect(metrics.heroParagraph).toContain('Data Center Technician at InterServer');
   expect(metrics.contactLine).toContain('shanekanterman04@gmail.com');
   expect(metrics.contactLine).toContain('Cranford');
   expect(metrics.sectionTops[0]?.id).toBe('projects');

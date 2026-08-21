@@ -12,7 +12,7 @@ test.describe('homepage', () => {
     await expect(page).toHaveTitle('Shane Kanterman | Infrastructure and Platform Projects');
     await expect(
       page.getByRole('heading', {
-        name: 'Building Linux platforms and deployment tooling—from bare metal to CI/CD.',
+        name: 'I build Linux platforms, from bare metal to CI/CD.',
       }),
     ).toBeVisible();
     await expect(
@@ -130,7 +130,7 @@ test.describe('homepage', () => {
 
     const card = page.locator('#projects .project-card').first();
     await card.scrollIntoViewIfNeeded();
-    // Let the .project-entry entrance reveal (editorial-reveal, 520ms)
+    // Let the .project-entry entrance reveal (editorial-reveal, 340ms)
     // finish settling before taking the "before" measurement, or its own
     // in-flight transform reads as part of the hover delta.
     await page.locator('#projects.observe-animate').evaluate(
@@ -291,6 +291,10 @@ test.describe('homepage', () => {
   });
 
   test('featured case study is a showcase, not just another card', async ({ page, isMobile }) => {
+    // This test measures rest-layout geometry. boundingBox() scrolls its
+    // target into view, which is exactly what arms the reveal observer — so
+    // without this the measurement races a translateY that is still running.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
     const showcase = page.locator('.project-showcase');
@@ -397,6 +401,8 @@ test.describe('homepage', () => {
 
   test('split diagram tiers align their node rows', async ({ page, isMobile }) => {
     test.skip(isMobile, 'The diagram plate is hidden below 960px');
+    // Rest-layout geometry — see the note on the showcase test above.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
     const splitTiers = page.locator('.project-showcase-diagram .system-diagram-tier-split');
@@ -522,6 +528,10 @@ test.describe('homepage', () => {
 
   test('supporting cards form a matched row', async ({ page, isMobile }) => {
     test.skip(isMobile, 'The multi-column layout only exists at >=960px');
+    // Rest-layout geometry — see the note on the showcase test above. The
+    // three cards' reveals are staggered, so a mid-animation read shows them
+    // at three different translateY offsets.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
     const cards = page.locator('#projects .project-card');
@@ -558,8 +568,12 @@ test.describe('homepage', () => {
     expect(verticalGap).toBeGreaterThan(24);
   });
 
-  test('editorial CTAs are left-aligned, not centred in their box', async ({ page, isMobile }) => {
-    test.skip(!isMobile, 'mobile is where the full-width box makes centring visible');
+  // The CTAs are pill buttons, so their *labels* are centred inside the pill
+  // on purpose. What must not drift is the pill's own left edge: on mobile
+  // the buttons go full-width and any padding mismatch against the body copy
+  // reads as a broken column.
+  test('CTA buttons share a left edge with the body copy', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'mobile is where the full-width box makes misalignment visible');
 
     await page.goto('/');
 
@@ -568,14 +582,12 @@ test.describe('homepage', () => {
     expect(heroParagraphBox).not.toBeNull();
 
     const heroCta = page.getByRole('link', { name: 'View Selected Work' });
-    await expect(heroCta).toHaveCSS('justify-content', 'flex-start');
     const heroCtaBox = await heroCta.boundingBox();
     expect(heroCtaBox).not.toBeNull();
     expect(Math.abs(heroCtaBox!.x - heroParagraphBox!.x)).toBeLessThanOrEqual(2);
 
     const contactCta = page.getByRole('link', { name: 'Email me' });
     await contactCta.scrollIntoViewIfNeeded();
-    await expect(contactCta).toHaveCSS('justify-content', 'flex-start');
     const contactParagraph = page.locator('#contact p').first();
     const contactParagraphBox = await contactParagraph.boundingBox();
     const contactCtaBox = await contactCta.boundingBox();
