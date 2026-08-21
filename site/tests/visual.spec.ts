@@ -11,7 +11,7 @@ test.describe('visual coverage', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'Building Linux platforms and deployment tooling—from bare metal to CI/CD.',
+        name: 'I build Linux platforms, from bare metal to CI/CD.',
       }),
     ).toBeVisible();
   });
