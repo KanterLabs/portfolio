@@ -45,7 +45,7 @@
       radius: number;
     }
 
-    const LINK_DISTANCE = 150;
+    const LINK_DISTANCE = 175;
     const POINTER_RADIUS = 220;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -61,16 +61,16 @@
     // (motion must not gate legibility). Light mode runs lower: a dark
     // green line on #f7f8f6 has far more contrast than sage on near-black.
     let accent = '#8fb8a3';
-    let linkAlpha = 0.4;
-    let nodeAlpha = 0.55;
+    let linkAlpha = 0.65;
+    let nodeAlpha = 0.85;
 
     const readTheme = () => {
       accent =
         getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() ||
         '#8fb8a3';
       const light = document.documentElement.dataset.theme === 'light';
-      linkAlpha = light ? 0.3 : 0.4;
-      nodeAlpha = light ? 0.45 : 0.55;
+      linkAlpha = light ? 0.5 : 0.65;
+      nodeAlpha = light ? 0.7 : 0.85;
     };
 
     const resize = () => {
@@ -85,13 +85,13 @@
     const initNodes = () => {
       // Density scales with area so ultrawide screens don't thin out and
       // phones don't clutter; the ceiling bounds the O(n²) link pass.
-      const target = Math.min(85, Math.max(26, Math.round((width * height) / 26000)));
+      const target = Math.min(110, Math.max(30, Math.round((width * height) / 19000)));
       nodes = Array.from({ length: target }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
         vx: (Math.random() - 0.5) * 0.3,
         vy: (Math.random() - 0.5) * 0.3,
-        radius: Math.random() * 1.6 + 1.1,
+        radius: Math.random() * 1.9 + 1.4,
       }));
     };
 
