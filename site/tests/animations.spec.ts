@@ -12,9 +12,34 @@ test('homepage exposes deliberate motion hooks', async ({ page }) => {
   await expect(page.locator('.architecture-boot-connector')).toHaveCount(2);
 });
 
+test('live background initializes a visible, animated canvas', async ({ page }) => {
+  await page.goto('/');
+
+  const canvas = page.locator('[data-constellation]');
+  await expect(canvas).toHaveCount(1);
+  await expect(canvas).toHaveAttribute('data-animation-state', 'running');
+
+  const dimensions = await canvas.evaluate((element: HTMLCanvasElement) => ({
+    cssWidth: element.getBoundingClientRect().width,
+    cssHeight: element.getBoundingClientRect().height,
+    bitmapWidth: element.width,
+    bitmapHeight: element.height,
+  }));
+
+  expect(dimensions.cssWidth).toBeGreaterThan(0);
+  expect(dimensions.cssHeight).toBeGreaterThan(0);
+  expect(dimensions.bitmapWidth).toBeGreaterThanOrEqual(dimensions.cssWidth);
+  expect(dimensions.bitmapHeight).toBeGreaterThanOrEqual(dimensions.cssHeight);
+});
+
 test('motion is disabled when reduced motion is requested', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
+
+  await expect(page.locator('[data-constellation]')).toHaveAttribute(
+    'data-animation-state',
+    'static',
+  );
 
   const motion = await page.evaluate(() => {
     const hero = document.querySelector('.hero-reveal');
