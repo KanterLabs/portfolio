@@ -1,0 +1,215 @@
+---
+// A drifting node-and-link field behind the hero — the site's system-diagram
+// language, animated. Ported to vanilla canvas 2D from ThreeUI's
+// constellation-field (MIT, github.com/MengTo/threeui); no runtime deps.
+---
+
+<div class="constellation-field" aria-hidden="true" data-constellation-region>
+  <canvas data-constellation></canvas>
+</div>
+
+<style>
+  .constellation-field {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* Tall enough to back the full hero fold, gone before #projects asks
+       to be read. The mask does the exit — never a hard clip line. */
+    height: min(100vh, 64rem);
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, black 0%, black 52%, transparent 94%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 52%, transparent 94%);
+  }
+
+  .constellation-field canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  const region = document.querySelector<HTMLElement>('[data-constellation-region]');
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-constellation]');
+  const ctx = canvas?.getContext('2d');
+
+  if (region && canvas && ctx) {
+    interface FieldNode {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+    }
+
+    const LINK_DISTANCE = 150;
+    const POINTER_RADIUS = 220;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    let width = 0;
+    let height = 0;
+    let nodes: FieldNode[] = [];
+    let rafId = 0;
+    let inView = true;
+    const pointer = { x: -1000, y: -1000 };
+
+    // The field is drawn in the accent color at low alpha; the ceiling per
+    // theme keeps the far-background layer from ever competing with text
+    // (motion must not gate legibility). Light mode runs lower: a dark
+    // green line on #f7f8f6 has far more contrast than sage on near-black.
+    let accent = '#8fb8a3';
+    let linkAlpha = 0.4;
+    let nodeAlpha = 0.55;
+
+    const readTheme = () => {
+      accent =
+        getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() ||
+        '#8fb8a3';
+      const light = document.documentElement.dataset.theme === 'light';
+      linkAlpha = light ? 0.3 : 0.4;
+      nodeAlpha = light ? 0.45 : 0.55;
+    };
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = region.clientWidth;
+      height = region.clientHeight;
+      canvas.width = Math.max(1, Math.floor(width * dpr));
+      canvas.height = Math.max(1, Math.floor(height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const initNodes = () => {
+      // Density scales with area so ultrawide screens don't thin out and
+      // phones don't clutter; the ceiling bounds the O(n²) link pass.
+      const target = Math.min(85, Math.max(26, Math.round((width * height) / 26000)));
+      nodes = Array.from({ length: target }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        radius: Math.random() * 1.6 + 1.1,
+      }));
+    };
+
+    const drawFrame = (time: number, advance: boolean) => {
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = accent;
+      ctx.fillStyle = accent;
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const d = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
+          if (d < LINK_DISTANCE) {
+            ctx.globalAlpha = (0.16 + (1 - d / LINK_DISTANCE) * 0.84) * linkAlpha;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      for (const node of nodes) {
+        if (advance) {
+          node.x += node.vx;
+          node.y += node.vy;
+          if (node.x < 0 || node.x > width) node.vx *= -1;
+          if (node.y < 0 || node.y > height) node.vy *= -1;
+
+          const pd = Math.hypot(node.x - pointer.x, node.y - pointer.y);
+          if (pd < POINTER_RADIUS) {
+            node.x -= (node.x - pointer.x) * 0.004;
+            node.y -= (node.y - pointer.y) * 0.004;
+          }
+        }
+
+        const pulse = advance ? 0.78 + Math.sin(time * 0.001 + node.x) * 0.22 : 0.85;
+        ctx.globalAlpha = pulse * nodeAlpha * 0.3;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius * 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = pulse * nodeAlpha;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+    };
+
+    const tick = (time: number) => {
+      drawFrame(time, true);
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const stop = () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    };
+
+    const start = () => {
+      if (rafId || reducedMotion.matches || document.hidden || !inView) return;
+      rafId = requestAnimationFrame(tick);
+    };
+
+    // Reduced motion keeps the composition but freezes it: one static frame,
+    // same rule as the CSS reveals (content readable, nothing moving).
+    const render = () => {
+      if (reducedMotion.matches) {
+        stop();
+        drawFrame(0, false);
+      } else {
+        start();
+      }
+    };
+
+    readTheme();
+    resize();
+    initNodes();
+    render();
+
+    window.addEventListener('resize', () => {
+      resize();
+      initNodes();
+      if (!rafId) drawFrame(0, false);
+    });
+
+    window.addEventListener('mousemove', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+    });
+
+    window.addEventListener('mouseout', () => {
+      pointer.x = -1000;
+      pointer.y = -1000;
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop();
+      else render();
+    });
+
+    // No frames for a field that has scrolled away.
+    new IntersectionObserver((entries) => {
+      inView = entries[0].isIntersecting;
+      if (inView) render();
+      else stop();
+    }).observe(region);
+
+    reducedMotion.addEventListener('change', render);
+
+    // The theme toggle rewrites data-theme in place; recolor without reload.
+    new MutationObserver(() => {
+      readTheme();
+      if (!rafId) drawFrame(0, false);
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+</script>
