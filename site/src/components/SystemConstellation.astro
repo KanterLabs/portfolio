@@ -76,21 +76,21 @@
     let lastFrameTime = 0;
     const pointer = { x: 0, y: 0, active: false };
 
-    // Dark mode carries a soft glow. Light mode is deliberately crisper: a
-    // clean mint schematic with sharp points, not low-contrast gray haze.
+    // Dark mode uses the brand accent. On the warm light canvas that same
+    // green reads like a surface tint, so the topology shifts to a cooler,
+    // neutral sage and lower alpha instead of making the page look stained.
     let accent = '#8fb8a3';
     let linkAlpha = 0.65;
     let nodeAlpha = 0.85;
-    let lightTheme = false;
 
     const readTheme = () => {
       const themeAccent =
         getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() ||
         '#8fb8a3';
-      lightTheme = document.documentElement.dataset.theme === 'light';
-      accent = lightTheme ? '#5f8f79' : themeAccent;
-      linkAlpha = lightTheme ? 0.24 : 0.65;
-      nodeAlpha = lightTheme ? 0.4 : 0.85;
+      const light = document.documentElement.dataset.theme === 'light';
+      accent = light ? '#9caaa4' : themeAccent;
+      linkAlpha = light ? 0.32 : 0.65;
+      nodeAlpha = light ? 0.52 : 0.85;
     };
 
     const setAnimationState = (state: 'running' | 'static' | 'paused') => {
@@ -247,7 +247,7 @@
       ctx.clearRect(0, 0, width, height);
       ctx.strokeStyle = accent;
       ctx.fillStyle = accent;
-      ctx.lineWidth = lightTheme ? 0.9 : 0.8;
+      ctx.lineWidth = 0.8;
 
       for (const link of links) {
         const from = nodes[link.from];
@@ -272,15 +272,13 @@
           const progress = (motionTime * link.pulseSpeed + link.pulseOffset) % 1;
           const packetX = from.x + (to.x - from.x) * progress;
           const packetY = from.y + (to.y - from.y) * progress;
-          if (!lightTheme) {
-            ctx.globalAlpha = (0.28 + focus * 0.28) * linkAlpha;
-            ctx.beginPath();
-            ctx.arc(packetX, packetY, 2.25, 0, Math.PI * 2);
-            ctx.fill();
-          }
+          ctx.globalAlpha = (0.28 + focus * 0.28) * linkAlpha;
+          ctx.beginPath();
+          ctx.arc(packetX, packetY, 2.25, 0, Math.PI * 2);
+          ctx.fill();
           ctx.globalAlpha = (0.72 + focus * 0.18) * linkAlpha;
           ctx.beginPath();
-          ctx.arc(packetX, packetY, lightTheme ? 1.1 : 0.85, 0, Math.PI * 2);
+          ctx.arc(packetX, packetY, 0.85, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -288,14 +286,11 @@
       for (const node of nodes) {
         const focus = pointerInfluence(node.x, node.y);
         const pulse = advance ? 0.78 + Math.sin(motionTime * 0.7 + node.phaseX) * 0.22 : 0.85;
-        const pointScale = lightTheme && !node.hub ? 0.58 : 1;
-        const radius = (node.radius + focus * 0.65) * pointScale;
-        if (!lightTheme) {
-          ctx.globalAlpha = pulse * nodeAlpha * (node.hub ? 0.34 : 0.3);
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, radius * 2.6, 0, Math.PI * 2);
-          ctx.fill();
-        }
+        const radius = node.radius + focus * 0.65;
+        ctx.globalAlpha = pulse * nodeAlpha * (node.hub ? 0.34 : 0.3);
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, radius * 2.6, 0, Math.PI * 2);
+        ctx.fill();
         ctx.globalAlpha = pulse * nodeAlpha * (1 + focus * 0.32);
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
