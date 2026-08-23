@@ -5,7 +5,7 @@
 ---
 
 <div class="constellation-field" aria-hidden="true" data-constellation-region>
-  <canvas data-constellation data-animation-state="static"></canvas>
+  <canvas data-constellation></canvas>
 </div>
 
 <style>
@@ -40,260 +40,102 @@
     interface FieldNode {
       x: number;
       y: number;
-      baseX: number;
-      baseY: number;
-      driftX: number;
-      driftY: number;
-      phaseX: number;
-      phaseY: number;
-      frequency: number;
+      vx: number;
+      vy: number;
       radius: number;
-      hub: boolean;
     }
 
-    interface FieldLink {
-      from: number;
-      to: number;
-      restLength: number;
-      pulse: boolean;
-      pulseOffset: number;
-      pulseSpeed: number;
-    }
-
-    const POINTER_RADIUS = 190;
-    const MAX_LINK_LENGTH = 260;
+    const LINK_DISTANCE = 175;
+    const POINTER_RADIUS = 220;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const coarsePointer = window.matchMedia('(pointer: coarse)');
 
     let width = 0;
     let height = 0;
     let nodes: FieldNode[] = [];
-    let links: FieldLink[] = [];
-    let animationFrame = 0;
-    let resizeFrame = 0;
+    let rafId = 0;
     let inView = true;
-    let motionTime = 0;
-    let lastFrameTime = 0;
-    const pointer = { x: 0, y: 0, active: false };
+    const pointer = { x: -1000, y: -1000 };
 
-    // Dark mode uses the brand accent. On the warm light canvas that same
-    // green reads like a surface tint, so the topology shifts to a cooler,
-    // neutral sage and lower alpha instead of making the page look stained.
+    // The field is drawn in the accent color at low alpha; the ceiling per
+    // theme keeps the far-background layer from ever competing with text
+    // (motion must not gate legibility). Light mode runs lower: a dark
+    // green line on #f7f8f6 has far more contrast than sage on near-black.
     let accent = '#8fb8a3';
     let linkAlpha = 0.65;
     let nodeAlpha = 0.85;
 
     const readTheme = () => {
-      const themeAccent =
+      accent =
         getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() ||
         '#8fb8a3';
       const light = document.documentElement.dataset.theme === 'light';
-      accent = light ? '#9caaa4' : themeAccent;
-      linkAlpha = light ? 0.32 : 0.65;
-      nodeAlpha = light ? 0.52 : 0.85;
-    };
-
-    const setAnimationState = (state: 'running' | 'static' | 'paused') => {
-      canvas.dataset.animationState = state;
+      linkAlpha = light ? 0.5 : 0.65;
+      nodeAlpha = light ? 0.7 : 0.85;
     };
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const nextWidth = Math.max(1, Math.round(region.clientWidth));
-      const nextHeight = Math.max(1, Math.round(region.clientHeight));
-      const changed = nextWidth !== width || nextHeight !== height || canvas.width !== Math.floor(nextWidth * dpr) || canvas.height !== Math.floor(nextHeight * dpr);
-      width = nextWidth;
-      height = nextHeight;
-      if (!changed) return false;
+      width = region.clientWidth;
+      height = region.clientHeight;
       canvas.width = Math.max(1, Math.floor(width * dpr));
       canvas.height = Math.max(1, Math.floor(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      return changed;
-    };
-
-    // A small integer PRNG makes both the composition and its motion repeat
-    // for the same viewport. It also avoids a new visual arrangement on every
-    // reload, which is especially noticeable behind the hero copy.
-    const seededRandom = (seed: number) => {
-      let state = seed >>> 0;
-      return () => {
-        state += 0x6d2b79f5;
-        let value = state;
-        value = Math.imul(value ^ (value >>> 15), value | 1);
-        value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-        return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-      };
-    };
-
-    const viewportSeed = () => {
-      // The integer mix keeps nearby viewport sizes from producing visibly
-      // related layouts while remaining stable for a given CSS viewport.
-      return ((width * 73856093) ^ (height * 19349663) ^ 0x9e3779b9) >>> 0;
     };
 
     const initNodes = () => {
-      const random = seededRandom(viewportSeed());
-      const calmViewport = coarsePointer.matches || width < 700;
-      // Phones and coarse-pointer devices get a sparser field so the headline
-      // keeps breathing room. The desktop range remains roughly 30–110 nodes.
-      const density = calmViewport ? 1 / 28000 : 1 / 19000;
-      const minimum = calmViewport ? 30 : 34;
-      const maximum = calmViewport ? 62 : 110;
-      const target = Math.min(maximum, Math.max(minimum, Math.round((width * height) * density)));
-
-      const positions = Array.from({ length: target }, () => ({
-        x: random() * width,
-        y: random() * height,
-        rank: random(),
+      // Density scales with area so ultrawide screens don't thin out and
+      // phones don't clutter; the ceiling bounds the O(n²) link pass.
+      const target = Math.min(110, Math.max(30, Math.round((width * height) / 19000)));
+      nodes = Array.from({ length: target }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        radius: Math.random() * 1.9 + 1.4,
       }));
-
-      // Spread hubs by choosing the next candidate farthest from the hubs
-      // already selected. This makes the larger infrastructure points useful
-      // landmarks rather than one accidental cluster.
-      const hubCount = Math.min(5, Math.max(3, Math.round(target / 26)));
-      const hubs: number[] = [];
-      while (hubs.length < hubCount) {
-        let bestIndex = -1;
-        let bestDistance = -1;
-        for (let i = 0; i < positions.length; i++) {
-          if (hubs.includes(i)) continue;
-          const nearestHub = hubs.reduce((nearest, hubIndex) => {
-            const hub = positions[hubIndex];
-            const candidate = positions[i];
-            return Math.min(nearest, Math.hypot(candidate.x - hub.x, candidate.y - hub.y));
-          }, Number.POSITIVE_INFINITY);
-          const score = hubs.length ? nearestHub : positions[i].rank;
-          if (score > bestDistance) {
-            bestDistance = score;
-            bestIndex = i;
-          }
-        }
-        if (bestIndex < 0) break;
-        hubs.push(bestIndex);
-      }
-
-      nodes = positions.map((position, index) => {
-        const hub = hubs.includes(index);
-        return {
-          x: position.x,
-          y: position.y,
-          baseX: position.x,
-          baseY: position.y,
-          // The low-amplitude harmonic drift is smooth at boundaries and
-          // cannot create pointer-induced clusters or edge bounces.
-          driftX: hub ? 5 + random() * 4 : 3 + random() * 4,
-          driftY: hub ? 4 + random() * 4 : 2 + random() * 4,
-          phaseX: random() * Math.PI * 2,
-          phaseY: random() * Math.PI * 2,
-          frequency: 0.18 + random() * 0.09,
-          radius: hub ? 2.25 + random() * 0.75 : 1.25 + random() * 0.8,
-          hub,
-        };
-      });
-
-      // Build the graph once per viewport. Each node asks for its nearest
-      // neighbors and a set removes duplicates, so every frame only walks a
-      // sparse, stable topology instead of reconsidering every pair.
-      const neighborCount = calmViewport ? 2 : 3;
-      const edgeKeys = new Set<string>();
-      links = [];
-      for (let i = 0; i < nodes.length; i++) {
-        const nearest = nodes
-          .map((node, index) => ({
-            index,
-            distance: index === i ? Number.POSITIVE_INFINITY : Math.hypot(nodes[i].baseX - node.baseX, nodes[i].baseY - node.baseY),
-          }))
-          .sort((a, b) => a.distance - b.distance)
-          .slice(0, neighborCount);
-
-        for (const neighbor of nearest) {
-          const from = Math.min(i, neighbor.index);
-          const to = Math.max(i, neighbor.index);
-          const key = `${from}:${to}`;
-          if (edgeKeys.has(key)) continue;
-          edgeKeys.add(key);
-          links.push({
-            from,
-            to,
-            restLength: neighbor.distance,
-            pulse: random() < (calmViewport ? 0.1 : 0.16),
-            pulseOffset: random(),
-            pulseSpeed: 0.08 + random() * 0.08,
-          });
-        }
-      }
     };
 
-    const pointerInfluence = (x: number, y: number) => {
-      if (!pointer.active || coarsePointer.matches) return 0;
-      const distance = Math.hypot(x - pointer.x, y - pointer.y);
-      if (distance >= POINTER_RADIUS) return 0;
-      const falloff = 1 - distance / POINTER_RADIUS;
-      return falloff * falloff;
-    };
-
-    const drawFrame = (advance: boolean, deltaSeconds = 0) => {
-      if (advance) {
-        motionTime += deltaSeconds;
-        // Update all nodes before drawing either links or nodes. Both layers
-        // therefore use precisely the same current positions in each frame.
-        for (const node of nodes) {
-          node.x = node.baseX + Math.sin(motionTime * node.frequency + node.phaseX) * node.driftX;
-          node.y = node.baseY + Math.sin(motionTime * node.frequency * 0.87 + node.phaseY) * node.driftY;
-        }
-      }
-
-      ctx.globalAlpha = 1;
+    const drawFrame = (time: number, advance: boolean) => {
       ctx.clearRect(0, 0, width, height);
       ctx.strokeStyle = accent;
       ctx.fillStyle = accent;
-      ctx.lineWidth = 0.8;
+      ctx.lineWidth = 1;
 
-      for (const link of links) {
-        const from = nodes[link.from];
-        const to = nodes[link.to];
-        const midpointX = (from.x + to.x) / 2;
-        const midpointY = (from.y + to.y) / 2;
-        const focus = Math.max(
-          pointerInfluence(from.x, from.y),
-          pointerInfluence(to.x, to.y),
-          pointerInfluence(midpointX, midpointY) * 0.65,
-        );
-        const lengthStrength = 1 - Math.min(link.restLength / MAX_LINK_LENGTH, 1);
-        ctx.globalAlpha = (0.2 + lengthStrength * 0.42) * linkAlpha * (1 + focus * 0.6);
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
-        ctx.stroke();
-
-        // A small deterministic packet reinforces the infrastructure feel.
-        // It is intentionally omitted from static/reduced-motion frames.
-        if (advance && link.pulse) {
-          const progress = (motionTime * link.pulseSpeed + link.pulseOffset) % 1;
-          const packetX = from.x + (to.x - from.x) * progress;
-          const packetY = from.y + (to.y - from.y) * progress;
-          ctx.globalAlpha = (0.28 + focus * 0.28) * linkAlpha;
-          ctx.beginPath();
-          ctx.arc(packetX, packetY, 2.25, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.globalAlpha = (0.72 + focus * 0.18) * linkAlpha;
-          ctx.beginPath();
-          ctx.arc(packetX, packetY, 0.85, 0, Math.PI * 2);
-          ctx.fill();
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const d = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
+          if (d < LINK_DISTANCE) {
+            ctx.globalAlpha = (0.16 + (1 - d / LINK_DISTANCE) * 0.84) * linkAlpha;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.stroke();
+          }
         }
       }
 
       for (const node of nodes) {
-        const focus = pointerInfluence(node.x, node.y);
-        const pulse = advance ? 0.78 + Math.sin(motionTime * 0.7 + node.phaseX) * 0.22 : 0.85;
-        const radius = node.radius + focus * 0.65;
-        ctx.globalAlpha = pulse * nodeAlpha * (node.hub ? 0.34 : 0.3);
+        if (advance) {
+          node.x += node.vx;
+          node.y += node.vy;
+          if (node.x < 0 || node.x > width) node.vx *= -1;
+          if (node.y < 0 || node.y > height) node.vy *= -1;
+
+          const pd = Math.hypot(node.x - pointer.x, node.y - pointer.y);
+          if (pd < POINTER_RADIUS) {
+            node.x -= (node.x - pointer.x) * 0.004;
+            node.y -= (node.y - pointer.y) * 0.004;
+          }
+        }
+
+        const pulse = advance ? 0.78 + Math.sin(time * 0.001 + node.x) * 0.22 : 0.85;
+        ctx.globalAlpha = pulse * nodeAlpha * 0.3;
         ctx.beginPath();
-        ctx.arc(node.x, node.y, radius * 2.6, 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, node.radius * 2.6, 0, Math.PI * 2);
         ctx.fill();
-        ctx.globalAlpha = pulse * nodeAlpha * (1 + focus * 0.32);
+        ctx.globalAlpha = pulse * nodeAlpha;
         ctx.beginPath();
-        ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
         ctx.fill();
       }
 
@@ -301,44 +143,28 @@
     };
 
     const tick = (time: number) => {
-      animationFrame = 0;
-      if (document.hidden || !inView || reducedMotion.matches) {
-        render();
-        return;
-      }
-      const deltaSeconds = lastFrameTime ? Math.min(80, time - lastFrameTime) / 1000 : 0;
-      lastFrameTime = time;
-      drawFrame(true, deltaSeconds);
-      animationFrame = requestAnimationFrame(tick);
+      drawFrame(time, true);
+      rafId = requestAnimationFrame(tick);
     };
 
     const stop = () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = 0;
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
       }
-      lastFrameTime = 0;
     };
 
     const start = () => {
-      if (animationFrame || reducedMotion.matches || document.hidden || !inView) return;
-      lastFrameTime = 0;
-      setAnimationState('running');
-      animationFrame = requestAnimationFrame(tick);
+      if (rafId || reducedMotion.matches || document.hidden || !inView) return;
+      rafId = requestAnimationFrame(tick);
     };
 
     // Reduced motion keeps the composition but freezes it: one static frame,
     // same rule as the CSS reveals (content readable, nothing moving).
     const render = () => {
-      if (document.hidden || !inView) {
-        stop();
-        setAnimationState('paused');
-        return;
-      }
       if (reducedMotion.matches) {
         stop();
-        drawFrame(false);
-        setAnimationState('static');
+        drawFrame(0, false);
       } else {
         start();
       }
@@ -347,80 +173,43 @@
     readTheme();
     resize();
     initNodes();
-    drawFrame(false);
     render();
 
-    const applyResize = () => {
-      resizeFrame = 0;
-      if (!resize()) return;
+    window.addEventListener('resize', () => {
+      resize();
       initNodes();
-      // A resize must immediately refresh the bitmap. Running frames pick up
-      // the new topology on their next tick without leaving a blank frame.
-      drawFrame(false);
-    };
-
-    const scheduleResize = () => {
-      if (resizeFrame) return;
-      resizeFrame = requestAnimationFrame(applyResize);
-    };
-
-    if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(applyResize).observe(region);
-    } else {
-      window.addEventListener('resize', scheduleResize, { passive: true });
-    }
-
-    const resetPointer = () => {
-      pointer.active = false;
-    };
-
-    // The field deliberately ignores pointer events; window-level pointer
-    // tracking keeps highlighting reliable over the canvas and surrounding
-    // hero content without ever moving a node toward the cursor.
-    window.addEventListener('pointermove', (event) => {
-      if (event.pointerType === 'touch' || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) {
-        resetPointer();
-        return;
-      }
-      const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      pointer.x = x;
-      pointer.y = y;
-      pointer.active = x >= 0 && x <= rect.width && y >= 0 && y <= rect.height;
+      if (!rafId) drawFrame(0, false);
     });
-    window.addEventListener('pointerleave', resetPointer);
-    window.addEventListener('pointercancel', resetPointer);
-    window.addEventListener('blur', resetPointer);
-    document.addEventListener('pointerout', (event) => {
-      if (!event.relatedTarget) resetPointer();
+
+    window.addEventListener('mousemove', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+    });
+
+    window.addEventListener('mouseout', () => {
+      pointer.x = -1000;
+      pointer.y = -1000;
     });
 
     document.addEventListener('visibilitychange', () => {
-      render();
+      if (document.hidden) stop();
+      else render();
     });
 
     // No frames for a field that has scrolled away.
-    if (typeof IntersectionObserver !== 'undefined') {
-      new IntersectionObserver((entries) => {
-        const entry = entries[0];
-        if (!entry) return;
-        inView = entry.isIntersecting;
-        render();
-      }).observe(region);
-    }
+    new IntersectionObserver((entries) => {
+      inView = entries[0].isIntersecting;
+      if (inView) render();
+      else stop();
+    }).observe(region);
 
-    const onMotionChange = () => render();
-    if (typeof reducedMotion.addEventListener === 'function') {
-      reducedMotion.addEventListener('change', onMotionChange);
-    } else if (typeof reducedMotion.addListener === 'function') {
-      reducedMotion.addListener(onMotionChange);
-    }
+    reducedMotion.addEventListener('change', render);
 
     // The theme toggle rewrites data-theme in place; recolor without reload.
     new MutationObserver(() => {
       readTheme();
-      if (!animationFrame) drawFrame(false);
+      if (!rafId) drawFrame(0, false);
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
 </script>
