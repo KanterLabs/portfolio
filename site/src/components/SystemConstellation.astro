@@ -61,16 +61,23 @@
     // (motion must not gate legibility). Light mode runs lower: a dark
     // green line on #f7f8f6 has far more contrast than sage on near-black.
     let accent = '#8fb8a3';
+    let linkAccent = '#67c991';
     let linkAlpha = 0.65;
     let nodeAlpha = 0.85;
+    let linkWidth = 1.3;
 
     const readTheme = () => {
       accent =
         getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() ||
         '#8fb8a3';
       const light = document.documentElement.dataset.theme === 'light';
-      linkAlpha = light ? 0.5 : 0.65;
+      // Connections use a clearer green than the nodes. Light mode keeps a
+      // lower alpha so the thicker paths stay crisp instead of tinting the
+      // off-white canvas.
+      linkAccent = light ? '#34855b' : '#67c991';
+      linkAlpha = light ? 0.32 : 0.65;
       nodeAlpha = light ? 0.7 : 0.85;
+      linkWidth = light ? 1.15 : 1.3;
     };
 
     const resize = () => {
@@ -97,9 +104,9 @@
 
     const drawFrame = (time: number, advance: boolean) => {
       ctx.clearRect(0, 0, width, height);
-      ctx.strokeStyle = accent;
+      ctx.strokeStyle = linkAccent;
       ctx.fillStyle = accent;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = linkWidth;
 
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
