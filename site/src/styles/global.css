@@ -300,6 +300,18 @@ select {
   letter-spacing: -0.03em;
 }
 
+/* With the constellation field behind it the hero reads as a stage, so on
+   viewports tall enough to afford it the fold belongs to the hero alone;
+   the next section starts below the field's fade-out. Short laptop
+   viewports keep the compact layout — a centered hero that clips its own
+   CTAs is worse than a modest one. */
+@media (width >= 960px) and (height >= 760px) {
+  .editorial-shell .hero-surface {
+    min-height: calc(100svh - 15rem);
+    align-content: center;
+  }
+}
+
 .editorial-shell > main > .observe-animate {
   padding: var(--space-section) 0;
   border-top: 1px solid var(--line);

@@ -8,6 +8,7 @@ import ProjectShowcase from '../components/ProjectShowcase.astro';
 import SectionIntro from '../components/SectionIntro.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
+import SystemConstellation from '../components/SystemConstellation.astro';
 import { getCollection } from 'astro:content';
 
 const allProjects = await getCollection('projects');
@@ -157,6 +158,7 @@ const structuredData = [
   structuredData={structuredData}
   chatEnabled={true}
 >
+  <SystemConstellation />
   <div class="page-shell editorial-shell relative z-10 pb-20">
     <SiteHeader home={true} navItems={navItems} />
 
