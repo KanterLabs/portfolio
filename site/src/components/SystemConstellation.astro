@@ -89,17 +89,21 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
+    // Density scales with area so ultrawide screens don't thin out and
+    // phones don't clutter; the ceiling bounds the O(n²) link pass.
+    const nodeTarget = () =>
+      Math.min(110, Math.max(30, Math.round((width * height) / 19000)));
+
+    const makeNode = (): FieldNode => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      radius: Math.random() * 1.9 + 1.4,
+    });
+
     const initNodes = () => {
-      // Density scales with area so ultrawide screens don't thin out and
-      // phones don't clutter; the ceiling bounds the O(n²) link pass.
-      const target = Math.min(110, Math.max(30, Math.round((width * height) / 19000)));
-      nodes = Array.from({ length: target }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        radius: Math.random() * 1.9 + 1.4,
-      }));
+      nodes = Array.from({ length: nodeTarget() }, makeNode);
     };
 
     const drawFrame = (time: number, advance: boolean) => {
@@ -130,8 +134,11 @@
 
           const pd = Math.hypot(node.x - pointer.x, node.y - pointer.y);
           if (pd < POINTER_RADIUS) {
-            node.x -= (node.x - pointer.x) * 0.004;
-            node.y -= (node.y - pointer.y) * 0.004;
+            // Pull eases off toward the rim so the field leans in near the
+            // cursor without snapping to it.
+            const pull = 0.012 * (1 - pd / POINTER_RADIUS);
+            node.x -= (node.x - pointer.x) * pull;
+            node.y -= (node.y - pointer.y) * pull;
           }
         }
 
@@ -183,12 +190,30 @@
     render();
 
     window.addEventListener('resize', () => {
+      const prevWidth = width;
+      const prevHeight = height;
       resize();
-      initNodes();
+      if (prevWidth > 0 && prevHeight > 0) {
+        // Carry the arrangement across the resize instead of re-rolling it —
+        // a window drag or phone rotation shouldn't pop a new sky into place.
+        // Density still tracks area: trim or grow to the new target count.
+        const sx = width / prevWidth;
+        const sy = height / prevHeight;
+        for (const node of nodes) {
+          node.x *= sx;
+          node.y *= sy;
+        }
+        const target = nodeTarget();
+        if (nodes.length > target) nodes.length = target;
+        while (nodes.length < target) nodes.push(makeNode());
+      } else {
+        initNodes();
+      }
       if (!rafId) drawFrame(0, false);
     });
 
     window.addEventListener('mousemove', (event) => {
+      if (!rafId) return; // frozen or off-screen field never reads the pointer
       const rect = canvas.getBoundingClientRect();
       pointer.x = event.clientX - rect.left;
       pointer.y = event.clientY - rect.top;
