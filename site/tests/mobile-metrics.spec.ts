@@ -13,9 +13,7 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
     hasHorizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
     h1: document.querySelector('h1')?.textContent?.replace(/\s+/g, ' ').trim(),
     heroParagraph: document.querySelector('main section > div p:last-of-type')?.textContent?.replace(/\s+/g, ' ').trim(),
-    contactLine: Array.from(document.querySelectorAll('p'))
-      .find((p) => p.textContent?.includes('shanekanterman04@gmail.com'))
-      ?.textContent?.trim(),
+    contactText: document.getElementById('contact')?.textContent ?? '',
     sectionTops: ['projects', 'about', 'architecture', 'skills', 'contact'].map((id) => ({
       id,
       top: Math.round(
@@ -30,8 +28,8 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
   expect(metrics.scrollHeight).toBeLessThan(12000);
   expect(metrics.h1).toContain('I build Linux platforms');
   expect(metrics.heroParagraph).toContain('Data Center Technician at InterServer');
-  expect(metrics.contactLine).toContain('shanekanterman04@gmail.com');
-  expect(metrics.contactLine).toContain('Cranford');
+  expect(metrics.contactText).toContain('shanekanterman04@gmail.com');
+  expect(metrics.contactText).toContain('Cranford');
   expect(metrics.sectionTops[0]?.id).toBe('projects');
   expect(metrics.sectionTops[0]?.top).toBeLessThan(1800);
   expect(metrics.sectionTops[0]?.top).toBeLessThan(metrics.sectionTops[1]?.top ?? 0);
