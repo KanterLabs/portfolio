@@ -300,10 +300,29 @@ select {
   letter-spacing: -0.03em;
 }
 
+/* With the constellation field behind it the hero reads as a stage, so on
+   viewports tall enough to afford it the fold belongs to the hero alone;
+   the next section starts below the field's fade-out. Short laptop
+   viewports keep the compact layout — a centered hero that clips its own
+   CTAs is worse than a modest one. */
+@media (width >= 960px) and (height >= 760px) {
+  .editorial-shell .hero-surface {
+    min-height: calc(100svh - 15rem);
+    align-content: center;
+  }
+}
+
 .editorial-shell > main > .observe-animate {
   padding: var(--space-section) 0;
   border-top: 1px solid var(--line);
   scroll-margin-top: var(--header-offset);
+}
+
+/* Contact is the page's closing statement: it should not also carry the
+   section rhythm's trailing padding, or the panel-to-footer gap doubles up
+   with the footer's own padding-top (see .site-footer below). */
+.editorial-shell > main > #contact {
+  padding-bottom: 0;
 }
 
 /* The contact block is a single full-width panel and reads as the page's
@@ -322,6 +341,189 @@ select {
   .editorial-shell #contact .contact-link-grid {
     display: flex;
     flex-wrap: wrap;
+  }
+}
+
+/* ── .panel-split ──
+   The primitive for "one object, two facets": a panel divided by a
+   hairline instead of two panels that failed to line up. Unlayered, so it
+   owns display/gap/padding on its direct children — call sites must not
+   fight it with grid/flex/gap- or p- utilities on the split element or its
+   children (same failure mode the .field-label comment above warns about
+   with mb-*). Below 960px the split collapses to a stacked layout with a
+   horizontal hairline; at >=960px it becomes two columns divided by a
+   vertical hairline, sized by --panel-split-cols (falls back to a 1.5:1
+   split when a call site doesn't set it). */
+.panel-split {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.panel-split > * + * {
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+}
+
+@media (width >= 960px) {
+  .panel-split {
+    grid-template-columns: var(--panel-split-cols, minmax(0, 1.5fr) minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .panel-split > *:first-child {
+    padding-right: 2rem;
+  }
+
+  .panel-split > * + * {
+    border-top: none;
+    border-left: 1px solid var(--line);
+    padding-left: 2rem;
+    padding-top: 0;
+  }
+}
+
+/* ── Experience timeline ──
+   Replaces four peer cards (two dated entries, a philosophy statement, and
+   a credential) with one panel: dates in a column, entries separated by
+   hairlines, an accent rail with a dot per entry. */
+.timeline {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-entry {
+  display: grid;
+  grid-template-columns: 9.5rem minmax(0, 1fr);
+  column-gap: 1.5rem;
+  padding-block: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.timeline-entry:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.timeline-entry:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-date {
+  margin: 0;
+  padding-top: 0.15rem;
+  color: var(--color-text-soft);
+  font-size: 0.82rem;
+}
+
+.timeline-body {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+  position: relative;
+  border-left: 1px solid var(--line);
+  padding-left: 1.75rem;
+}
+
+.timeline-body::before {
+  content: '';
+  position: absolute;
+  left: -3.5px;
+  top: 0.45rem;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-color);
+}
+
+.timeline-title {
+  margin: 0;
+  font-size: 1.12rem;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--color-text-base);
+}
+
+.timeline-copy {
+  margin: 0;
+  max-width: 42rem;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+@media (width < 780px) {
+  .timeline-entry {
+    grid-template-columns: 1fr;
+    row-gap: 0.5rem;
+  }
+
+  .timeline-body {
+    border-left: none;
+    padding-left: 0;
+  }
+
+  .timeline-body::before {
+    display: none;
+  }
+}
+
+/* Base rule keeps the proof rows spaced below 960px, where the merged
+   panel stacks and there is no floor to anchor against. */
+.architecture-proof-rows {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+/* Bottom-anchors the architecture proof rows against the merged panel's
+   diagram column, mirroring .project-showcase-footer: the statement sits
+   at the top, the evidence rail sits at the floor, so the two columns of
+   #architecture's single panel end flush instead of ragged. */
+@media (width >= 960px) {
+  .editorial-shell #architecture .panel-split > *:first-child {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editorial-shell #architecture .architecture-proof-rows {
+    margin-top: auto;
+    padding-top: 2rem;
+  }
+}
+
+/* dt/dd pairs auto-place two-up into rows across the grid's two columns —
+   no per-row wrapper needed. */
+.contact-details {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 1rem;
+  row-gap: 0.75rem;
+  margin: 1.75rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.contact-details dt,
+.contact-details dd {
+  margin: 0;
+}
+
+.contact-details dd {
+  color: var(--color-text-base);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+@media (width < 580px) {
+  .contact-details {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-details dd {
+    padding-bottom: 0.2rem;
   }
 }
 
@@ -1121,6 +1323,13 @@ select {
   color: var(--color-text-soft);
 }
 
+/* Scoped to #skills, not the shared .stack-list selector above, so the
+   case-study .stack-list (tests/case-studies.spec.ts) stays untouched. */
+#skills .stack-list {
+  border-top: 1px solid var(--line);
+  padding-top: 0.9rem;
+}
+
 .contact-link-grid {
   display: grid;
   gap: 0.85rem;
@@ -1171,11 +1380,6 @@ select {
 
 .project-status-archived .project-status-dot {
   background: var(--color-text-soft);
-}
-
-.certification-row {
-  display: grid;
-  gap: 0.2rem;
 }
 
 .site-footer {
