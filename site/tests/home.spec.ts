@@ -1,6 +1,6 @@
 import { test, expect, type Locator } from '@playwright/test';
 import { expectHashLinkToReachSection, expectNoHorizontalOverflow } from './helpers/navigation';
-import { parseColor } from './helpers/contrast';
+import { parseColor, effectiveBackground, getContrastRatio } from './helpers/contrast';
 
 test.describe('homepage', () => {
   test('desktop nav anchors and CTA targets work', async ({ page, isMobile }) => {
@@ -12,7 +12,7 @@ test.describe('homepage', () => {
     await expect(page).toHaveTitle('Shane Kanterman | Infrastructure and Platform Projects');
     await expect(
       page.getByRole('heading', {
-        name: 'Building Linux platforms and deployment tooling—from bare metal to CI/CD.',
+        name: 'I build Linux platforms, from bare metal to CI/CD.',
       }),
     ).toBeVisible();
     await expect(
@@ -32,8 +32,11 @@ test.describe('homepage', () => {
     await page.goto('/');
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Skills' }).click(), 'skills');
     await page.goto('/');
+    // The panel-to-footer void shrank on purpose (see #contact padding-bottom
+    // and .site-footer changes), so the page is shorter and the browser can no
+    // longer scroll the last section quite as close to the viewport top.
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Contact' }).click(), 'contact', {
-      maxTop: 460,
+      maxTop: 480,
     });
     await page.goto('/');
     await expectHashLinkToReachSection(
@@ -130,7 +133,7 @@ test.describe('homepage', () => {
 
     const card = page.locator('#projects .project-card').first();
     await card.scrollIntoViewIfNeeded();
-    // Let the .project-entry entrance reveal (editorial-reveal, 520ms)
+    // Let the .project-entry entrance reveal (editorial-reveal, 340ms)
     // finish settling before taking the "before" measurement, or its own
     // in-flight transform reads as part of the hover delta.
     await page.locator('#projects.observe-animate').evaluate(
@@ -221,32 +224,344 @@ test.describe('homepage', () => {
     }
   });
 
-  test('experience cards share one title-to-body rhythm', async ({ page, isMobile }) => {
+  test('#about reads as two panels, not a grid of tiles', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Desktop-only panel geometry');
+
+    // Rest-layout geometry — see the note on the showcase test below.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto('/');
+
+    const panels = page.locator('#about .glass');
+    await expect(panels).toHaveCount(2);
+
+    const first = await panels.nth(0).boundingBox();
+    const second = await panels.nth(1).boundingBox();
+    expect(first).not.toBeNull();
+    expect(second).not.toBeNull();
+
+    const gap = second!.y - (first!.y + first!.height);
+    expect(gap, `panel-to-panel gap: ${gap}px`).toBeGreaterThanOrEqual(30);
+    expect(gap, `panel-to-panel gap: ${gap}px`).toBeLessThanOrEqual(44);
+  });
+
+  test('the experience timeline is a timeline, not a card row', async ({ page, isMobile }) => {
     test.skip(isMobile, 'viewport-resizing test drives its own widths');
 
-    const measureGaps = async () => {
-      const cards = page.locator('#about .grid.grid-cols-3 .glass');
-      await expect(cards).toHaveCount(3);
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto('/');
 
-      const gaps: number[] = [];
-      for (let i = 0; i < 3; i += 1) {
-        const titleBox = await cards.nth(i).locator('h3').boundingBox();
-        const bodyBox = await cards.nth(i).locator('h3 + p').boundingBox();
-        expect(titleBox, `card ${i} title box`).not.toBeNull();
-        expect(bodyBox, `card ${i} body box`).not.toBeNull();
-        gaps.push(bodyBox!.y - (titleBox!.y + titleBox!.height));
-      }
-      return gaps;
-    };
+    const timeline = page.locator('#about ol.timeline');
+    await expect(timeline).toHaveCount(1);
+    const entries = timeline.locator('li.timeline-entry');
+    await expect(entries).toHaveCount(3);
+
+    const titleXs = await entries.locator('.timeline-title').evaluateAll((els) =>
+      els.map((el) => el.getBoundingClientRect().x),
+    );
+    const dateXs = await entries.locator('.timeline-date').evaluateAll((els) =>
+      els.map((el) => el.getBoundingClientRect().x),
+    );
+    expect(Math.max(...titleXs) - Math.min(...titleXs)).toBeLessThanOrEqual(1);
+    expect(Math.max(...dateXs) - Math.min(...dateXs)).toBeLessThanOrEqual(1);
+
+    const chrome = await entries.evaluateAll((els) =>
+      els.map((el) => {
+        const style = getComputedStyle(el);
+        return {
+          borderTopWidth: style.borderTopWidth,
+          borderTopStyle: style.borderTopStyle,
+          borderTopColor: style.borderTopColor,
+        };
+      }),
+    );
+    expect(chrome[0].borderTopWidth).toBe('0px');
+    for (const entry of [chrome[1], chrome[2]]) {
+      expect(entry.borderTopStyle).toBe('solid');
+      expect(parseFloat(entry.borderTopWidth)).toBeGreaterThanOrEqual(1);
+      const color = parseColor(entry.borderTopColor);
+      expect(color, `unparseable color ${entry.borderTopColor}`).not.toBeNull();
+      expect(color!.alpha).toBeGreaterThan(0);
+    }
+
+    // The entry copy keeps a readable measure instead of running the full
+    // panel width — guards the .timeline-copy max-width cap.
+    const measures = await entries.locator('.timeline-copy').evaluateAll((els) =>
+      els.map((el) => ({
+        copy: el.getBoundingClientRect().width,
+        body: el.closest('.timeline-body')!.getBoundingClientRect().width,
+      })),
+    );
+    expect(measures).toHaveLength(3);
+    for (const { copy, body } of measures) {
+      expect(copy).toBeLessThanOrEqual(700);
+      expect(copy).toBeLessThan(body - 100);
+    }
+
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.reload();
+
+    const count = await entries.count();
+    for (let i = 0; i < count; i += 1) {
+      const entry = entries.nth(i);
+      const dateBox = await entry.locator('.timeline-date').boundingBox();
+      const orgBox = await entry.locator('.field-label').boundingBox();
+      expect(dateBox, `entry ${i} date box`).not.toBeNull();
+      expect(orgBox, `entry ${i} org label box`).not.toBeNull();
+      expect(dateBox!.y + dateBox!.height, `entry ${i} date should sit above org label`).toBeLessThanOrEqual(
+        orgBox!.y + 1,
+      );
+
+      const borderLeftWidth = await entry
+        .locator('.timeline-body')
+        .evaluate((el) => getComputedStyle(el).borderLeftWidth);
+      expect(borderLeftWidth, `entry ${i} rail should be gone on mobile`).toBe('0px');
+    }
+  });
+
+  test('panels split by a hairline instead of ending ragged', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Desktop/tablet breakpoint comparison drives its own widths');
+
+    const selectors = ['#about .panel-split', '#architecture .panel-split', '#contact .panel-split'];
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto('/');
+
+    for (const selector of selectors) {
+      const panel = page.locator(selector).first();
+      const children = panel.locator(':scope > *');
+      await expect(children).toHaveCount(2);
+
+      const chrome = await children.nth(1).evaluate((el) => {
+        const style = getComputedStyle(el);
+        return {
+          borderLeftStyle: style.borderLeftStyle,
+          borderLeftWidth: style.borderLeftWidth,
+          borderLeftColor: style.borderLeftColor,
+          borderTopWidth: style.borderTopWidth,
+        };
+      });
+      expect(chrome.borderLeftStyle, `${selector} divider style`).toBe('solid');
+      expect(parseFloat(chrome.borderLeftWidth), `${selector} divider width`).toBeGreaterThanOrEqual(1);
+      const color = parseColor(chrome.borderLeftColor);
+      expect(color, `unparseable color ${chrome.borderLeftColor}`).not.toBeNull();
+      expect(color!.alpha, `${selector} divider visibility`).toBeGreaterThan(0);
+      expect(chrome.borderTopWidth, `${selector} divider should not also carry a top border`).toBe('0px');
+
+      const first = await children.nth(0).boundingBox();
+      const second = await children.nth(1).boundingBox();
+      expect(first).not.toBeNull();
+      expect(second).not.toBeNull();
+      const overlap = Math.min(first!.y + first!.height, second!.y + second!.height) - Math.max(first!.y, second!.y);
+      expect(overlap, `${selector} columns should vertically overlap`).toBeGreaterThan(0);
+      expect(second!.x, `${selector} second column should sit right of the first`).toBeGreaterThan(
+        first!.x + first!.width - 1,
+      );
+    }
+
+    await page.setViewportSize({ width: 940, height: 1400 });
+    await page.reload();
+
+    for (const selector of selectors) {
+      const panel = page.locator(selector).first();
+      const children = panel.locator(':scope > *');
+      const chrome = await children.nth(1).evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { borderTopStyle: style.borderTopStyle, borderLeftWidth: style.borderLeftWidth };
+      });
+      expect(chrome.borderTopStyle, `${selector} stacked divider style`).toBe('solid');
+      expect(chrome.borderLeftWidth, `${selector} stacked divider should drop its left border`).toBe('0px');
+    }
+  });
+
+  test('the architecture panel ends flush at the floor', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The two-column architecture layout is desktop-only');
+
+    // Rest-layout geometry — see the note on the showcase test below.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto('/');
+
+    await expect(page.locator('#architecture .glass')).toHaveCount(1);
+
+    const rows = page.locator('#architecture .proof-inline-row');
+    const rowBox = await rows.last().boundingBox();
+    const footerBox = await page.locator('#architecture .architecture-footer').boundingBox();
+    expect(rowBox).not.toBeNull();
+    expect(footerBox).not.toBeNull();
+
+    const rowBottom = rowBox!.y + rowBox!.height;
+    const footerBottom = footerBox!.y + footerBox!.height;
+    expect(Math.abs(rowBottom - footerBottom), `row bottom ${rowBottom} vs footer bottom ${footerBottom}`).toBeLessThanOrEqual(12);
+  });
+
+  test('the architecture proof rows stay spaced below the panel-split breakpoint', async ({ page }) => {
+    // Below 960px #architecture stacks into one column and .architecture-proof-rows
+    // loses the bottom-anchored `margin-top: auto` — it must still keep a real gap
+    // between its own rows instead of collapsing flush against its border-adjacent
+    // siblings. Covers the base (non-@media) rule, not just the >=960px flush case above.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 390, height: 1200 });
+    await page.goto('/');
+
+    const rows = page.locator('#architecture .proof-inline-row');
+    await expect(rows).toHaveCount(3);
+
+    const rowGap = await page.locator('#architecture .architecture-proof-rows').evaluate(
+      (el) => parseFloat(getComputedStyle(el).rowGap || getComputedStyle(el).gap),
+    );
+    expect(rowGap).toBeGreaterThan(0);
+
+    const firstBox = await rows.nth(0).boundingBox();
+    const secondBox = await rows.nth(1).boundingBox();
+    expect(firstBox).not.toBeNull();
+    expect(secondBox).not.toBeNull();
+    expect(secondBox!.y).toBeGreaterThan(firstBox!.y + firstBox!.height);
+  });
+
+  test('the contact panel closes the page', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Desktop-only panel geometry; contrast/copy checks run separately');
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto('/');
+
+    await expect(page.locator('#contact .glass')).toHaveCount(1);
+
+    const h2 = page.locator('#contact h2');
+    const lineCount1440 = await h2.evaluate(
+      (el) => el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight),
+    );
+    expect(lineCount1440).toBeLessThanOrEqual(2.2);
+
+    const panelBox = await page.locator('#contact .glass').boundingBox();
+    const railBox = await page.locator('#contact .contact-link-grid').boundingBox();
+    expect(panelBox).not.toBeNull();
+    expect(railBox).not.toBeNull();
+    const panelCenter = panelBox!.y + panelBox!.height / 2;
+    const railCenter = railBox!.y + railBox!.height / 2;
+    expect(Math.abs(railCenter - panelCenter)).toBeLessThanOrEqual(6);
+
+    const footerParagraph = page.locator('.site-footer p').first();
+    const footerBox1440 = await footerParagraph.boundingBox();
+    expect(footerBox1440).not.toBeNull();
+    const gap1440 = footerBox1440!.y - (panelBox!.y + panelBox!.height);
+    expect(gap1440, `panel-to-footer gap at 1440: ${gap1440}px`).toBeGreaterThanOrEqual(88);
+    expect(gap1440, `panel-to-footer gap at 1440: ${gap1440}px`).toBeLessThanOrEqual(150);
+
+    const emailDetail = page.locator('#contact dd', { hasText: 'shanekanterman04@gmail.com' });
+    const emailChrome = await emailDetail.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { fontSize: style.fontSize, color: style.color };
+    });
+    expect(parseFloat(emailChrome.fontSize)).toBeGreaterThanOrEqual(15);
+    // Compare against a known --color-text-soft consumer (.timeline-date) and
+    // a known --color-text-base consumer (the contact h2, via text-text-base)
+    // so the comparison is browser-resolved rgb() vs rgb(), not a raw hex
+    // custom-property string vs a resolved color.
+    const softReferenceColor = await page.locator('#about .timeline-date').first().evaluate(
+      (el) => getComputedStyle(el).color,
+    );
+    const baseReferenceColor = await page.locator('#contact h2').evaluate((el) => getComputedStyle(el).color);
+    expect(emailChrome.color).not.toBe(softReferenceColor);
+    expect(emailChrome.color).toBe(baseReferenceColor);
+
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.reload();
+
+    const lineCount390 = await page
+      .locator('#contact h2')
+      .evaluate((el) => el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight));
+    expect(lineCount390).toBeLessThanOrEqual(4.2);
+
+    const panelBox390 = await page.locator('#contact .glass').boundingBox();
+    const footerBox390 = await page.locator('.site-footer p').first().boundingBox();
+    expect(panelBox390).not.toBeNull();
+    expect(footerBox390).not.toBeNull();
+    const gap390 = footerBox390!.y - (panelBox390!.y + panelBox390!.height);
+    expect(gap390, `panel-to-footer gap at 390: ${gap390}px`).toBeGreaterThanOrEqual(64);
+    expect(gap390, `panel-to-footer gap at 390: ${gap390}px`).toBeLessThanOrEqual(120);
+
+    await expect(page.getByText('Where I am headed')).toHaveCount(0);
+    await expect(page.getByText(/Looking for junior infrastructure and platform roles/)).toHaveCount(0);
+
+    await expect(page.getByRole('link', { name: 'Email me' })).toHaveAttribute(
+      'href',
+      'mailto:shanekanterman04@gmail.com',
+    );
+  });
+
+  test('contact email clears contrast in both themes', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Desktop-only contrast check; the copy is unaffected by viewport');
+
+    for (const colorScheme of ['light', 'dark'] as const) {
+      await page.emulateMedia({ colorScheme });
+      await page.addInitScript(() => localStorage.clear());
+      await page.goto('/');
+      await page.evaluate(() => localStorage.clear());
+      await page.reload();
+
+      const emailDetail = page.locator('#contact dd', { hasText: 'shanekanterman04@gmail.com' });
+      const bg = await effectiveBackground(page, '#contact dd');
+      const color = await emailDetail.evaluate((el) => getComputedStyle(el).color);
+      const fg = parseColor(color);
+      expect(fg, `unparseable color ${color} (${colorScheme})`).not.toBeNull();
+      const ratio = getContrastRatio(fg!.rgb, bg);
+      expect(ratio, `${colorScheme} email contrast: ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  test('section rhythm is one number, not five', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'viewport-resizing test drives its own widths');
 
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 1000 });
       await page.goto('/');
 
-      const gaps = await measureGaps();
-      const spread = Math.max(...gaps) - Math.min(...gaps);
-      expect(spread, `title-to-body gap spread at ${width}px: ${gaps.join(', ')}`).toBeLessThanOrEqual(1);
+      // #projects, #about, #architecture, and #skills each open with a real
+      // <SectionIntro>; #contact is the page's closing statement and never
+      // used the component, so it is deliberately not part of this count.
+      const intros = page.locator('[data-section-intro]');
+      await expect(intros).toHaveCount(4);
+      const margins = await intros.evaluateAll((els) => els.map((el) => getComputedStyle(el).marginBottom));
+      const unique = new Set(margins);
+      expect(unique.size, `margin-bottom values at ${width}px: ${margins.join(', ')}`).toBe(1);
     }
+
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto('/');
+    const skillsGap = await page
+      .locator('#skills > .grid')
+      .evaluate((el) => getComputedStyle(el).columnGap);
+    const projectsGap = await page
+      .locator('#projects .project-card-grid')
+      .evaluate((el) => getComputedStyle(el).columnGap);
+    expect(skillsGap).toBe(projectsGap);
+  });
+
+  test('skills cards separate their sentence from their stack list', async ({ page }) => {
+    await page.goto('/');
+
+    const stackLists = page.locator('#skills .stack-list');
+    await expect(stackLists).toHaveCount(3);
+
+    for (let i = 0; i < 3; i += 1) {
+      const chrome = await stackLists.nth(i).evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { style: style.borderTopStyle, width: style.borderTopWidth, color: style.borderTopColor };
+      });
+      expect(chrome.style, `stack list ${i} border style`).toBe('solid');
+      expect(parseFloat(chrome.width), `stack list ${i} border width`).toBeGreaterThanOrEqual(1);
+      const color = parseColor(chrome.color);
+      expect(color, `unparseable color ${chrome.color}`).not.toBeNull();
+      expect(color!.alpha, `stack list ${i} border visibility`).toBeGreaterThan(0);
+    }
+
+    await page.goto('/projects/hostlet');
+    const caseStudyStackList = page.locator('.stack-list').first();
+    const borderTopWidth = await caseStudyStackList.evaluate((el) => getComputedStyle(el).borderTopWidth);
+    expect(borderTopWidth, 'case-study stack list must stay unscoped by the #skills rule').toBe('0px');
   });
 
   test('case-study titles link to their case studies', async ({ page }) => {
@@ -291,6 +606,10 @@ test.describe('homepage', () => {
   });
 
   test('featured case study is a showcase, not just another card', async ({ page, isMobile }) => {
+    // This test measures rest-layout geometry. boundingBox() scrolls its
+    // target into view, which is exactly what arms the reveal observer — so
+    // without this the measurement races a translateY that is still running.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
     const showcase = page.locator('.project-showcase');
@@ -397,6 +716,8 @@ test.describe('homepage', () => {
 
   test('split diagram tiers align their node rows', async ({ page, isMobile }) => {
     test.skip(isMobile, 'The diagram plate is hidden below 960px');
+    // Rest-layout geometry — see the note on the showcase test above.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
     const splitTiers = page.locator('.project-showcase-diagram .system-diagram-tier-split');
@@ -522,6 +843,10 @@ test.describe('homepage', () => {
 
   test('supporting cards form a matched row', async ({ page, isMobile }) => {
     test.skip(isMobile, 'The multi-column layout only exists at >=960px');
+    // Rest-layout geometry — see the note on the showcase test above. The
+    // three cards' reveals are staggered, so a mid-animation read shows them
+    // at three different translateY offsets.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
     const cards = page.locator('#projects .project-card');
@@ -558,8 +883,12 @@ test.describe('homepage', () => {
     expect(verticalGap).toBeGreaterThan(24);
   });
 
-  test('editorial CTAs are left-aligned, not centred in their box', async ({ page, isMobile }) => {
-    test.skip(!isMobile, 'mobile is where the full-width box makes centring visible');
+  // The CTAs are pill buttons, so their *labels* are centred inside the pill
+  // on purpose. What must not drift is the pill's own left edge: on mobile
+  // the buttons go full-width and any padding mismatch against the body copy
+  // reads as a broken column.
+  test('CTA buttons share a left edge with the body copy', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'mobile is where the full-width box makes misalignment visible');
 
     await page.goto('/');
 
@@ -568,14 +897,12 @@ test.describe('homepage', () => {
     expect(heroParagraphBox).not.toBeNull();
 
     const heroCta = page.getByRole('link', { name: 'View Selected Work' });
-    await expect(heroCta).toHaveCSS('justify-content', 'flex-start');
     const heroCtaBox = await heroCta.boundingBox();
     expect(heroCtaBox).not.toBeNull();
     expect(Math.abs(heroCtaBox!.x - heroParagraphBox!.x)).toBeLessThanOrEqual(2);
 
     const contactCta = page.getByRole('link', { name: 'Email me' });
     await contactCta.scrollIntoViewIfNeeded();
-    await expect(contactCta).toHaveCSS('justify-content', 'flex-start');
     const contactParagraph = page.locator('#contact p').first();
     const contactParagraphBox = await contactParagraph.boundingBox();
     const contactCtaBox = await contactCta.boundingBox();

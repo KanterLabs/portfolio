@@ -9,7 +9,7 @@ interface Props {
 const { eyebrow, title, body, class: className = '' } = Astro.props;
 ---
 
-<div class={`max-w-[48rem] mb-8 max-[780px]:mb-6 ${className}`}>
+<div class={`max-w-[48rem] mb-10 max-[780px]:mb-7 ${className}`} data-section-intro>
   <p class="eyebrow">{eyebrow}</p>
   <h2
     class="text-[length:var(--step-section)] leading-[1.12] tracking-[-0.025em] mb-4 font-bold text-text-base"
