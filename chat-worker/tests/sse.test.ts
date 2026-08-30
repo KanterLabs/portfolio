@@ -55,6 +55,22 @@ describe('SSE handling', () => {
     ]);
   });
 
+  it('reports the completed assistant text to the finish callback', async () => {
+    const upstream = streamFromChunks([
+      'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"Hello "}\n\n',
+      'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"there"}\n\n',
+      'event: response.completed\ndata: {"type":"response.completed"}\n\n',
+    ]);
+    let result: { reason: string; text: string } | undefined;
+
+    const response = new Response(
+      transformUpstreamSse(upstream, [], { onFinished: (value) => { result = value; } }),
+    );
+    await response.text();
+
+    expect(result).toEqual({ reason: 'completed', text: 'Hello there' });
+  });
+
   it('waits for response completion after an output item completes', async () => {
     let canceled = false;
     const encoder = new TextEncoder();
@@ -105,12 +121,14 @@ describe('SSE handling', () => {
   });
 
   it('treats an unexpected upstream EOF as an error instead of a completed answer', async () => {
+    let result: { reason: string; text: string } | undefined;
     const response = new Response(
       transformUpstreamSse(
         streamFromChunks([
           'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"partial"}\n\n',
         ]),
         [],
+        { onFinished: (value) => { result = value; } },
       ),
     );
     const events = parsePublicEvents(await response.text());
@@ -121,5 +139,6 @@ describe('SSE handling', () => {
       { event: 'error', data: { code: 'upstream_error', message: 'Chat is temporarily unavailable.' } },
       { event: 'done', data: { reason: 'error' } },
     ]);
+    expect(result).toEqual({ reason: 'error', text: 'partial' });
   });
 });

@@ -8,7 +8,13 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.scripts.json",
+    "knowledge:audit": "tsx scripts/knowledge-cli.ts audit",
+    "knowledge:review": "tsx scripts/knowledge-cli.ts review",
+    "knowledge:generate": "tsx scripts/knowledge-cli.ts generate",
+    "d1:migrate:local": "wrangler d1 migrations apply CHAT_HISTORY --local",
+    "d1:migrate:beta": "wrangler d1 migrations apply CHAT_HISTORY --remote --env beta",
+    "d1:migrate:production": "wrangler d1 migrations apply CHAT_HISTORY --remote --env production",
     "deploy:dry-run": "wrangler deploy --dry-run --env beta && wrangler deploy --dry-run --env production",
     "deploy": "npm run deploy:beta",
     "deploy:beta": "wrangler deploy --env beta",
@@ -16,6 +22,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260816.1",
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.12",
     "typescript": "^5.9.2",
     "vitest": "^4.1.10",
     "wrangler": "^4.123.0"
