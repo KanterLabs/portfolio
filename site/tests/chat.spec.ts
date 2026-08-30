@@ -116,6 +116,15 @@ test('launcher opens and closes the panel, and Escape restores launcher focus', 
   await expect(launcher).toBeFocused();
 });
 
+test('discloses that chat content is stored', async ({ page }) => {
+  await page.goto('/');
+  await openChat(page);
+
+  await expect(page.locator('.portfolio-chat-privacy')).toContainText(
+    'Chats are stored to improve this assistant.',
+  );
+});
+
 test('starter prompts send the current page and visitor context', async ({ page }) => {
   const requests = await installChatRoute(page, () =>
     stream(event('delta', { delta: 'Starter response.' }), event('done', {})),
@@ -174,6 +183,46 @@ test('assembles streamed deltas and renders only allowlisted source links', asyn
   await expect(links.first()).toHaveAttribute('href', /\/projects\/hostlet\/?$/);
   await expect(links.first()).toContainText('Hostlet project');
   await expect(sources).not.toContainText('Untrusted page');
+});
+
+test('formats assistant emphasis and inline list markers as readable Markdown', async ({ page }) => {
+  const answer =
+    "Shane’s main project is the **KanterLabs Homelab Platform**, which includes: - Public and private workload separation - Disposable GitHub Actions runners - Health checks and rollback paths";
+  await installChatRoute(page, () =>
+    stream(event('delta', { delta: answer }), event('done', {})),
+  );
+
+  await page.goto('/');
+  await openChat(page);
+  await page.locator('[data-chat-input]').fill('Tell me about Shane’s platform work.');
+  await page.locator('[data-chat-send]').click();
+
+  const assistant = page.locator('[data-chat-transcript] .portfolio-chat-message-assistant').last();
+  await expect(assistant.locator('strong')).toHaveText('KanterLabs Homelab Platform');
+  await expect(assistant.locator('ul > li')).toHaveText([
+    'Public and private workload separation',
+    'Disposable GitHub Actions runners',
+    'Health checks and rollback paths',
+  ]);
+  await expect(assistant).not.toContainText('**');
+});
+
+test('renders assistant formatting without interpreting HTML', async ({ page }) => {
+  await installChatRoute(page, () =>
+    stream(
+      event('delta', { delta: 'Safe **answer**: - <img src=x onerror=alert(1)>' }),
+      event('done', {}),
+    ),
+  );
+
+  await page.goto('/');
+  await openChat(page);
+  await page.locator('[data-chat-input]').fill('Test output safety.');
+  await page.locator('[data-chat-send]').click();
+
+  const assistant = page.locator('[data-chat-transcript] .portfolio-chat-message-assistant').last();
+  await expect(assistant.locator('img')).toHaveCount(0);
+  await expect(assistant.locator('li')).toHaveText('<img src=x onerror=alert(1)>');
 });
 
 test('marks the assistant message as streaming until the SSE response completes', async ({ page }) => {

@@ -9,10 +9,10 @@ Astro widget on shanekanterman.dev (and beta.shanekanterman.dev)
    | POST /api/chat
    v
 Cloudflare Worker (portfolio-chat / portfolio-chat-beta)
+   |\
+   | \-- D1 (portfolio-chat-history)
    |
-   | OpenAI Responses API
-   v
-gpt-5.6-luna
+   \---- OpenAI Responses API → gpt-5.6-luna
 ```
 
 Worker routes intercept only `<hostname>/api/chat*`; every other request
@@ -41,6 +41,46 @@ After setting the secret, open `/api/chat/health` on the matching hostname and
 confirm that `configured` is `true`. Then open the **Ask about Shane** widget
 and ask a question such as "Tell me about Hostlet."
 
+## D1 chat history
+
+The Worker stores each accepted request in the `CHAT_HISTORY` D1 binding. A
+record contains the visitor UUID, environment, page path, user message, the
+bounded request history supplied to the model, assistant response, public
+source links, model and knowledge versions, outcome, timestamps, and duration.
+It does not store IP addresses, user agents, credentials, hidden reasoning, or
+raw upstream errors. The widget tells visitors that chat content is stored and
+asks them not to submit sensitive information.
+
+History writes are best effort. A missing binding or temporary D1 failure does
+not break chat delivery. The health endpoint reports `historyConfigured` so a
+deployed environment can be checked without exposing database details.
+
+The one-time resource setup is:
+
+```sh
+cd chat-worker
+npx wrangler login
+npx wrangler d1 create portfolio-chat-history --binding CHAT_HISTORY
+```
+
+Add the returned database name and UUID as a `CHAT_HISTORY` D1 binding for both
+`env.beta` and `env.production` in `wrangler.toml`, then apply the migration:
+
+```sh
+npm run d1:migrate:beta
+npm run d1:migrate:production
+```
+
+Once the binding is configured, CI applies pending migrations for the target
+environment before deploying the Worker. D1 records are retained until
+explicitly deleted. To inspect recent production exchanges without printing
+credentials:
+
+```sh
+npx wrangler d1 execute CHAT_HISTORY --remote --env production --command \
+  "SELECT started_at, page_path, status, duration_ms FROM chat_exchanges ORDER BY started_at DESC LIMIT 25"
+```
+
 ## Knowledge boundary
 
 `chat-content/knowledge.json` is the sole approved factual source. It contains
@@ -50,11 +90,27 @@ load infrastructure configuration.
 
 When updating public portfolio facts:
 
-1. Update the visible page or case study.
-2. Review and update the corresponding knowledge entry.
-3. Advance the knowledge version and `lastReviewed` date.
-4. Add or update scope cases in `chat-content/prompt-scope.md`.
-5. Run the Worker and browser test suites.
+1. Edit the visible page or case study and commit it. The audit derives
+   staleness from git history, so uncommitted edits are invisible to it.
+2. For a new page run `npm run knowledge:generate -- <path.mdx>`; for a
+   changed page run `npm run knowledge:review -- <entryId…>`. Both require
+   `OPENAI_API_KEY` and only print a proposal; review exits non-zero when an
+   entry is contradicted by its source. Apply the proposal by hand to
+   `chat-content/knowledge.json`.
+3. Update `lastReviewed` on every touched entry and bump `version` in
+   `chat-content/knowledge.json`. The version now lives only there;
+   `/api/chat/health` reports it after the next Worker deploy. There is no
+   `wrangler.toml` `KNOWLEDGE_VERSION` var anymore.
+4. Run `npm run knowledge:audit` until it is clean. CI runs the same audit in
+   the chat-worker validation job and blocks merges on it.
+5. Update scope cases in `chat-content/prompt-scope.md` (manual, not
+   enforced), then run the Worker and browser test suites.
+
+A case study can set `draft: true` in its frontmatter. A draft page is not
+built and not listed, it is exempt from knowledge-coverage checks, and the
+audit rejects any knowledge entry that sources it. Drafting the featured
+project or the experience entry fails the homepage build, which expects both
+to exist.
 
 ## Local validation
 
@@ -63,6 +119,7 @@ cd chat-worker
 npm ci
 npm run typecheck
 npm test
+npm run d1:migrate:local
 npm run deploy:dry-run
 
 cd ../site
@@ -85,4 +142,4 @@ Cloudflare across code deployments.
 To disable the chatbot in an environment, roll its static site back to a
 release from before the widget and restore the preceding Worker deployment or
 remove its route. Neither action requires an Nginx, Tunnel, or portfolio-LXC
-change.
+change. Rolling back Worker code does not delete D1 data or reverse migrations.

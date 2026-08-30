@@ -1,0 +1,17 @@
+{
+  "//": "The maintenance scripts run under Node, not in a Worker. They get their own config because @types/node and @cloudflare/workers-types disagree about several globals; keeping them in separate programs avoids that conflict entirely.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["scripts"]
+}
