@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-18",
+  "version": "2026-08-30",
   "entries": [
     {
       "id": "profile",
@@ -8,7 +8,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-08-30",
       "topics": ["profile", "experience", "education", "contact"],
       "keywords": [
         "Shane Kanterman",
@@ -31,7 +31,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#contact"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-08-30",
       "topics": ["contact", "email", "links"],
       "keywords": [
         "contact",
@@ -50,7 +50,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#architecture"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-08-30",
       "topics": ["skills", "architecture", "delivery", "platform"],
       "keywords": [
         "Proxmox",
@@ -109,7 +109,7 @@
         "path": "site/src/content/projects/hostlet.mdx",
         "href": "/projects/hostlet"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-08-24",
       "topics": ["project", "deployment", "rust", "docker", "product"],
       "keywords": [
         "Hostlet",
@@ -160,7 +160,7 @@
         "path": "site/src/content/projects/multi-node-portfolio.mdx",
         "href": "/projects/multi-node-portfolio"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-08-24",
       "topics": ["project", "portfolio", "astro", "delivery", "cloudflare"],
       "keywords": [
         "Astro",
@@ -184,7 +184,7 @@
         "path": "site/src/content/projects/data-center-operations.mdx",
         "href": "/projects/data-center-operations"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-08-24",
       "topics": ["experience", "data center", "hardware", "provisioning", "linux"],
       "keywords": [
         "InterServer",

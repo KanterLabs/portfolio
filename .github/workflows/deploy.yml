@@ -59,6 +59,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
@@ -71,6 +73,8 @@ jobs:
         run: npm audit --package-lock-only --audit-level=low
       - name: Typecheck Worker
         run: npm run typecheck
+      - name: Audit knowledge freshness
+        run: npm run knowledge:audit
       - name: Run Worker tests
         run: npm test
       - name: Build Worker deployment bundle
@@ -153,6 +157,19 @@ jobs:
         if: inputs.rollback_sha == ''
         working-directory: chat-worker
         run: npm ci
+      - name: Apply chat history migrations
+        if: inputs.rollback_sha == ''
+        working-directory: chat-worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WORKER_ENV: ${{ github.ref_name == 'beta' && 'beta' || 'production' }}
+        run: |
+          if grep -q 'binding = "CHAT_HISTORY"' wrangler.toml; then
+            npm run "d1:migrate:$WORKER_ENV"
+          else
+            echo "CHAT_HISTORY is not configured; skipping D1 migrations."
+          fi
       - name: Deploy chat Worker
         if: inputs.rollback_sha == ''
         working-directory: chat-worker

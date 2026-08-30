@@ -11,7 +11,7 @@ import StackBadge from '../components/StackBadge.astro';
 import SystemConstellation from '../components/SystemConstellation.astro';
 import { getCollection } from 'astro:content';
 
-const allProjects = await getCollection('projects');
+const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
 const portfolioProjects = sorted.filter((project) => project.data.kind === 'project');
 const featuredProject = portfolioProjects.find((project) => project.data.featured)!;

@@ -15,6 +15,7 @@ const projects = defineCollection({
       keyOutcome: z.string(),
       kind: z.enum(['project', 'experience']).default('project'),
       featured: z.boolean().default(false),
+      draft: z.boolean().default(false),
       order: z.number(),
       stack: z.array(z.string()),
       status: z.enum(['shipped', 'in-progress', 'archived']),

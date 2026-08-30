@@ -89,6 +89,9 @@
           </button>
         </div>
         <button class="portfolio-chat-retry" type="button" data-chat-retry hidden>Try sending again</button>
+        <p class="portfolio-chat-privacy">
+          Chats are stored to improve this assistant. Please don’t include sensitive information.
+        </p>
       </form>
     </div>
   </section>
@@ -190,6 +193,88 @@
         transcript.append(article);
         scrollTranscript();
         return { article, paragraph };
+      };
+
+      const appendInlineFormatting = (element: HTMLElement, text: string) => {
+        const segments = text.split(/(\*\*[^*\n]+\*\*)/g);
+
+        for (const segment of segments) {
+          if (segment.startsWith('**') && segment.endsWith('**')) {
+            const strong = document.createElement('strong');
+            strong.textContent = segment.slice(2, -2);
+            element.append(strong);
+          } else if (segment) {
+            element.append(document.createTextNode(segment));
+          }
+        }
+      };
+
+      const assistantBlocks = (text: string) => {
+        const lines: string[] = [];
+
+        for (const sourceLine of text.replace(/\r\n?/g, '\n').split('\n')) {
+          const inlineListStart = sourceLine.indexOf(': - ');
+          if (inlineListStart === -1) {
+            lines.push(sourceLine);
+            continue;
+          }
+
+          lines.push(sourceLine.slice(0, inlineListStart + 1));
+          for (const item of sourceLine.slice(inlineListStart + 3).split(' - ')) {
+            lines.push(`- ${item}`);
+          }
+        }
+
+        return lines;
+      };
+
+      const renderAssistantMessage = (article: HTMLElement, text: string) => {
+        article.textContent = '';
+        const lines = assistantBlocks(text);
+        let index = 0;
+
+        while (index < lines.length) {
+          const line = lines[index]?.trim() ?? '';
+          if (!line) {
+            index += 1;
+            continue;
+          }
+
+          const unorderedMatch = line.match(/^[-*]\s+(.+)$/);
+          const orderedMatch = line.match(/^\d+[.)]\s+(.+)$/);
+          if (unorderedMatch || orderedMatch) {
+            const list = document.createElement(orderedMatch ? 'ol' : 'ul');
+            while (index < lines.length) {
+              const itemLine = lines[index]?.trim() ?? '';
+              const itemMatch = orderedMatch
+                ? itemLine.match(/^\d+[.)]\s+(.+)$/)
+                : itemLine.match(/^[-*]\s+(.+)$/);
+              if (!itemMatch) break;
+
+              const item = document.createElement('li');
+              appendInlineFormatting(item, itemMatch[1]);
+              list.append(item);
+              index += 1;
+            }
+            article.append(list);
+            continue;
+          }
+
+          const paragraphLines = [line];
+          index += 1;
+          while (index < lines.length) {
+            const nextLine = lines[index]?.trim() ?? '';
+            if (!nextLine || /^[-*]\s+/.test(nextLine) || /^\d+[.)]\s+/.test(nextLine)) break;
+            paragraphLines.push(nextLine);
+            index += 1;
+          }
+
+          const paragraph = document.createElement('p');
+          appendInlineFormatting(paragraph, paragraphLines.join(' '));
+          article.append(paragraph);
+        }
+
+        scrollTranscript();
       };
 
       const createStreamRenderer = (paragraph: HTMLParagraphElement) => {
@@ -490,9 +575,9 @@
 
           if (!assistantText) {
             assistantText = 'I could not find an answer for that yet. Please try another question.';
-            assistantParagraph.textContent = assistantText;
-            scrollTranscript();
           }
+
+          renderAssistantMessage(assistantMessage, assistantText);
 
           if (sequence === requestSequence) {
             messageHistory = [...messageHistory, { role: 'user', content: message }, { role: 'assistant', content: assistantText }].slice(-6);
@@ -722,8 +807,27 @@
     animation: portfolio-chat-message-in 160ms ease-out both;
   }
 
-  .portfolio-chat-message p {
+  .portfolio-chat-message p,
+  .portfolio-chat-message ul,
+  .portfolio-chat-message ol {
     margin: 0;
+  }
+
+  .portfolio-chat-message p + p,
+  .portfolio-chat-message p + ul,
+  .portfolio-chat-message p + ol,
+  .portfolio-chat-message ul + p,
+  .portfolio-chat-message ol + p {
+    margin-top: 0.5rem;
+  }
+
+  .portfolio-chat-message ul,
+  .portfolio-chat-message ol {
+    padding-left: 1.2rem;
+  }
+
+  .portfolio-chat-message li + li {
+    margin-top: 0.25rem;
   }
 
   .portfolio-chat-message[data-streaming='true'] p::after {
@@ -858,6 +962,13 @@
   .portfolio-chat-limit {
     color: var(--chat-soft);
     font-size: 0.68rem;
+  }
+
+  .portfolio-chat-privacy {
+    margin: 0.15rem 0 0;
+    color: var(--chat-soft);
+    font-size: 0.68rem;
+    line-height: 1.35;
   }
 
   .portfolio-chat-send {

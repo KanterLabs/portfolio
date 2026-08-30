@@ -5,6 +5,13 @@ export interface ParsedSseEvent {
   data: string;
 }
 
+export type StreamFinishReason = 'completed' | 'error' | 'aborted';
+
+export interface StreamResult {
+  reason: StreamFinishReason;
+  text: string;
+}
+
 /** Incremental SSE parser that preserves events split at arbitrary chunks. */
 export class SseParser {
   private buffer = '';
@@ -137,7 +144,7 @@ function isUpstreamError(type: string): boolean {
 export function transformUpstreamSse(
   upstream: ReadableStream<Uint8Array>,
   sources: SourceRef[],
-  options: { onFinished?: () => void } = {},
+  options: { onFinished?: (result: StreamResult) => void } = {},
 ): ReadableStream<Uint8Array> {
   let downstreamCancelRequested = false;
   let activeReader: ReadableStreamDefaultReader<Uint8Array> | undefined;
@@ -146,6 +153,8 @@ export function transformUpstreamSse(
     async start(controller) {
       let completed = false;
       let finished = false;
+      let finishReason: StreamFinishReason = 'aborted';
+      let outputText = '';
       const parser = new SseParser();
       const decoder = new TextDecoder();
       const reader = upstream.getReader();
@@ -154,7 +163,7 @@ export function transformUpstreamSse(
       const finish = () => {
         if (!finished) {
           finished = true;
-          options.onFinished?.();
+          options.onFinished?.({ reason: finishReason, text: outputText });
         }
       };
       const enqueue = (chunk: Uint8Array) => {
@@ -168,6 +177,7 @@ export function transformUpstreamSse(
           return;
         }
         completed = true;
+        finishReason = reason;
         enqueue(encodeSseEvent('done', { reason }));
       };
       const emitError = () => {
@@ -192,6 +202,7 @@ export function transformUpstreamSse(
         if (type === 'response.output_text.delta' || type === 'output_text.delta') {
           const delta = upstreamDelta(data);
           if (delta) {
+            outputText += delta;
             enqueue(encodeSseEvent('delta', { delta }));
           }
           return;
