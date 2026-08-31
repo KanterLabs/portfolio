@@ -19,10 +19,6 @@ on:
         description: "SHA-256 of the exact privately verified beta artifact"
         required: false
         type: string
-      retire_legacy_beta:
-        description: "Guarded mode: PLAN-BETA or one-time exact confirmation RETIRE-BETA"
-        required: false
-        type: string
 
 concurrency:
   group: portfolio-${{ github.ref }}
@@ -32,76 +28,6 @@ permissions:
   contents: read
 
 jobs:
-  retire-legacy-beta-worker:
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      (inputs.retire_legacy_beta == 'PLAN-BETA' || inputs.retire_legacy_beta == 'RETIRE-BETA')
-    runs-on: homelab
-    environment: beta
-    permissions:
-      contents: read
-    steps:
-      - name: Check out Worker configuration
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: "22.22.1"
-          cache: npm
-          cache-dependency-path: chat-worker/package-lock.json
-      - name: Install Worker tooling
-        working-directory: chat-worker
-        run: npm ci
-      - name: Verify exact Worker retirement target
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: |
-          set -euo pipefail
-          api=https://api.cloudflare.com/client/v4
-          auth="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
-          probe() {
-            local path=$1 expected=$2 actual
-            actual=$(curl --silent --show-error --output /dev/null \
-              --write-out '%{http_code}' --header "$auth" "$api$path")
-            [ "$actual" = "$expected" ] || {
-              echo "Cloudflare target guard failed: expected HTTP $expected, got $actual" >&2
-              exit 1
-            }
-          }
-          probe "/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/portfolio-chat-beta" 200
-          probe "/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/portfolio-chat" 200
-          probe "/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database/66df7b77-2510-4477-bd9f-98131ab97661" 200
-          npx --prefix chat-worker wrangler delete portfolio-chat-beta --dry-run
-      - name: Delete only the beta Worker
-        if: inputs.retire_legacy_beta == 'RETIRE-BETA'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: |
-          set -euo pipefail
-          npx --prefix chat-worker wrangler delete portfolio-chat-beta --force
-      - name: Prove beta Worker is absent and production data is retained
-        if: inputs.retire_legacy_beta == 'RETIRE-BETA'
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: |
-          set -euo pipefail
-          api=https://api.cloudflare.com/client/v4
-          auth="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
-          probe() {
-            local path=$1 expected=$2 actual
-            actual=$(curl --silent --show-error --output /dev/null \
-              --write-out '%{http_code}' --header "$auth" "$api$path")
-            [ "$actual" = "$expected" ] || {
-              echo "Cloudflare retirement audit failed: expected HTTP $expected, got $actual" >&2
-              exit 1
-            }
-          }
-          probe "/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/portfolio-chat-beta" 404
-          probe "/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/portfolio-chat" 200
-          probe "/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database/66df7b77-2510-4477-bd9f-98131ab97661" 200
-
   promotion-source:
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
     runs-on: homelab
