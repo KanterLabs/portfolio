@@ -233,12 +233,14 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import ipaddress
+          import socket
+
           target = ipaddress.ip_address("10.40.0.32")
           if not target.is_private:
               raise SystemExit("deployment target is not a private management address")
+          with socket.create_connection((str(target), 22), timeout=5):
+              pass
           PY
-          ip route get 10.40.0.32 | grep -qv '^unreachable'
-          timeout 5 bash -c '</dev/tcp/10.40.0.32/22'
       - name: Deploy immutable candidate release
         if: github.ref_name == 'beta' && inputs.rollback_sha == ''
         env:
