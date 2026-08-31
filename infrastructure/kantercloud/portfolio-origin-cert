@@ -1,0 +1,198 @@
+#!/usr/bin/env bash
+# Issue and atomically install the Portfolio edge-to-origin certificate.
+
+set -euo pipefail
+
+readonly VMID=202
+readonly CA_ROOT=/var/lib/vz/portfolio-origin-ca
+readonly CA_KEY="$CA_ROOT/ca.key"
+readonly CA_CERT="$CA_ROOT/ca.crt"
+readonly CA_SERIAL="$CA_ROOT/ca.srl"
+readonly LOCK=/run/lock/portfolio-origin-cert.lock
+readonly PROD_NAME=portfolio-origin.kantercloud.internal
+readonly PREVIEW_NAME=portfolio-preview-origin.kantercloud.internal
+readonly CERT_PATH=/etc/nginx/tls/portfolio-origin.fullchain.pem
+readonly KEY_PATH=/etc/nginx/tls/portfolio-origin.key
+readonly TRUST_PATH=/etc/nginx/tls/portfolio-origin-ca.pem
+readonly RENEW_BEFORE_SECONDS=2592000
+
+die() {
+    printf 'portfolio-origin-cert: %s\n' "$1" >&2
+    exit 1
+}
+
+require_root() {
+    [[ $(id -u) -eq 0 ]] || die "must run as root on the Kantercloud Proxmox host"
+}
+
+require_manual_apply() {
+    [[ ${PORTFOLIO_CA_APPLY:-} == YES ]] \
+        || die "PORTFOLIO_CA_APPLY=YES is required"
+    [[ ${PORTFOLIO_CA_CONFIRM:-} == PORTFOLIO_ORIGIN_CERT_APPLY ]] \
+        || die "PORTFOLIO_CA_CONFIRM=PORTFOLIO_ORIGIN_CERT_APPLY is required"
+}
+
+validate_pair() {
+    local cert=$1 key=$2 ca=$3 actual_names cert_key key_key
+    openssl verify -CAfile "$ca" "$cert" >/dev/null
+    openssl x509 -in "$cert" -noout -checkend "$RENEW_BEFORE_SECONDS" >/dev/null
+    openssl x509 -in "$cert" -noout -checkhost "$PROD_NAME" >/dev/null
+    openssl x509 -in "$cert" -noout -checkhost "$PREVIEW_NAME" >/dev/null
+    actual_names=$(
+        openssl x509 -in "$cert" -noout -ext subjectAltName \
+            | tail -n +2 \
+            | tr ',' '\n' \
+            | sed -n 's/^[[:space:]]*DNS://p' \
+            | LC_ALL=C sort
+    )
+    [[ $actual_names == "$PROD_NAME"$'\n'"$PREVIEW_NAME" ]] \
+        || die "leaf SAN set is not the exact reviewed pair"
+    cert_key=$(openssl x509 -in "$cert" -pubkey -noout | openssl pkey -pubin -outform DER | sha256sum | awk '{print $1}')
+    key_key=$(openssl pkey -in "$key" -pubout -outform DER | sha256sum | awk '{print $1}')
+    [[ $cert_key == "$key_key" ]] || die "leaf certificate and key do not match"
+}
+
+init_ca() {
+    require_manual_apply
+    [[ ! -e $CA_KEY && ! -e $CA_CERT ]] || die "CA material already exists"
+    install -d -o root -g root -m 0700 "$CA_ROOT"
+    local temp
+    temp=$(mktemp -d "$CA_ROOT/.init.XXXXXX")
+    trap "rm -rf -- '$temp'; trap - RETURN" RETURN
+    umask 077
+    openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-384 -out "$temp/ca.key"
+    openssl req -new -x509 -sha384 -days 3650 \
+        -key "$temp/ca.key" \
+        -subj /CN=KanterLabs-Portfolio-Origin-CA \
+        -addext basicConstraints=critical,CA:TRUE,pathlen:0 \
+        -addext keyUsage=critical,keyCertSign,cRLSign \
+        -addext subjectKeyIdentifier=hash \
+        -out "$temp/ca.crt"
+    openssl x509 -in "$temp/ca.crt" -noout -checkend 31536000 >/dev/null
+    install -o root -g root -m 0600 "$temp/ca.key" "$CA_KEY"
+    install -o root -g root -m 0644 "$temp/ca.crt" "$CA_CERT"
+    sync -f "$CA_ROOT"
+    printf 'portfolio-origin-cert: initialized private CA\n'
+}
+
+install_leaf() {
+    local cert=$1 key=$2 ca=$3 stamp backup
+    stamp=$(date -u +%Y%m%dT%H%M%SZ)
+    backup="/var/backups/portfolio-origin-tls/$stamp"
+
+    pct exec "$VMID" -- install -d -o root -g root -m 0755 /etc/nginx/tls
+    pct exec "$VMID" -- install -d -o root -g root -m 0700 "$backup"
+    for path in "$CERT_PATH" "$KEY_PATH" "$TRUST_PATH"; do
+        if pct exec "$VMID" -- test -f "$path"; then
+            pct exec "$VMID" -- cp -a -- "$path" "$backup/"
+        fi
+    done
+    pct push "$VMID" "$cert" "$CERT_PATH.next" --perms 0644
+    pct push "$VMID" "$key" "$KEY_PATH.next" --perms 0600
+    pct push "$VMID" "$ca" "$TRUST_PATH.next" --perms 0644
+    pct exec "$VMID" -- chown root:root "$CERT_PATH.next" "$KEY_PATH.next" "$TRUST_PATH.next"
+    pct exec "$VMID" -- mv -f "$CERT_PATH.next" "$CERT_PATH"
+    pct exec "$VMID" -- mv -f "$KEY_PATH.next" "$KEY_PATH"
+    pct exec "$VMID" -- mv -f "$TRUST_PATH.next" "$TRUST_PATH"
+
+    if ! pct exec "$VMID" -- nginx -t >/dev/null 2>&1 \
+        || ! pct exec "$VMID" -- systemctl reload nginx; then
+        for path in "$CERT_PATH" "$KEY_PATH" "$TRUST_PATH"; do
+            name=${path##*/}
+            if pct exec "$VMID" -- test -f "$backup/$name"; then
+                pct exec "$VMID" -- cp -a -- "$backup/$name" "$path"
+            else
+                pct exec "$VMID" -- rm -f -- "$path"
+            fi
+        done
+        pct exec "$VMID" -- nginx -t >/dev/null 2>&1 \
+            && pct exec "$VMID" -- systemctl reload nginx || true
+        die "Nginx validation or reload failed; prior certificate material restored"
+    fi
+}
+
+issue_leaf() {
+    [[ -f $CA_KEY && -f $CA_CERT ]] || die "CA material is not initialized"
+    [[ $(stat -c %U:%G "$CA_KEY") == root:root ]] || die "CA key owner must be root:root"
+    (( (8#$(stat -c %a "$CA_KEY") & 8#077) == 0 )) || die "CA key is readable by group or other"
+
+    local temp serial_arg
+    temp=$(mktemp -d "$CA_ROOT/.issue.XXXXXX")
+    trap "rm -rf -- '$temp'; trap - RETURN" RETURN
+    umask 077
+    openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out "$temp/origin.key"
+    openssl req -new -sha256 \
+        -key "$temp/origin.key" \
+        -subj "/CN=$PROD_NAME" \
+        -addext "subjectAltName=DNS:$PROD_NAME,DNS:$PREVIEW_NAME" \
+        -out "$temp/origin.csr"
+    if [[ -f $CA_SERIAL ]]; then
+        serial_arg=(-CAserial "$CA_SERIAL")
+    else
+        serial_arg=(-CAcreateserial -CAserial "$CA_SERIAL")
+    fi
+    openssl x509 -req -sha256 -days 90 \
+        -in "$temp/origin.csr" \
+        -CA "$CA_CERT" -CAkey "$CA_KEY" "${serial_arg[@]}" \
+        -copy_extensions copy \
+        -extfile <(printf '%s\n' \
+            'basicConstraints=critical,CA:FALSE' \
+            'keyUsage=critical,digitalSignature,keyEncipherment' \
+            'extendedKeyUsage=serverAuth') \
+        -out "$temp/origin.crt" >/dev/null 2>&1
+    chmod 0600 "$CA_SERIAL"
+    validate_pair "$temp/origin.crt" "$temp/origin.key" "$CA_CERT"
+    install_leaf "$temp/origin.crt" "$temp/origin.key" "$CA_CERT"
+    printf 'portfolio-origin-cert: installed verified 90-day leaf\n'
+}
+
+check_live() {
+    local temp
+    temp=$(mktemp -d "$CA_ROOT/.check.XXXXXX")
+    trap "rm -rf -- '$temp'; trap - RETURN" RETURN
+    pct pull "$VMID" "$CERT_PATH" "$temp/origin.crt"
+    pct pull "$VMID" "$KEY_PATH" "$temp/origin.key"
+    pct pull "$VMID" "$TRUST_PATH" "$temp/ca.crt"
+    chmod 0600 "$temp/origin.key"
+    validate_pair "$temp/origin.crt" "$temp/origin.key" "$temp/ca.crt"
+    cmp -s "$CA_CERT" "$temp/ca.crt" || die "guest trust root differs from issuer CA"
+    pct exec "$VMID" -- nginx -t >/dev/null
+    printf 'portfolio-origin-cert: live pair, chain, SANs, expiry, and Nginx are valid\n'
+}
+
+main() {
+    require_root
+    command -v openssl >/dev/null || die "openssl is required"
+    command -v pct >/dev/null || die "pct is required"
+    install -d -o root -g root -m 0700 "$CA_ROOT"
+    exec 9>"$LOCK"
+    flock 9
+
+    case ${1:-} in
+        init-ca)
+            init_ca
+            ;;
+        issue)
+            require_manual_apply
+            issue_leaf
+            ;;
+        renew)
+            if pct exec "$VMID" -- openssl x509 -in "$CERT_PATH" -noout \
+                -checkend "$RENEW_BEFORE_SECONDS" >/dev/null 2>&1; then
+                check_live
+            else
+                [[ ${PORTFOLIO_CA_AUTOMATED_RENEWAL:-} == YES ]] \
+                    || require_manual_apply
+                issue_leaf
+            fi
+            ;;
+        check)
+            check_live
+            ;;
+        *)
+            die "usage: portfolio-origin-cert init-ca|issue|renew|check"
+            ;;
+    esac
+}
+
+main "$@"

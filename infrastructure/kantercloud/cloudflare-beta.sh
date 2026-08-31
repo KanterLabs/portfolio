@@ -49,6 +49,13 @@ find_tunnel_id() {
         | head -n 1
 }
 
+find_access_app_id() {
+    cf_request GET "/accounts/$ACCOUNT_ID/access/apps?per_page=100" \
+        | jq -r --arg domain "$BETA_HOST" --arg name "$ACCESS_APP_NAME" \
+            '.result[] | select(.domain == $domain and .name == $name) | .id' \
+        | head -n 1
+}
+
 find_owner_email() {
     local app_id
     app_id=$(cf_request GET "/accounts/$ACCOUNT_ID/access/apps?per_page=100" \
@@ -267,12 +274,97 @@ validate() {
     printf 'cloudflare_validation=ok\n'
 }
 
+retire_plan() {
+    local tunnel_id app_id response dns_count app_count tunnel_count
+
+    tunnel_id=$(find_tunnel_id)
+    tunnel_count=0
+    [[ -z "$tunnel_id" ]] || tunnel_count=1
+
+    response=$(cf_request GET "/accounts/$ACCOUNT_ID/access/apps?per_page=100")
+    app_count=$(jq -r --arg domain "$BETA_HOST" --arg name "$ACCESS_APP_NAME" '
+        [.result[] | select(.domain == $domain and .name == $name)] | length
+    ' <<<"$response")
+    app_id=$(find_access_app_id)
+
+    response=$(cf_request GET "/zones/$ZONE_ID/dns_records?name=$BETA_HOST")
+    dns_count=$(jq -r --arg target "$tunnel_id.cfargotunnel.com" '
+        [
+            .result[]
+            | select(
+                .type == "CNAME"
+                and .content == $target
+                and .proxied == true
+            )
+        ]
+        | length
+    ' <<<"$response")
+
+    [[ "$tunnel_count" == 1 ]] || {
+        printf 'expected exactly one active named beta Tunnel\n' >&2
+        return 1
+    }
+    [[ "$app_count" == 1 && -n "$app_id" ]] || {
+        printf 'expected exactly one named beta Access application\n' >&2
+        return 1
+    }
+    [[ "$dns_count" == 1 ]] || {
+        printf 'expected exactly one beta DNS record targeting the named Tunnel\n' >&2
+        return 1
+    }
+    printf 'beta_retire_plan=tunnel:1,access:1,dns:1\n'
+}
+
+audit_retired() {
+    local tunnel_id response app_count dns_count
+
+    tunnel_id=$(find_tunnel_id)
+    response=$(cf_request GET "/accounts/$ACCOUNT_ID/access/apps?per_page=100")
+    app_count=$(jq -r --arg domain "$BETA_HOST" '
+        [.result[] | select(.domain == $domain)] | length
+    ' <<<"$response")
+    response=$(cf_request GET "/zones/$ZONE_ID/dns_records?name=$BETA_HOST")
+    dns_count=$(jq -r '.result | length' <<<"$response")
+
+    [[ -z "$tunnel_id" ]] || {
+        printf 'beta Tunnel is still active\n' >&2
+        return 1
+    }
+    [[ "$app_count" == 0 ]] || {
+        printf 'beta Access application still exists\n' >&2
+        return 1
+    }
+    [[ "$dns_count" == 0 ]] || {
+        printf 'beta DNS record still exists\n' >&2
+        return 1
+    }
+    printf 'beta_retired=tunnel:0,access:0,dns:0\n'
+}
+
+retire() {
+    local tunnel_id app_id response record_id
+
+    retire_plan >/dev/null
+    tunnel_id=$(find_tunnel_id)
+    app_id=$(find_access_app_id)
+    response=$(cf_request GET "/zones/$ZONE_ID/dns_records?name=$BETA_HOST")
+    record_id=$(jq -r '.result[0].id' <<<"$response")
+
+    cf_request DELETE "/zones/$ZONE_ID/dns_records/$record_id" >/dev/null
+    cf_request DELETE "/accounts/$ACCOUNT_ID/access/apps/$app_id" >/dev/null
+    cf_request DELETE "/accounts/$ACCOUNT_ID/cfd_tunnel/$tunnel_id" >/dev/null
+    audit_retired
+}
+
 case "$MODE" in
 prepare) prepare ;;
 publish) publish ;;
 validate) validate ;;
+retire-plan) retire_plan ;;
+retire) retire ;;
+audit-retired) audit_retired ;;
 *)
-    printf 'usage: %s prepare <token-output> | publish | validate\n' "$0" >&2
+    printf 'usage: %s prepare <token-output> | publish | validate | retire-plan | retire | audit-retired\n' "$0" >&2
     exit 64
     ;;
 esac

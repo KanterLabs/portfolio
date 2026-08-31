@@ -1,0 +1,11 @@
+[Unit]
+Description=Check the Portfolio private origin certificate daily
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=2h
+Persistent=true
+Unit=portfolio-origin-cert.service
+
+[Install]
+WantedBy=timers.target

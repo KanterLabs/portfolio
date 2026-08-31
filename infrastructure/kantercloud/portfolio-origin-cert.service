@@ -1,0 +1,16 @@
+[Unit]
+Description=Renew the Portfolio private origin certificate
+After=pve-cluster.service
+Wants=pve-cluster.service
+
+[Service]
+Type=oneshot
+Environment=PORTFOLIO_CA_AUTOMATED_RENEWAL=YES
+ExecStart=/usr/local/sbin/portfolio-origin-cert renew
+User=root
+Group=root
+UMask=0077
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/vz/portfolio-origin-ca /run/lock /run/lxc /var/lib/lxc /var/backups /var/log/pve/tasks
