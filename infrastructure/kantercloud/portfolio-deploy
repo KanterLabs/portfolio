@@ -5,11 +5,11 @@ deploy_user=$(id -un)
 case "$deploy_user" in
     portfolio-deploy)
         root=/srv/portfolio
-        health_host=shanekanterman.dev
+        health_host=portfolio-origin.kantercloud.internal
         ;;
     portfolio-beta-deploy)
         root=/srv/portfolio-beta
-        health_host=beta.shanekanterman.dev
+        health_host=portfolio-preview-origin.kantercloud.internal
         ;;
     *)
         printf 'unsupported deployment identity\n' >&2
@@ -19,6 +19,8 @@ esac
 
 releases="$root/releases"
 incoming="$root/incoming"
+artifacts="$root/artifacts"
+manifests="$root/manifests"
 command=${SSH_ORIGINAL_COMMAND:-}
 
 fail() {
@@ -30,6 +32,31 @@ valid_sha() {
     printf '%s' "$1" | grep -Eq '^[0-9a-f]{40}$'
 }
 
+valid_digest() {
+    printf '%s' "$1" | grep -Eq '^[0-9a-f]{64}$'
+}
+
+verify_digest() {
+    file=$1
+    expected=$2
+    actual=$(sha256sum -- "$file" | awk '{print $1}')
+    [ "$actual" = "$expected" ] || fail "artifact SHA-256 mismatch"
+}
+
+verify_archive_members() {
+    archive=$1
+
+    tar -tzf "$archive" | while IFS= read -r member; do
+        case "$member" in
+            ''|/*|../*|*/../*|*/..) fail "unsafe archive path" ;;
+        esac
+    done
+
+    tar -tvzf "$archive" | awk '
+        substr($0, 1, 1) != "-" && substr($0, 1, 1) != "d" { exit 1 }
+    ' || fail "archive contains a link or special file"
+}
+
 activate() {
     release=$1
     previous=$(readlink -f "$root/current" 2>/dev/null || true)
@@ -37,70 +64,176 @@ activate() {
     ln -s "$release" "$root/current.next"
     mv -Tf "$root/current.next" "$root/current"
 
-    if ! curl --fail --silent --show-error --max-time 5 \
-        -H "Host: $health_host" http://127.0.0.1/ >/dev/null; then
+    response=$(curl --fail --silent --show-error --max-time 5 \
+        --cacert /etc/nginx/tls/portfolio-origin-ca.pem \
+        --resolve "$health_host:443:10.40.30.32" \
+        "https://$health_host/healthz") || response=
+    if [ "$response" != "ok" ]; then
         if [ -n "$previous" ] && [ -d "$previous" ]; then
             ln -s "$previous" "$root/current.previous"
             mv -Tf "$root/current.previous" "$root/current"
         fi
-        fail "release failed local HTTP validation"
+        fail "release failed local verified-HTTPS validation"
     fi
 }
 
+install_archive() {
+    archive=$1
+    sha=$2
+    digest=$3
+    allow_legacy_bootstrap=${4:-false}
+    temporary="$releases/.$sha.tmp"
+    release="$releases/$sha"
+    manifest="$manifests/$sha.sha256"
+
+    verify_digest "$archive" "$digest"
+    verify_archive_members "$archive"
+
+    rm -rf -- "$temporary"
+    mkdir -p "$temporary"
+    tar -xzf "$archive" -C "$temporary" --no-same-owner --no-same-permissions
+    [ -f "$temporary/index.html" ] || fail "release is missing index.html"
+    [ -z "$(find "$temporary" -type l -print -quit)" ] || fail "release contains a symbolic link"
+    find "$temporary" -type d -exec chmod 0755 {} +
+    find "$temporary" -type f -exec chmod 0644 {} +
+
+    if [ -d "$release" ]; then
+        if [ -f "$manifest" ]; then
+            [ "$(tr -d '\n' < "$manifest")" = "$digest" ] \
+                || fail "existing release is bound to another artifact"
+        else
+            # One-time adoption of a pre-manifest production release is
+            # permitted only during exact-artifact promotion.  The release
+            # must still be active and byte-identical to the privately tested
+            # archive; a normal upload can never claim legacy content.
+            [ "$allow_legacy_bootstrap" = true ] \
+                || fail "existing release has no artifact manifest"
+            [ "$(readlink -f "$root/current" 2>/dev/null || true)" = "$release" ] \
+                || fail "legacy release is not the active production release"
+            [ -z "$(find "$release" -type l -print -quit)" ] \
+                || fail "legacy release contains a symbolic link"
+            diff --brief --recursive --no-dereference "$temporary" "$release" >/dev/null \
+                || fail "legacy release does not match the approved artifact"
+        fi
+        rm -rf -- "$temporary"
+    else
+        mv "$temporary" "$release"
+        # Reproducible archives may intentionally carry an epoch timestamp on
+        # their root directory.  Retention orders release directories by
+        # mtime, so stamp the installed container now rather than allowing a
+        # brand-new release to look like the oldest one.
+        touch -m "$release"
+    fi
+
+    manifest_next="$manifests/.$sha.sha256.next"
+    printf '%s\n' "$digest" > "$manifest_next"
+    chmod 0444 "$manifest_next"
+    mv -f "$manifest_next" "$manifest"
+}
+
 prune_releases() {
+    current=$(readlink -f "$root/current" 2>/dev/null || true)
     find "$releases" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' \
         | sort -nr \
         | sed -n '6,$p' \
         | cut -d' ' -f2- \
         | while IFS= read -r old_release; do
+            [ "$old_release" != "$current" ] || continue
             case "$old_release" in
-                "$releases"/[0-9a-f][0-9a-f]*) rm -rf -- "$old_release" ;;
+                "$releases"/[0-9a-f][0-9a-f]*)
+                    old_sha=${old_release##*/}
+                    rm -rf -- "$old_release"
+                    rm -f -- "$manifests/$old_sha.sha256"
+                    ;;
                 *) fail "refusing to prune unexpected path" ;;
             esac
         done
 }
 
+mkdir -p "$releases" "$incoming" "$artifacts" "$manifests"
+chmod 0755 "$releases" "$incoming" "$artifacts" "$manifests"
+
 exec 9>"$root/deploy.lock"
 flock 9
 
-case "$command" in
-    "deploy "*)
-        sha=${command#deploy }
+set -- $command
+action=${1:-}
+case "$action" in
+    deploy)
+        [ "$#" -eq 3 ] || fail "deploy requires a release SHA and artifact SHA-256"
+        sha=$2
+        digest=$3
         valid_sha "$sha" || fail "invalid release SHA"
+        valid_digest "$digest" || fail "invalid artifact SHA-256"
         archive="$incoming/$sha.tar.gz"
-        temporary="$releases/.$sha.tmp"
-        release="$releases/$sha"
+        retained="$artifacts/$digest.tar.gz"
 
-        umask 022
         rm -f -- "$archive"
-        rm -rf -- "$temporary"
-        mkdir -p "$temporary"
-        trap 'rm -f -- "$archive"; rm -rf -- "$temporary"' EXIT HUP INT TERM
+        trap 'rm -f -- "$archive"; rm -rf -- "$releases/.$sha.tmp"' EXIT HUP INT TERM
         dd of="$archive" bs=1M status=none
+        verify_digest "$archive" "$digest"
 
-        tar -tzf "$archive" | while IFS= read -r member; do
-            case "$member" in
-                /*|../*|*/../*|*/..) fail "unsafe archive path" ;;
-            esac
-        done
-
-        tar -xzf "$archive" -C "$temporary" --no-same-owner --no-same-permissions
-        [ -f "$temporary/index.html" ] || fail "release is missing index.html"
-        find "$temporary" -type d -exec chmod 0755 {} +
-        find "$temporary" -type f -exec chmod 0644 {} +
-
-        if [ -d "$release" ]; then
-            rm -rf -- "$temporary"
+        if [ -f "$retained" ]; then
+            verify_digest "$retained" "$digest"
+            rm -f -- "$archive"
         else
-            mv "$temporary" "$release"
+            mv "$archive" "$retained"
+            chmod 0444 "$retained"
         fi
-        rm -f -- "$archive"
-        activate "$release"
+
+        install_archive "$retained" "$sha" "$digest"
+        activate "$releases/$sha"
         prune_releases
-        printf 'deployed %s\n' "$sha"
+        trap - EXIT HUP INT TERM
+        printf 'deployed %s artifact %s\n' "$sha" "$digest"
         ;;
-    "rollback "*)
-        sha=${command#rollback }
+    promote)
+        [ "$deploy_user" = portfolio-deploy ] \
+            || fail "only the production identity may promote a candidate"
+        [ "$#" -eq 4 ] \
+            || fail "promote requires candidate SHA, artifact SHA-256, and production SHA"
+        candidate_sha=$2
+        digest=$3
+        production_sha=$4
+        valid_sha "$candidate_sha" || fail "invalid candidate SHA"
+        valid_digest "$digest" || fail "invalid artifact SHA-256"
+        valid_sha "$production_sha" || fail "invalid production SHA"
+
+        candidate_root=/srv/portfolio-beta
+        candidate_release="$candidate_root/releases/$candidate_sha"
+        candidate_manifest="$candidate_root/manifests/$candidate_sha.sha256"
+        candidate_artifact="$candidate_root/artifacts/$digest.tar.gz"
+        [ -d "$candidate_release" ] || fail "candidate release is not retained"
+        [ -f "$candidate_manifest" ] || fail "candidate manifest is not retained"
+        [ "$(tr -d '\n' < "$candidate_manifest")" = "$digest" ] \
+            || fail "candidate manifest does not match the approved artifact"
+        [ -f "$candidate_artifact" ] || fail "candidate artifact is not retained"
+        [ "$(readlink -f "$candidate_root/current")" = "$candidate_release" ] \
+            || fail "candidate is no longer the privately active release"
+
+        retained="$artifacts/$digest.tar.gz"
+        if [ -f "$retained" ]; then
+            verify_digest "$retained" "$digest"
+        else
+            retained_next="$artifacts/.$digest.tar.gz.next"
+            rm -f -- "$retained_next"
+            trap 'rm -f -- "$retained_next"' EXIT HUP INT TERM
+            cp -- "$candidate_artifact" "$retained_next"
+            verify_digest "$retained_next" "$digest"
+            chmod 0444 "$retained_next"
+            mv "$retained_next" "$retained"
+            trap - EXIT HUP INT TERM
+        fi
+
+        install_archive "$retained" "$production_sha" "$digest" true
+        activate "$releases/$production_sha"
+        prune_releases
+        printf 'promoted candidate %s artifact %s as %s\n' \
+            "$candidate_sha" "$digest" "$production_sha"
+        ;;
+    rollback)
+        [ "$#" -eq 2 ] || fail "rollback requires a release SHA"
+        sha=$2
         valid_sha "$sha" || fail "invalid release SHA"
         release="$releases/$sha"
         [ -d "$release" ] || fail "release is not retained"
@@ -108,6 +241,6 @@ case "$command" in
         printf 'rolled back to %s\n' "$sha"
         ;;
     *)
-        fail "allowed commands: deploy <sha> or rollback <sha>"
+        fail "allowed commands: deploy <sha> <artifact-sha256>, promote <candidate-sha> <artifact-sha256> <production-sha>, or rollback <sha>"
         ;;
 esac

@@ -11,6 +11,18 @@ on:
         description: "Retained 40-character release SHA to activate on the selected branch environment"
         required: false
         type: string
+      promote_candidate_sha:
+        description: "Privately verified 40-character beta release SHA to promote to production"
+        required: false
+        type: string
+      promote_artifact_sha256:
+        description: "SHA-256 of the exact privately verified beta artifact"
+        required: false
+        type: string
+      retire_legacy_beta:
+        description: "One-time exact confirmation: RETIRE-BETA"
+        required: false
+        type: string
 
 concurrency:
   group: portfolio-${{ github.ref }}
@@ -20,6 +32,47 @@ permissions:
   contents: read
 
 jobs:
+  retire-legacy-beta:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.retire_legacy_beta == 'RETIRE-BETA'
+    runs-on: homelab
+    environment: beta
+    permissions:
+      contents: read
+    steps:
+      - name: Check out retirement tooling
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "22.22.1"
+          cache: npm
+          cache-dependency-path: chat-worker/package-lock.json
+      - name: Install Worker tooling
+        working-directory: chat-worker
+        run: npm ci
+      - name: Verify exact retirement targets
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          bash infrastructure/kantercloud/cloudflare-beta.sh retire-plan
+          npx --prefix chat-worker wrangler delete portfolio-chat-beta --dry-run
+      - name: Delete only the beta Worker, DNS, Access app, and Tunnel
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          npx --prefix chat-worker wrangler delete portfolio-chat-beta --force
+          bash infrastructure/kantercloud/cloudflare-beta.sh retire
+      - name: Prove beta publication is absent
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: bash infrastructure/kantercloud/cloudflare-beta.sh audit-retired
+
   promotion-source:
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
     runs-on: homelab
@@ -118,12 +171,18 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Archive build output
-        run: tar -czf ../site-dist.tar.gz -C dist .
+        run: |
+          tar -czf ../site-dist.tar.gz -C dist .
+          sha256sum ../site-dist.tar.gz | awk '{print $1}' > ../site-dist.tar.gz.sha256
+          sha256sum dist/index.html | awk '{print $1}' > ../site-index.html.sha256
       - name: Upload build artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: site-dist
-          path: site-dist.tar.gz
+          path: |
+            site-dist.tar.gz
+            site-dist.tar.gz.sha256
+            site-index.html.sha256
           if-no-files-found: error
 
   deploy:
@@ -132,54 +191,30 @@ jobs:
     if: >-
       github.event_name != 'pull_request' &&
       (
-        (github.ref_name == 'main' && vars.DEPLOY_ENABLED == 'true') ||
-        (github.ref_name == 'beta' && vars.BETA_DEPLOY_ENABLED == 'true')
+        (github.ref_name == 'beta' && vars.BETA_DEPLOY_ENABLED == 'true') ||
+        (
+          github.ref_name == 'main' &&
+          github.event_name == 'workflow_dispatch' &&
+          vars.DEPLOY_ENABLED == 'true' &&
+          (
+            inputs.rollback_sha != '' ||
+            (inputs.promote_candidate_sha != '' && inputs.promote_artifact_sha256 != '')
+          )
+        )
       )
     needs: [dependency-audit, chat-worker-validate, build-and-test]
     runs-on: homelab
     timeout-minutes: 10
     environment:
       name: ${{ github.ref_name == 'beta' && 'beta' || 'production' }}
-      url: ${{ github.ref_name == 'beta' && 'https://beta.shanekanterman.dev' || 'https://shanekanterman.dev' }}
+      url: ${{ github.ref_name == 'beta' && 'https://kanter-edge.tail848b9c.ts.net:9445' || 'https://shanekanterman.dev' }}
     permissions:
       contents: read
     steps:
       - name: Check out deployment configuration
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - name: Set up Node.js for Worker deployment
-        if: inputs.rollback_sha == ''
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: "22.22.1"
-          cache: npm
-          cache-dependency-path: chat-worker/package-lock.json
-      - name: Install Worker dependencies
-        if: inputs.rollback_sha == ''
-        working-directory: chat-worker
-        run: npm ci
-      - name: Apply chat history migrations
-        if: inputs.rollback_sha == ''
-        working-directory: chat-worker
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          WORKER_ENV: ${{ github.ref_name == 'beta' && 'beta' || 'production' }}
-        run: |
-          if grep -q 'binding = "CHAT_HISTORY"' wrangler.toml; then
-            npm run "d1:migrate:$WORKER_ENV"
-          else
-            echo "CHAT_HISTORY is not configured; skipping D1 migrations."
-          fi
-      - name: Deploy chat Worker
-        if: inputs.rollback_sha == ''
-        working-directory: chat-worker
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          WORKER_ENV: ${{ github.ref_name == 'beta' && 'beta' || 'production' }}
-        run: npm run "deploy:$WORKER_ENV"
       - name: Download build artifact
-        if: inputs.rollback_sha == ''
+        if: github.ref_name == 'beta' && inputs.rollback_sha == ''
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: site-dist
@@ -193,13 +228,40 @@ jobs:
           chmod 0600 ~/.ssh/portfolio
           install -m 0644 infrastructure/kantercloud/portfolio-known-hosts \
             ~/.ssh/known_hosts
-      - name: Deploy release
-        if: inputs.rollback_sha == ''
+      - name: Verify private management deployment path
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import ipaddress
+          target = ipaddress.ip_address("10.40.0.32")
+          if not target.is_private:
+              raise SystemExit("deployment target is not a private management address")
+          PY
+          ip route get 10.40.0.32 | grep -qv '^unreachable'
+          timeout 5 bash -c '</dev/tcp/10.40.0.32/22'
+      - name: Deploy immutable candidate release
+        if: github.ref_name == 'beta' && inputs.rollback_sha == ''
         env:
-          DEPLOY_USER: ${{ github.ref_name == 'beta' && 'portfolio-beta-deploy' || 'portfolio-deploy' }}
           RELEASE_SHA: ${{ github.sha }}
         run: |
-          ssh -i ~/.ssh/portfolio "$DEPLOY_USER@10.40.0.32" "deploy $RELEASE_SHA" < site-dist.tar.gz
+          set -euo pipefail
+          ARTIFACT_SHA256=$(tr -d '\n' < site-dist.tar.gz.sha256)
+          printf '%s' "$ARTIFACT_SHA256" | grep -Eq '^[0-9a-f]{64}$'
+          printf '%s  %s\n' "$ARTIFACT_SHA256" site-dist.tar.gz | sha256sum --check --strict
+          ssh -i ~/.ssh/portfolio "portfolio-beta-deploy@10.40.0.32" \
+            "deploy $RELEASE_SHA $ARTIFACT_SHA256" < site-dist.tar.gz
+      - name: Promote exact verified candidate
+        if: github.ref_name == 'main' && inputs.rollback_sha == ''
+        env:
+          CANDIDATE_SHA: ${{ inputs.promote_candidate_sha }}
+          ARTIFACT_SHA256: ${{ inputs.promote_artifact_sha256 }}
+          PRODUCTION_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$CANDIDATE_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$ARTIFACT_SHA256" | grep -Eq '^[0-9a-f]{64}$'
+          ssh -i ~/.ssh/portfolio "portfolio-deploy@10.40.0.32" \
+            "promote $CANDIDATE_SHA $ARTIFACT_SHA256 $PRODUCTION_SHA"
       - name: Roll back to retained release
         if: inputs.rollback_sha != ''
         env:
@@ -222,19 +284,23 @@ jobs:
             --retry 5 --retry-delay 2 --retry-all-errors \
             https://shanekanterman.dev/api/chat/health)
           printf '%s' "$chat_health" | grep -q '"service":"portfolio-chat"'
-      - name: Verify beta Access gate
+      - name: Verify private candidate
         if: github.ref_name == 'beta'
         run: |
-          for url in \
-            https://beta.shanekanterman.dev/healthz \
-            https://beta.shanekanterman.dev/api/chat/health
-          do
-            status=$(curl --silent --show-error --output /dev/null \
-              --write-out '%{http_code}' \
-              --retry 5 --retry-delay 2 --retry-all-errors \
-              "$url")
-            [ "$status" = "302" ] || [ "$status" = "303" ]
-          done
+          set -euo pipefail
+          endpoint=https://kanter-edge.tail848b9c.ts.net:9445
+          resolve=kanter-edge.tail848b9c.ts.net:9445:100.112.144.103
+          response=$(curl --fail --silent --show-error \
+            --resolve "$resolve" \
+            --retry 5 --retry-delay 2 --retry-all-errors \
+            "$endpoint/healthz")
+          [ "$response" = "ok" ]
+          expected=$(tr -d '\n' < site-index.html.sha256)
+          actual=$(curl --fail --silent --show-error \
+            --resolve "$resolve" \
+            --retry 5 --retry-delay 2 --retry-all-errors \
+            "$endpoint/" | sha256sum | awk '{print $1}')
+          [ "$actual" = "$expected" ]
       - name: Remove deployment SSH identity
         if: always()
         run: rm -f ~/.ssh/portfolio

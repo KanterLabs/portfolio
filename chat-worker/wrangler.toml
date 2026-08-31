@@ -5,22 +5,7 @@ workers_dev = false
 
 [vars]
 APP_ENV = "development"
-ALLOWED_ORIGIN = "https://beta.shanekanterman.dev"
-OPENAI_MODEL = "gpt-5.6-luna"
-
-[env.beta]
-name = "portfolio-chat-beta"
-workers_dev = false
-route = { pattern = "beta.shanekanterman.dev/api/chat*", zone_name = "shanekanterman.dev" }
-
-[[env.beta.d1_databases]]
-binding = "CHAT_HISTORY"
-database_name = "portfolio-chat-history"
-database_id = "66df7b77-2510-4477-bd9f-98131ab97661"
-
-[env.beta.vars]
-APP_ENV = "beta"
-ALLOWED_ORIGIN = "https://beta.shanekanterman.dev"
+ALLOWED_ORIGIN = "https://shanekanterman.dev"
 OPENAI_MODEL = "gpt-5.6-luna"
 
 [env.production]
