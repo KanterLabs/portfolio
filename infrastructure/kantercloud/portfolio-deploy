@@ -240,7 +240,36 @@ case "$action" in
         activate "$release"
         printf 'rolled back to %s\n' "$sha"
         ;;
+    verify)
+        [ "$#" -eq 4 ] \
+            || fail "verify requires a release SHA, artifact SHA-256, and index SHA-256"
+        sha=$2
+        digest=$3
+        index_digest=$4
+        valid_sha "$sha" || fail "invalid release SHA"
+        valid_digest "$digest" || fail "invalid artifact SHA-256"
+        valid_digest "$index_digest" || fail "invalid index SHA-256"
+        release="$releases/$sha"
+        manifest="$manifests/$sha.sha256"
+        retained="$artifacts/$digest.tar.gz"
+        [ -d "$release" ] || fail "release is not retained"
+        [ -f "$manifest" ] || fail "release manifest is not retained"
+        [ "$(tr -d '\n' < "$manifest")" = "$digest" ] \
+            || fail "release manifest does not match the artifact"
+        [ -f "$retained" ] || fail "artifact is not retained"
+        verify_digest "$retained" "$digest"
+        [ "$(readlink -f "$root/current")" = "$release" ] \
+            || fail "release is not active"
+        [ "$(sha256sum -- "$release/index.html" | awk '{print $1}')" = "$index_digest" ] \
+            || fail "active index SHA-256 mismatch"
+        response=$(curl --fail --silent --show-error --max-time 5 \
+            --cacert /etc/nginx/tls/portfolio-origin-ca.pem \
+            --resolve "$health_host:443:10.40.30.32" \
+            "https://$health_host/healthz") || response=
+        [ "$response" = ok ] || fail "active release failed verified-HTTPS validation"
+        printf 'verified %s artifact %s index %s\n' "$sha" "$digest" "$index_digest"
+        ;;
     *)
-        fail "allowed commands: deploy <sha> <artifact-sha256>, promote <candidate-sha> <artifact-sha256> <production-sha>, or rollback <sha>"
+        fail "allowed commands: deploy <sha> <artifact-sha256>, promote <candidate-sha> <artifact-sha256> <production-sha>, rollback <sha>, or verify <sha> <artifact-sha256> <index-sha256>"
         ;;
 esac
