@@ -288,21 +288,14 @@ jobs:
           printf '%s' "$chat_health" | grep -q '"service":"portfolio-chat"'
       - name: Verify private candidate
         if: github.ref_name == 'beta'
+        env:
+          RELEASE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          endpoint=https://kanter-edge.tail848b9c.ts.net:9445
-          resolve=kanter-edge.tail848b9c.ts.net:9445:100.112.144.103
-          response=$(curl --fail --silent --show-error \
-            --resolve "$resolve" \
-            --retry 5 --retry-delay 2 --retry-all-errors \
-            "$endpoint/healthz")
-          [ "$response" = "ok" ]
-          expected=$(tr -d '\n' < site-index.html.sha256)
-          actual=$(curl --fail --silent --show-error \
-            --resolve "$resolve" \
-            --retry 5 --retry-delay 2 --retry-all-errors \
-            "$endpoint/" | sha256sum | awk '{print $1}')
-          [ "$actual" = "$expected" ]
+          ARTIFACT_SHA256=$(tr -d '\n' < site-dist.tar.gz.sha256)
+          INDEX_SHA256=$(tr -d '\n' < site-index.html.sha256)
+          ssh -i ~/.ssh/portfolio "portfolio-beta-deploy@10.40.0.32" \
+            "verify $RELEASE_SHA $ARTIFACT_SHA256 $INDEX_SHA256"
       - name: Remove deployment SSH identity
         if: always()
         run: rm -f ~/.ssh/portfolio
