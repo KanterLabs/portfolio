@@ -82,7 +82,7 @@
         "path": "site/src/content/projects/kanterlabs-homelab.mdx",
         "href": "/projects/kanterlabs-homelab"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-09-03",
       "topics": ["project", "homelab", "platform", "networking", "ci"],
       "keywords": [
         "homelab",
@@ -95,12 +95,17 @@
         "Actions Runner Controller",
         "GitHub Actions",
         "Caddy",
+        "CoreDNS",
         "Cloudflare",
         "Tailscale",
+        "VLANs",
+        "nftables",
+        "private PKI",
+        "default-deny",
         "network policy",
         "GHCR"
       ],
-      "content": "The KanterLabs Homelab Platform turns a small collection of systems into an intentional platform. Its public case study describes separate public and private workload boundaries, a shared edge, and disposable GitHub Actions runner pods managed with Actions Runner Controller. It uses Proxmox, Linux, Caddy, Tailscale, k3s, Docker, and GHCR. The design keeps secrets outside Git and favors reviewed configuration, explicit operator checkpoints, bounded resources, and documented rollback paths."
+      "content": "The KanterLabs Homelab Platform turns a small collection of systems into an intentional two-site platform. Its public case study describes hardened edge VMs at both sites, distinct management, ingress, public-origin, and private-origin planes, exact service listeners, split-horizon private DNS, verified edge-to-origin TLS, and default-deny network policy. Public traffic uses dedicated Cloudflare paths, while named Tailscale services provide private entrances without direct workload-network access. Network changes use deterministic configuration, timed rollback, independent management checks, synthetic canaries, and negative exposure tests. GitHub Actions jobs run in disposable pods managed by Actions Runner Controller, with secrets kept outside Git."
     },
     {
       "id": "hostlet",
