@@ -38,6 +38,7 @@ jobs:
           HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
           TARGET_REPOSITORY: ${{ github.repository }}
         run: |
+          # shellcheck disable=SC2029
           set -euo pipefail
           [ "$HEAD_REF" = "beta" ]
           [ "$HEAD_REPOSITORY" = "$TARGET_REPOSITORY" ]
@@ -96,7 +97,7 @@ jobs:
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
       # The chatbot ships in every build; the Worker route for the matching
       # hostname serves its API.
-      PUBLIC_CHAT_ENABLED: 'true'
+      PUBLIC_CHAT_ENABLED: "true"
     defaults:
       run:
         working-directory: site
@@ -177,12 +178,41 @@ jobs:
         env:
           PORTFOLIO_DEPLOY_SSH_KEY: ${{ secrets.PORTFOLIO_DEPLOY_SSH_KEY }}
         run: |
+          # shellcheck disable=SC2029
           set -euo pipefail
           install -m 0700 -d ~/.ssh
           printf '%s\n' "$PORTFOLIO_DEPLOY_SSH_KEY" > ~/.ssh/portfolio
           chmod 0600 ~/.ssh/portfolio
           install -m 0644 infrastructure/kantercloud/portfolio-known-hosts \
             ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<'EOF'
+          Host portfolio-ovh
+            HostName 10.40.0.32
+            User portfolio-deploy
+            IdentityFile ~/.ssh/portfolio
+            IdentitiesOnly yes
+          Host portfolio-ovh-beta
+            HostName 10.40.0.32
+            User portfolio-beta-deploy
+            IdentityFile ~/.ssh/portfolio
+            IdentitiesOnly yes
+          Host portfolio-homelab
+            HostName 10.0.30.13
+            User portfolio-deploy
+            ProxyJump debian@10.0.0.101
+            IdentityFile ~/.ssh/portfolio
+            IdentitiesOnly yes
+          Host portfolio-homelab-beta
+            HostName 10.0.30.13
+            User portfolio-beta-deploy
+            ProxyJump debian@10.0.0.101
+            IdentityFile ~/.ssh/portfolio
+            IdentitiesOnly yes
+          Host 10.0.0.101
+            IdentityFile ~/.ssh/portfolio
+            IdentitiesOnly yes
+          EOF
+          chmod 0600 ~/.ssh/config
       - name: Verify private management deployment path
         run: |
           set -euo pipefail
@@ -190,11 +220,12 @@ jobs:
           import ipaddress
           import socket
 
-          target = ipaddress.ip_address("10.40.0.32")
-          if not target.is_private:
-              raise SystemExit("deployment target is not a private management address")
-          with socket.create_connection((str(target), 22), timeout=5):
-              pass
+          for value in ("10.40.0.32", "10.0.0.101", "10.0.30.13"):
+              if not ipaddress.ip_address(value).is_private:
+                  raise SystemExit("deployment target is not private")
+          for value in ("10.40.0.32", "10.0.0.101"):
+              with socket.create_connection((value, 22), timeout=5):
+                  pass
           PY
       - name: Deploy immutable candidate release
         if: github.ref_name == 'beta' && inputs.rollback_sha == ''
@@ -205,8 +236,9 @@ jobs:
           ARTIFACT_SHA256=$(tr -d '\n' < site-dist.tar.gz.sha256)
           printf '%s' "$ARTIFACT_SHA256" | grep -Eq '^[0-9a-f]{64}$'
           printf '%s  %s\n' "$ARTIFACT_SHA256" site-dist.tar.gz | sha256sum --check --strict
-          ssh -i ~/.ssh/portfolio "portfolio-beta-deploy@10.40.0.32" \
-            "deploy $RELEASE_SHA $ARTIFACT_SHA256" < site-dist.tar.gz
+          for origin in portfolio-ovh-beta portfolio-homelab-beta; do
+            ssh "$origin" deploy "$RELEASE_SHA" "$ARTIFACT_SHA256" < site-dist.tar.gz
+          done
       - name: Promote exact verified candidate
         if: github.ref_name == 'main' && inputs.rollback_sha == ''
         env:
@@ -217,19 +249,33 @@ jobs:
           set -euo pipefail
           printf '%s' "$CANDIDATE_SHA" | grep -Eq '^[0-9a-f]{40}$'
           printf '%s' "$ARTIFACT_SHA256" | grep -Eq '^[0-9a-f]{64}$'
-          ssh -i ~/.ssh/portfolio "portfolio-deploy@10.40.0.32" \
-            "promote $CANDIDATE_SHA $ARTIFACT_SHA256 $PRODUCTION_SHA"
+          OVH_PREVIOUS=$(ssh portfolio-ovh current)
+          HOMELAB_PREVIOUS=$(ssh portfolio-homelab current)
+          for origin in portfolio-ovh portfolio-homelab; do
+            ssh "$origin" prepare-promote "$CANDIDATE_SHA" "$ARTIFACT_SHA256" "$PRODUCTION_SHA"
+          done
+          rollback_both() {
+            ssh portfolio-ovh rollback "$OVH_PREVIOUS" || true
+            ssh portfolio-homelab rollback "$HOMELAB_PREVIOUS" || true
+          }
+          trap rollback_both ERR
+          ssh portfolio-ovh activate-prepared "$PRODUCTION_SHA" "$ARTIFACT_SHA256"
+          ssh portfolio-homelab activate-prepared "$PRODUCTION_SHA" "$ARTIFACT_SHA256"
+          trap - ERR
       - name: Roll back to retained release
         if: inputs.rollback_sha != ''
         env:
-          DEPLOY_USER: ${{ github.ref_name == 'beta' && 'portfolio-beta-deploy' || 'portfolio-deploy' }}
+          DEPLOY_SUFFIX: ${{ github.ref_name == 'beta' && '-beta' || '' }}
           ROLLBACK_SHA: ${{ inputs.rollback_sha }}
         run: |
+          # shellcheck disable=SC2029
           printf '%s' "$ROLLBACK_SHA" | grep -Eq '^[0-9a-f]{40}$' || {
             echo "rollback_sha must be exactly 40 lowercase hexadecimal characters" >&2
             exit 1
           }
-          ssh -i ~/.ssh/portfolio "$DEPLOY_USER@10.40.0.32" "rollback $ROLLBACK_SHA"
+          # shellcheck disable=SC2029
+          ssh "portfolio-ovh$DEPLOY_SUFFIX" rollback "$ROLLBACK_SHA"
+          ssh "portfolio-homelab$DEPLOY_SUFFIX" rollback "$ROLLBACK_SHA"
       - name: Verify production health
         if: github.ref_name == 'main'
         run: |
@@ -246,11 +292,13 @@ jobs:
         env:
           RELEASE_SHA: ${{ github.sha }}
         run: |
+          # shellcheck disable=SC2029
           set -euo pipefail
           ARTIFACT_SHA256=$(tr -d '\n' < site-dist.tar.gz.sha256)
           INDEX_SHA256=$(tr -d '\n' < site-index.html.sha256)
-          ssh -i ~/.ssh/portfolio "portfolio-beta-deploy@10.40.0.32" \
-            "verify $RELEASE_SHA $ARTIFACT_SHA256 $INDEX_SHA256"
+          for origin in portfolio-ovh-beta portfolio-homelab-beta; do
+            ssh "$origin" verify "$RELEASE_SHA" "$ARTIFACT_SHA256" "$INDEX_SHA256"
+          done
       - name: Remove deployment SSH identity
         if: always()
-        run: rm -f ~/.ssh/portfolio
+        run: rm -f ~/.ssh/portfolio ~/.ssh/config

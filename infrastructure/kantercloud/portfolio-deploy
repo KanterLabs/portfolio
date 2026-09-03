@@ -1,15 +1,24 @@
 #!/bin/sh
 set -eu
 
+origin_address=10.40.30.32
+origin_scheme=https
+origin_port=443
+production_health_host=portfolio-origin.kantercloud.internal
+preview_health_host=portfolio-preview-origin.kantercloud.internal
+if [ -r /etc/portfolio-origin.env ]; then
+    . /etc/portfolio-origin.env
+fi
+
 deploy_user=$(id -un)
 case "$deploy_user" in
     portfolio-deploy)
         root=/srv/portfolio
-        health_host=portfolio-origin.kantercloud.internal
+        health_host=$production_health_host
         ;;
     portfolio-beta-deploy)
         root=/srv/portfolio-beta
-        health_host=portfolio-preview-origin.kantercloud.internal
+        health_host=$preview_health_host
         ;;
     *)
         printf 'unsupported deployment identity\n' >&2
@@ -57,24 +66,49 @@ verify_archive_members() {
     ' || fail "archive contains a link or special file"
 }
 
+check_origin_health() {
+    case "$origin_scheme" in
+        https)
+            curl --fail --silent --show-error --max-time 5 \
+                --cacert /etc/nginx/tls/portfolio-origin-ca.pem \
+                --resolve "$health_host:$origin_port:$origin_address" \
+                "https://$health_host:$origin_port/healthz"
+            ;;
+        http)
+            curl --fail --silent --show-error --max-time 5 \
+                --resolve "$health_host:$origin_port:$origin_address" \
+                "http://$health_host:$origin_port/healthz"
+            ;;
+        *) fail "unsupported origin health-check scheme" ;;
+    esac
+}
+
 activate() {
     release=$1
+    release_sha=${release##*/}
     previous=$(readlink -f "$root/current" 2>/dev/null || true)
 
     ln -s "$release" "$root/current.next"
     mv -Tf "$root/current.next" "$root/current"
 
-    response=$(curl --fail --silent --show-error --max-time 5 \
-        --cacert /etc/nginx/tls/portfolio-origin-ca.pem \
-        --resolve "$health_host:443:10.40.30.32" \
-        "https://$health_host/healthz") || response=
+    response=$(check_origin_health) || response=
     if [ "$response" != "ok" ]; then
         if [ -n "$previous" ] && [ -d "$previous" ]; then
             ln -s "$previous" "$root/current.previous"
             mv -Tf "$root/current.previous" "$root/current"
         fi
-        fail "release failed local verified-HTTPS validation"
+        fail "release failed local origin health validation"
     fi
+
+    manifest="$manifests/$release_sha.sha256"
+    artifact_digest=unknown
+    [ ! -f "$manifest" ] || artifact_digest=$(tr -d '\n' < "$manifest")
+    mkdir -p "$root/state"
+    state_next="$root/state/.release.json.next"
+    printf '{"release":"%s","artifactSha256":"%s"}\n' \
+        "$release_sha" "$artifact_digest" > "$state_next"
+    chmod 0444 "$state_next"
+    mv -f "$state_next" "$root/state/release.json"
 }
 
 install_archive() {
@@ -231,6 +265,52 @@ case "$action" in
         printf 'promoted candidate %s artifact %s as %s\n' \
             "$candidate_sha" "$digest" "$production_sha"
         ;;
+    prepare-promote)
+        [ "$deploy_user" = portfolio-deploy ] || fail "production identity required"
+        [ "$#" -eq 4 ] || fail "prepare-promote requires candidate SHA, artifact SHA-256, and production SHA"
+        candidate_sha=$2
+        digest=$3
+        production_sha=$4
+        valid_sha "$candidate_sha" || fail "invalid candidate SHA"
+        valid_digest "$digest" || fail "invalid artifact SHA-256"
+        valid_sha "$production_sha" || fail "invalid production SHA"
+        candidate_root=/srv/portfolio-beta
+        candidate_manifest="$candidate_root/manifests/$candidate_sha.sha256"
+        candidate_artifact="$candidate_root/artifacts/$digest.tar.gz"
+        [ -f "$candidate_manifest" ] || fail "candidate manifest is not retained"
+        [ "$(tr -d '\n' < "$candidate_manifest")" = "$digest" ] || fail "candidate digest mismatch"
+        [ -f "$candidate_artifact" ] || fail "candidate artifact is not retained"
+        retained="$artifacts/$digest.tar.gz"
+        if [ ! -f "$retained" ]; then
+            retained_next="$artifacts/.$digest.tar.gz.next"
+            cp -- "$candidate_artifact" "$retained_next"
+            verify_digest "$retained_next" "$digest"
+            chmod 0444 "$retained_next"
+            mv "$retained_next" "$retained"
+        fi
+        verify_digest "$retained" "$digest"
+        install_archive "$retained" "$production_sha" "$digest" true
+        printf 'prepared %s artifact %s\n' "$production_sha" "$digest"
+        ;;
+    activate-prepared)
+        [ "$deploy_user" = portfolio-deploy ] || fail "production identity required"
+        [ "$#" -eq 3 ] || fail "activate-prepared requires production SHA and artifact SHA-256"
+        production_sha=$2
+        digest=$3
+        valid_sha "$production_sha" || fail "invalid production SHA"
+        valid_digest "$digest" || fail "invalid artifact SHA-256"
+        [ -d "$releases/$production_sha" ] || fail "prepared release is missing"
+        [ "$(tr -d '\n' < "$manifests/$production_sha.sha256")" = "$digest" ] || fail "prepared digest mismatch"
+        activate "$releases/$production_sha"
+        prune_releases
+        printf 'activated %s artifact %s\n' "$production_sha" "$digest"
+        ;;
+    current)
+        [ "$#" -eq 1 ] || fail "current takes no arguments"
+        current=$(readlink -f "$root/current" 2>/dev/null || true)
+        [ -n "$current" ] || fail "there is no active release"
+        printf '%s\n' "${current##*/}"
+        ;;
     rollback)
         [ "$#" -eq 2 ] || fail "rollback requires a release SHA"
         sha=$2
@@ -262,14 +342,11 @@ case "$action" in
             || fail "release is not active"
         [ "$(sha256sum -- "$release/index.html" | awk '{print $1}')" = "$index_digest" ] \
             || fail "active index SHA-256 mismatch"
-        response=$(curl --fail --silent --show-error --max-time 5 \
-            --cacert /etc/nginx/tls/portfolio-origin-ca.pem \
-            --resolve "$health_host:443:10.40.30.32" \
-            "https://$health_host/healthz") || response=
-        [ "$response" = ok ] || fail "active release failed verified-HTTPS validation"
+        response=$(check_origin_health) || response=
+        [ "$response" = ok ] || fail "active release failed origin health validation"
         printf 'verified %s artifact %s index %s\n' "$sha" "$digest" "$index_digest"
         ;;
     *)
-        fail "allowed commands: deploy <sha> <artifact-sha256>, promote <candidate-sha> <artifact-sha256> <production-sha>, rollback <sha>, or verify <sha> <artifact-sha256> <index-sha256>"
+        fail "unsupported deployment command"
         ;;
 esac
