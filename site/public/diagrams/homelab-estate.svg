@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
   <title id="title">KanterLabs infrastructure estate</title>
-  <desc id="desc">Cloudflare and GitHub connect to separate home and remote Proxmox environments. The home environment provides development, CI, secrets, and supporting services. The remote environment provides edge routing plus public and private workload zones.</desc>
+  <desc id="desc">Cloudflare and GitHub connect to separate home and remote Proxmox environments. Both sites use hardened edge boundaries with distinct management, ingress, and origin planes. The home environment also provides development and ephemeral CI.</desc>
   <defs>
     <style>
       .title{font:700 30px Inter,Arial,sans-serif;fill:#18181b}.subtitle{font:500 16px Inter,Arial,sans-serif;fill:#52525b}
@@ -16,7 +16,7 @@
   </defs>
   <rect width="1400" height="900" fill="#f4f4f5"/>
   <text x="700" y="50" text-anchor="middle" class="title">KanterLabs Infrastructure Estate</text>
-  <text x="700" y="78" text-anchor="middle" class="subtitle">Two Proxmox environments with distinct development, CI, edge, and workload responsibilities</text>
+  <text x="700" y="78" text-anchor="middle" class="subtitle">Two sites, two hardened edges, and explicit management, ingress, origin, and CI boundaries</text>
 
   <rect x="430" y="110" width="220" height="78" rx="16" class="external"/>
   <text x="540" y="143" text-anchor="middle" class="label">Cloudflare</text>
@@ -27,7 +27,7 @@
 
   <rect x="70" y="250" width="590" height="560" rx="24" class="site"/>
   <text x="105" y="292" class="section">Home Proxmox environment</text>
-  <text x="105" y="318" class="small">Development, CI, secrets, and supporting services</text>
+  <text x="105" y="318" class="small">Development, CI, secrets, isolated edge, and origins</text>
 
   <rect x="105" y="360" width="240" height="115" rx="16" class="node"/>
   <text x="128" y="390" class="tiny">DEVELOPMENT</text>
@@ -39,23 +39,28 @@
   <text x="403" y="420" class="label">Infisical service</text>
   <text x="403" y="446" class="small">Runtime credentials outside Git</text>
 
-  <rect x="105" y="515" width="515" height="190" rx="18" class="edge"/>
+  <rect x="105" y="515" width="250" height="190" rx="18" class="edge"/>
   <text x="132" y="550" class="tiny">ORGANIZATION CI</text>
-  <text x="132" y="583" class="label">Single-node k3s + Actions Runner Controller</text>
-  <text x="132" y="612" class="small">One warm runner · three-runner ceiling</text>
-  <rect x="132" y="637" width="205" height="44" rx="11" class="node"/>
-  <text x="234" y="664" text-anchor="middle" class="small">Ephemeral runner pods</text>
-  <rect x="365" y="637" width="225" height="44" rx="11" class="node"/>
-  <text x="477" y="664" text-anchor="middle" class="small">Read-only operations view</text>
+  <text x="132" y="583" class="label">k3s + ARC</text>
+  <text x="132" y="612" class="small">Disposable runner pods</text>
+  <text x="132" y="640" class="small">Bounded job resources</text>
+  <text x="132" y="668" class="small">Read-only operations view</text>
+
+  <rect x="380" y="515" width="240" height="190" rx="18" class="private"/>
+  <text x="407" y="550" class="tiny">HOME EDGE</text>
+  <text x="407" y="583" class="label">Hardened edge VM</text>
+  <text x="407" y="612" class="small">Outbound public tunnel</text>
+  <text x="407" y="640" class="small">Tailnet private entrance</text>
+  <text x="407" y="668" class="small">Isolated origin plane</text>
 
   <rect x="740" y="250" width="590" height="560" rx="24" class="site"/>
   <text x="775" y="292" class="section">Kantercloud Proxmox environment</text>
-  <text x="775" y="318" class="small">Shared ingress and isolated application workloads</text>
+  <text x="775" y="318" class="small">Production edge and isolated application origins</text>
 
   <rect x="775" y="360" width="520" height="120" rx="18" class="edge"/>
-  <text x="802" y="391" class="tiny">SHARED EDGE</text>
-  <text x="802" y="422" class="label">Caddy + Tailscale</text>
-  <text x="802" y="450" class="small">Hostname routing, public listeners, and private Tailnet entrance</text>
+  <text x="802" y="391" class="tiny">REMOTE EDGE</text>
+  <text x="802" y="422" class="label">Hardened edge VM</text>
+  <text x="802" y="450" class="small">Exact public listeners, private names, verified origin routing</text>
 
   <rect x="775" y="525" width="245" height="180" rx="18" class="public"/>
   <text x="802" y="556" class="tiny">PUBLIC WORKLOAD ZONE</text>
@@ -72,12 +77,12 @@
   <text x="1077" y="674" class="small">No public or LAN entrance</text>
 
   <rect x="775" y="744" width="520" height="40" rx="10" class="boundary"/>
-  <text x="1035" y="769" text-anchor="middle" class="small">Management plane remains separate from application ingress</text>
+  <text x="1035" y="769" text-anchor="middle" class="small">Management, ingress, and origin planes are default-deny</text>
 
   <path d="M540 188V218H1005V360" class="line" marker-end="url(#arrow)"/>
   <path d="M860 188V220H362V515" class="line" marker-end="url(#arrow)"/>
   <path d="M1035 480V503H897V525" class="line" marker-end="url(#arrow)"/>
   <path d="M1035 480V503H1172V525" class="line" marker-end="url(#arrow)"/>
   <path d="M620 610H715V420H775" class="dash" marker-end="url(#arrow)"/>
-  <text x="687" y="595" text-anchor="middle" class="tiny">DEPLOY</text>
+  <text x="687" y="595" text-anchor="middle" class="tiny">PRIVATE DEPLOY</text>
 </svg>
