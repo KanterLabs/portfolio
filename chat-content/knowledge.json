@@ -190,7 +190,7 @@
         "beta deployment",
         "candidate verification"
       ],
-      "content": "The Dual-Origin Portfolio Deployment case study describes a static Astro portfolio delivered as the same immutable release to OVH and homelab Nginx origins. Cloudflare provides public TLS, health checks, and production load balancing. GitHub Actions deploys beta artifacts directly over private management paths to both isolated candidate lanes, verifies each candidate locally, then promotes the exact artifact to both production origins with coordinated rollback. The design separates public ingress, private deployment, and workload responsibilities while retaining commit-addressed releases for recovery."
+      "content": "The Dual-Origin Portfolio Deployment case study describes a static Astro portfolio delivered as the same immutable release to OVH and homelab Nginx origins. Cloudflare provides public TLS, health checks, and production load balancing. GitHub Actions deploys beta artifacts directly over private management paths to both isolated candidate lanes. After beta merges to main, the workflow stages and privately verifies the tested main artifact on both origins, then automatically promotes that exact digest to production with coordinated rollback. The design separates public ingress, private deployment, and workload responsibilities while retaining commit-addressed releases for recovery."
     },
     {
       "id": "data-center-operations",

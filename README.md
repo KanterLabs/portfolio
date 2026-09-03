@@ -60,8 +60,10 @@ Feature branches merge into the protected `beta` branch. Every successful
 the isolated preview vhost on both origins. It has no public DNS record,
 Cloudflare Access application, Tunnel, or Funnel. A pull request from `beta`
 to `main` runs the same browser suite again.
-Production activation is an explicit workflow dispatch that promotes the exact
-privately verified candidate SHA and artifact digest.
+After a successful merge to `main`, the workflow stages that exact tested
+artifact in both private candidate lanes, verifies its SHA and content on each
+origin, and automatically promotes the same digest to production. Manual
+dispatch remains available for explicit retained-release rollback.
 
 The candidate lane uses its own GitHub environment, SSH key, Unix deployment
 account, release root, lock, and rollback history. It cannot activate a

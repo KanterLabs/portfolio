@@ -91,11 +91,12 @@ archive, extracts it into a commit-addressed release, validates its local
 private HTTPS health endpoint, and atomically swaps the relevant `current`
 symlink. A failed local check restores the prior symlink.
 
-Production promotion names the exact verified beta SHA and artifact digest.
-Both origins prepare that artifact before either activates it. If activation on
-one origin fails, the workflow rolls both origins back to their recorded prior
-release. Retained releases make rollback independent of GitHub, npm, or a
-rebuild.
+When `beta` merges to `main`, the workflow stages the tested main artifact in
+both private candidate lanes and verifies its SHA and content there. Both
+production origins then prepare that exact digest before either activates it.
+If activation on one origin fails, the workflow rolls both origins back to
+their recorded prior release. Retained releases make rollback independent of
+GitHub, npm, or a rebuild.
 
 ## TLS and Health
 
