@@ -39,12 +39,14 @@ archives, path traversal, links, special files, digest mismatches, and commands
 outside its fixed lifecycle grammar.
 
 Each candidate stores its archive digest, tree digest, and index digest in an
-immutable manifest. Production activation is an explicit dispatch from `main`
-that names the exact privately verified candidate SHA and archive SHA-256. Both
-helpers revalidate and prepare that same artifact before either origin
-activates it. If either activation fails, the workflow restores both origins to
-their recorded previous release. Candidate and production have separate Unix
-accounts, release roots, locks, and rollback histories.
+immutable manifest. After a validated `beta` pull request merges to `main`, the
+main workflow stages its tested artifact through both private candidate accounts
+and verifies the SHA and content on each origin. Both production helpers then
+revalidate and prepare that exact digest before either origin activates it. If
+either activation fails, the workflow restores both origins to their recorded
+previous release. Candidate and production have separate Unix accounts, release
+roots, locks, and rollback histories. Manual dispatch remains available for an
+explicit retained-release rollback.
 
 ## TLS and routing
 
