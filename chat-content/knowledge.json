@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-30",
+  "version": "2026-09-03",
   "entries": [
     {
       "id": "profile",
@@ -135,7 +135,13 @@
         "href": "/projects/sandbox-factory"
       },
       "lastReviewed": "2026-08-18",
-      "topics": ["project", "sandbox", "virtualization", "control plane", "security"],
+      "topics": [
+        "project",
+        "sandbox",
+        "virtualization",
+        "control plane",
+        "security"
+      ],
       "keywords": [
         "Sandbox Factory",
         "development sandbox",
@@ -156,11 +162,11 @@
     {
       "id": "portfolio-infrastructure",
       "source": {
-        "title": "Portfolio Infrastructure Deployment",
+        "title": "Dual-Origin Portfolio Deployment",
         "path": "site/src/content/projects/multi-node-portfolio.mdx",
         "href": "/projects/multi-node-portfolio"
       },
-      "lastReviewed": "2026-08-24",
+      "lastReviewed": "2026-09-03",
       "topics": ["project", "portfolio", "astro", "delivery", "cloudflare"],
       "keywords": [
         "Astro",
@@ -168,14 +174,18 @@
         "Nginx",
         "Caddy",
         "Cloudflare",
-        "Proxmox",
+        "OVH",
+        "homelab",
+        "load balancing",
         "GitHub Actions",
         "atomic delivery",
         "rollback",
         "Full strict TLS",
-        "private origin"
+        "private origin",
+        "beta deployment",
+        "candidate verification"
       ],
-      "content": "The Portfolio Infrastructure Deployment case study describes a static Astro portfolio delivered through GitHub Actions to a private workload behind a shared Caddy edge. Cloudflare provides public TLS and routing, Nginx serves the generated site, and releases are activated atomically with retained rollback paths. The design keeps the runtime small while separating public ingress from the workload and validating the origin path."
+      "content": "The Dual-Origin Portfolio Deployment case study describes a static Astro portfolio delivered as the same immutable release to OVH and homelab Nginx origins. Cloudflare provides public TLS, health checks, and production load balancing. GitHub Actions deploys beta artifacts directly over private management paths to both isolated candidate lanes, verifies each candidate locally, then promotes the exact artifact to both production origins with coordinated rollback. The design separates public ingress, private deployment, and workload responsibilities while retaining commit-addressed releases for recovery."
     },
     {
       "id": "data-center-operations",
@@ -185,7 +195,13 @@
         "href": "/projects/data-center-operations"
       },
       "lastReviewed": "2026-08-24",
-      "topics": ["experience", "data center", "hardware", "provisioning", "linux"],
+      "topics": [
+        "experience",
+        "data center",
+        "hardware",
+        "provisioning",
+        "linux"
+      ],
       "keywords": [
         "InterServer",
         "data center",
