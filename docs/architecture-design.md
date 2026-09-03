@@ -2,36 +2,33 @@
 
 ## Current topology
 
-The public and private-candidate planes share one verified HTTPS origin but
-have independent ingress and deployment boundaries:
+The public and private-candidate planes are deployed to two verified HTTPS
+origins with independent ingress and deployment boundaries:
 
 ```text
-Internet -> Cloudflare CDN/TLS -> OVH Caddy public listener
-                               -> private-CA HTTPS on VLAN 130
-                               -> portfolio Nginx production vhost
+Internet -> Cloudflare CDN/TLS -> dual-origin load balancer
+                               -> OVH Caddy -> private-CA HTTPS -> OVH Nginx
+                               -> homelab ingress -> private-CA HTTPS -> homelab Nginx
 
-Tailnet client -> Tailscale Serve HTTPS :9445 -> loopback Caddy :19445
-                                              -> private-CA HTTPS on VLAN 130
-                                              -> portfolio Nginx preview vhost
-
-CI runner -> management route -> 10.40.0.32:22 -> forced-command deploy helper
+CI runner -> 10.40.0.32:22 -> OVH forced-command deploy helper
+          -> 10.0.0.101 jump host -> 10.0.30.13:22 -> homelab helper
 ```
 
-The Tailnet preview has no public DNS, Funnel, Cloudflare Access application,
-Cloudflare Tunnel, or public Worker. Public traffic cannot reach the preview
+The preview vhosts have no public DNS, Funnel, Cloudflare Access application,
+Cloudflare Tunnel, or public Worker. Public traffic cannot reach either preview
 vhost, and deployment traffic never uses either ingress plane.
 
 ## Workload isolation
 
-The origin is an unprivileged Debian LXC. Nginx serves production from
+Each origin serves production from
 `/srv/portfolio/current` and the private candidate from
 `/srv/portfolio-beta/current`; both are symlinks to immutable, commit-addressed
 releases. The container runs neither Docker nor Tailscale.
 
-Nginx listens only on `10.40.30.32:443`. Its deny-by-default nftables policy
-permits management SSH from `10.40.0.1` and origin HTTPS from the edge address
-`10.40.30.2`; it has no TCP 80 allowance or listener. Production and preview
-use separate SNI and Host identities on the same origin certificate.
+The OVH origin listens only on `10.40.30.32:443`; the homelab origin listens
+only on `10.0.30.13:443`. Both deny-by-default nftables policies permit only
+the reviewed management and ingress peers. Production and preview use separate
+SNI and Host identities on each origin certificate.
 
 ## Delivery and promotion
 
@@ -43,22 +40,23 @@ outside its fixed lifecycle grammar.
 
 Each candidate stores its archive digest, tree digest, and index digest in an
 immutable manifest. Production activation is an explicit dispatch from `main`
-that names the exact privately verified candidate SHA and archive SHA-256. The
-helper revalidates the candidate and adopts that same artifact; it does not
-rebuild or re-upload a production copy. Candidate and production have separate
-Unix accounts, release roots, locks, and rollback histories.
+that names the exact privately verified candidate SHA and archive SHA-256. Both
+helpers revalidate and prepare that same artifact before either origin
+activates it. If either activation fails, the workflow restores both origins to
+their recorded previous release. Candidate and production have separate Unix
+accounts, release roots, locks, and rollback histories.
 
 ## TLS and routing
 
-Cloudflare uses Full (strict) mode to the OVH Caddy edge.
-`www.shanekanterman.dev` redirects to the canonical apex. Caddy connects to
-`10.40.30.32:443` with SNI `portfolio-origin.kantercloud.internal`, a fixed
-Host header, and the tracked Portfolio origin CA.
+Cloudflare uses Full (strict) mode and health-checks both public origins.
+`www.shanekanterman.dev` redirects to the canonical apex. The OVH edge connects
+to `10.40.30.32:443` with SNI `portfolio-origin.kantercloud.internal`; the
+homelab ingress connects to `10.0.30.13:443` with SNI
+`portfolio-origin.homelab.internal`. Both trust the tracked Portfolio origin CA.
 
-The Tailnet-only Serve entry terminates the client certificate for
-`kanter-edge.tail848b9c.ts.net`, hands off on edge loopback, and then uses SNI
-`portfolio-preview-origin.kantercloud.internal` to reach the preview vhost.
-The preview adds no-index headers and a deny-all `robots.txt`.
+The preview vhosts use the corresponding preview SNI name. They add no-index
+headers and a deny-all `robots.txt` and are not registered as load-balancer
+origins.
 
 The private origin leaf is issued for exactly the two internal names by a
 root-only CA on the Kantercloud Proxmox host. A daily systemd timer checks the
