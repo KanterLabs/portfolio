@@ -100,6 +100,10 @@ const jsonLdItems = structuredData
       document.addEventListener('DOMContentLoaded', () => {
         const sections = document.querySelectorAll<HTMLElement>('.observe-animate');
         const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        // On phone-sized viewports the IntersectionObserver reveal reads as
+        // content "loading" late while scrolling — skip it and show every
+        // section immediately (matches the reduced-motion path).
+        const smallViewportQuery = window.matchMedia('(width < 780px)');
 
         const revealAll = () => {
           sections.forEach((section) => {
@@ -107,7 +111,7 @@ const jsonLdItems = structuredData
           });
         };
 
-        if (sections.length === 0 || reducedMotionQuery.matches || !('IntersectionObserver' in window)) {
+        if (sections.length === 0 || reducedMotionQuery.matches || smallViewportQuery.matches || !('IntersectionObserver' in window)) {
           revealAll();
           return;
         }
