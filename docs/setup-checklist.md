@@ -11,7 +11,8 @@
 - [ ] deployment uploads and forced commands reach OVH at `10.40.0.32:22` and homelab at `10.0.30.13:22` through the reviewed jump host
 - [ ] the deploy helper accepts only immutable deploy, exact promotion, retained rollback, and digest verification commands
 - [ ] both `/srv/portfolio-beta/current` links name the intended private candidate SHA
-- [ ] production promotion names the exact candidate SHA and artifact SHA-256
+- [ ] a successful `beta` merge to `main` automatically stages and verifies the tested main artifact in both candidate lanes before production activation
+- [ ] production promotion uses the exact candidate SHA and artifact SHA-256 verified on both origins
 - [ ] both `/srv/portfolio/current` links name the intended production SHA
 
 ## Origin and edge
