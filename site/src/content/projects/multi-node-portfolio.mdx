@@ -1,21 +1,19 @@
 ---
-title: Portfolio Infrastructure Deployment
-summary: A static Astro portfolio served from a private Kantercloud LXC through a shared Caddy edge, with Full (strict) Cloudflare TLS and atomic delivery from GitHub Actions.
-highlight: Separates public ingress from a minimal private workload container.
-impact: Replaced a stale single-active-origin GCP design with private routing, verified origin TLS, and fast release rollback.
-constraint: Keep the runtime small and inexpensive without putting Tailscale or Docker inside the workload.
+title: Dual-Origin Portfolio Deployment
+summary: A static Astro portfolio deployed as the same immutable release to OVH and homelab origins, with Cloudflare load balancing in production and direct private beta verification on both.
+highlight: Keeps public failover separate from the private candidate delivery path.
+impact: Replaced a single-origin deployment story with an exercised dual-origin release and rollback workflow.
+constraint: Keep both origins small, independently verifiable, and unreachable through public deployment paths.
 role: Designer, builder, and operator.
-scope: Astro, Debian LXC, Nginx, Caddy, Cloudflare, Tailscale, Proxmox, and CI/CD.
-keyOutcome: A portfolio whose live deployment matches the infrastructure story it tells.
+scope: Astro, Debian, Nginx, Caddy, Cloudflare Load Balancing, private networking, and CI/CD.
+keyOutcome: A portfolio whose production resilience and beta validation follow the same release contract.
 featured: false
 order: 4
 stack:
   - Astro
   - Nginx
   - Caddy
-  - Proxmox LXC
   - Cloudflare
-  - Tailscale
   - GitHub Actions
 status: shipped
 date: 2026-07-18
@@ -24,99 +22,119 @@ links:
   - label: View portfolio repo
     href: https://github.com/KanterLabs/portfolio
 system:
-  caption: GitHub Actions builds the static site, joins the tailnet as a short-lived node, and activates a commit-addressed release atomically on the private Nginx origin behind the shared Caddy edge.
+  caption: GitHub Actions builds one artifact, deploys it directly to both private beta origins, then promotes the exact verified artifact to the two load-balanced production origins.
   tiers:
     - nodes:
         - title: GitHub Actions
     - nodes:
-        - title: Tailnet deploy
+        - title: Private deploy paths
     - nodes:
-        - title: Atomic release
+        - title: Immutable candidates
           kind: accent
     - nodes:
-        - title: Nginx origin
+        - title: OVH + homelab origins
 ---
-
-import DiagramFigure from '../../components/DiagramFigure.astro';
-import Callout from '../../components/Callout.astro';
 
 ## Overview
 
-The portfolio is intentionally static. The operational work is in making that small application deploy safely, remain private behind a shared edge, and recover without rebuilding a server by hand.
+The portfolio is intentionally static. The operational work is in making one
+small artifact deploy safely to two independent origins, keeping the beta lane
+private, and recovering without rebuilding a server by hand.
 
-The current production path is **Cloudflare → shared edge VM → private portfolio origin**. Cloudflare provides the public network and validates the origin certificate. Caddy owns public ingress on the shared edge VM. Nginx serves the generated Astro files from a dedicated unprivileged container.
+Production is **Cloudflare → load-balanced OVH and homelab origins**. Each
+origin serves the same commit-addressed Astro release through Nginx. The OVH
+path includes the shared Caddy edge; the homelab origin has its own reviewed
+ingress path. Neither public route is used for deployment.
 
 ## Current Architecture
 
 ```text
 Internet
    |
-Cloudflare DNS, CDN, Full (strict) TLS
+Cloudflare DNS, CDN, Full (strict) TLS, and health checks
    |
-Shared edge VM · Caddy
-   |
-Private Kantercloud network
-   |
-Unprivileged Debian LXC · Nginx · Astro files
+Cloudflare Load Balancer
+   |                         |
+OVH edge → Nginx          Homelab ingress → Nginx
+   \_________________________/
+        identical immutable release
 ```
-
-<DiagramFigure
-  src="/diagrams/architecture-diagram.svg"
-  alt="Cloudflare routing through the Kantercloud Caddy edge to a private portfolio LXC"
-  caption="Public ingress, edge routing, and the static origin are separate responsibilities."
-  wide={true}
-/>
 
 ## Why This Shape
 
-The edge VM already owns the server's public ports and certificate lifecycle. Putting the portfolio there would mix ingress and workload state. Giving the portfolio LXC its own Tailscale node would duplicate network identity and administration.
+The public edge and the workload should not share an operational boundary. A
+single origin was simple, but it made a maintenance event or failed host a
+single point of failure. The current design adds a homelab origin without
+making either origin responsible for public DNS, load-balancer policy, or the
+other origin's state.
 
 The resulting boundary is small and explicit:
 
-- the Proxmox host routes public web traffic only to the shared edge VM
-- Caddy proxies the portfolio hostname over the private guest network
-- the LXC accepts HTTP only from approved infrastructure addresses
-- deployment reaches private SSH through the existing subnet router
-- the LXC runs no Docker daemon and no Tailscale daemon
+- Cloudflare health checks and load balancing decide which production origin
+  receives public traffic
+- each origin accepts only its reviewed ingress and management peers
+- OVH is reached over private management SSH; homelab is reached through the
+  reviewed jump host
+- neither workload runs Docker, Tailscale, or a public deployment listener
 
 ## Atomic Delivery
 
-GitHub Actions builds and tests the Astro site on a hosted runner. The deployment job joins the tailnet as a short-lived tagged node and sends a compressed release through a restricted SSH key.
+GitHub Actions builds and tests the Astro site on an ephemeral homelab runner.
+A beta push produces one compressed artifact and sends it directly over private
+management paths to the beta account on each origin. Beta is deliberately not a
+load-balancer backend: it has no public DNS record, Tunnel, Funnel, or public
+worker route.
 
-The remote account cannot open a shell. It can only request `deploy <sha>` or `rollback <sha>`. The deploy command validates the archive, extracts it to a temporary directory, moves it into a commit-addressed release, and swaps the `current` symlink atomically. If local HTTP validation fails, the previous symlink is restored.
+The remote account cannot open a shell. It can only request the fixed deploy,
+verify, promote, activation, and rollback commands. Each helper validates the
+archive, extracts it into a commit-addressed release, validates its local
+private HTTPS health endpoint, and atomically swaps the relevant `current`
+symlink. A failed local check restores the prior symlink.
 
-Five releases stay on disk, so a rollback does not depend on GitHub, npm, or a rebuild.
+Production promotion names the exact verified beta SHA and artifact digest.
+Both origins prepare that artifact before either activates it. If activation on
+one origin fails, the workflow rolls both origins back to their recorded prior
+release. Retained releases make rollback independent of GitHub, npm, or a
+rebuild.
 
 ## TLS and Health
 
-Cloudflare uses **Full (strict)** origin mode and requires TLS 1.2 or newer from visitors. Caddy obtains and renews publicly trusted certificates for the apex and `www` hostnames. The `www` hostname redirects to the canonical apex URL.
+Cloudflare uses **Full (strict)** origin mode and health-checks the two public
+origins. The apex and `www` hostnames are served through the production pool,
+with `www` redirecting to the canonical apex. Both origins use their own
+private origin identity and trust chain.
 
-Nginx exposes `/healthz` with an exact `ok` response. Cloudflare checks the route through the edge, while Homebase checks both the public site and the private origin. That separates an origin failure from a DNS, TLS, or edge-routing failure.
+Nginx exposes `/healthz` with an exact `ok` response. The deployment helper
+checks the private vhost after activation, while Cloudflare monitors the public
+origins. That separates release, origin, and edge failures instead of treating
+the site as one opaque endpoint.
 
 ## Recovery
 
 The deployment has three recovery layers:
 
-| Failure | Recovery |
-|---|---|
-| Bad site release | Activate a retained commit SHA |
-| Broken container | Restore the nightly Proxmox snapshot |
-| Migration regression | Temporarily re-enable the retained GCP origin |
-
-<Callout type="note">
-  The rollback GCP origin is temporary. It remains disabled during the soak window and can be removed once the Kantercloud deployment has a clean operating history.
-</Callout>
+| Failure                      | Recovery                                                                    |
+| ---------------------------- | --------------------------------------------------------------------------- |
+| Bad release on either origin | Roll both origins back to retained commit-addressed releases                |
+| Failed origin                | Cloudflare health checks remove it while the other origin continues serving |
+| Broken workload              | Restore that origin's verified backup without changing the other origin     |
 
 ## Architecture Evolution
 
-The first version used two GCP `e2-micro` origins behind a paid Cloudflare Load Balancer. That design was useful for learning Terraform, multi-zone origins, and health checks. Over time the second origin became disabled, leaving the published redundancy claim out of step with reality.
+The first version used two GCP `e2-micro` origins behind a paid Cloudflare Load
+Balancer. That design was useful for learning Terraform, multi-zone origins,
+and health checks. Over time the second origin became disabled, leaving the
+published redundancy claim out of step with reality.
 
-The migration kept the useful parts—static output, Nginx, Cloudflare, automated delivery—and replaced nominal redundancy with controls that are exercised directly: private origin access, atomic releases, verified TLS, explicit health checks, and snapshot recovery.
+The initial homelab migration simplified that to one private origin while the
+delivery controls matured. The current iteration restores real redundancy with
+two active origins and makes it part of the normal beta and promotion workflow,
+rather than a standby path that is never exercised.
 
 ## What It Shows
 
-- **Linux operations:** a hardened Debian service with narrow firewall rules
-- **Network design:** public edge and private workload roles kept separate
-- **Delivery engineering:** build once, validate, atomically activate, and retain rollback state
-- **Operational honesty:** documentation and visible site claims match the running system
-- **Cost judgment:** reuse existing reliable infrastructure instead of paying for an idle load-balancer design
+- **Linux operations:** two hardened services with narrow firewall rules
+- **Network design:** public load balancing, ingress, and private workloads have separate roles
+- **Delivery engineering:** build once, validate twice, and promote the exact artifact
+- **Recovery design:** coordinated release rollback plus origin-level failover
+- **Operational honesty:** the public writeup describes the deployment that actually runs
