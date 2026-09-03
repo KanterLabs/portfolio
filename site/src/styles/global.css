@@ -1446,16 +1446,26 @@ select {
     margin-block: -0.45rem;
   }
 
-  [data-toc-details] nav a {
-    padding-block: 0.75rem;
+  /* Card titles are the primary navigation on a phone — grow their hit
+     box the same way .text-link does above. */
+  .project-title-link {
+    display: inline-block;
+    padding-block: 0.5rem;
+    margin-block: -0.5rem;
   }
 
+  /* Heading anchors are a hover affordance, but they must stay keyboard
+     reachable (tests/case-studies.spec.ts), so grow their hit box rather
+     than hiding them on touch. */
   .prose h2 .heading-anchor,
   .prose h3 .heading-anchor {
     padding: 0.5rem;
     margin: -0.5rem -0.2rem;
   }
 
+  [data-toc-details] nav a {
+    padding-block: 0.75rem;
+  }
 }
 
 /* The open panel overlays page content, so it needs a solid surface —
