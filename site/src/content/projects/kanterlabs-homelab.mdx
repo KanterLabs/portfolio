@@ -1,12 +1,12 @@
 ---
 title: KanterLabs Homelab Platform
-summary: A two-site Proxmox platform that separates public ingress, private workloads, secrets, and ephemeral CI, with reviewed infrastructure configuration kept in Git.
-highlight: Turns a collection of servers into an intentional platform with documented trust boundaries and repeatable operations.
-impact: Replaced repository-specific persistent runners and loosely coupled ingress rules with organization-wide ephemeral CI and explicit public/private workload zones.
+summary: A two-site Proxmox platform with hardened edge VMs, isolated network planes, private DNS and TLS, and ephemeral CI, all governed by reviewed infrastructure configuration.
+highlight: Turns a collection of servers into an intentional platform with fail-closed network boundaries and guarded, recoverable operations.
+impact: Replaced loosely coupled ingress rules and persistent runners with reusable edge boundaries, default-deny network policy, and organization-wide ephemeral CI.
 constraint: Keep the system understandable and recoverable without publishing secrets, mounting host privileges into CI jobs, or pretending every change is continuously reconciled.
 role: Infrastructure designer, builder, and operator.
-scope: Proxmox, Linux, Caddy, Cloudflare, Tailscale, network policy, k3s, Actions Runner Controller, GHCR, and GitHub Actions.
-keyOutcome: A reviewed source of truth for edge routing and CI, backed by isolated job execution, staged migrations, and documented rollback paths.
+scope: Proxmox, Linux, VLANs, nftables, Caddy, CoreDNS, Cloudflare, Tailscale, private PKI, k3s, Actions Runner Controller, GHCR, and GitHub Actions.
+keyOutcome: A reusable two-edge platform whose public, private, management, and origin traffic paths are explicit, tested, and recoverable.
 featured: true
 order: 1
 stack:
@@ -25,7 +25,7 @@ links:
   - label: View portfolio source
     href: https://github.com/KanterLabs/portfolio
 system:
-  caption: Public traffic enters through Cloudflare and private traffic through Tailscale Serve; both cross the shared Caddy edge VM into isolated public and private workload zones, while GitHub Actions jobs run in ephemeral ARC pods.
+  caption: Public and private traffic enter through distinct Cloudflare and Tailscale paths on hardened edge VMs; default-deny policy isolates management, ingress, and origin planes while CI runs in ephemeral ARC pods.
   tiers:
     - nodes:
         - label: Public entry
@@ -35,9 +35,9 @@ system:
           title: Tailscale Serve
           detail: Tailnet-only HTTPS
     - nodes:
-        - label: Shared edge
-          title: Edge VM · Caddy
-          detail: Routes each hostname to its zone
+        - label: Edge boundary
+          title: Hardened edges
+          detail: Exact, fail-closed routes
           kind: accent
     - nodes:
         - label: Zone
@@ -59,13 +59,14 @@ import InfrastructureStats from '../../components/InfrastructureStats.astro';
 
 ## Overview
 
-My homelab grew from a development server into a small platform spread across two Proxmox environments: one at home for development, CI, secrets, and supporting services, and one for public application workloads and edge routing.
+My homelab grew from a development server into a small platform spread across two Proxmox environments. Each site now has a purpose-built edge boundary: the home environment supports development, CI, secrets, and selected origins, while the remote environment carries production application workloads and Internet-facing routing.
 
 The interesting part is not the machine count. It is the set of boundaries around them:
 
-- public traffic enters through a dedicated edge instead of reaching workloads directly
-- private applications have a separate Tailnet-only entrance
-- management networking is not treated as an application ingress zone
+- public traffic enters through dedicated Cloudflare paths instead of reaching workloads directly
+- private applications have separate Tailnet-only names and listeners
+- management, ingress, and origin networks are distinct planes with default-deny forwarding
+- edge services bind to exact interfaces, and private DNS answers only on the intended views
 - GitHub Actions jobs run in disposable pods instead of long-lived repository runners
 - credentials live outside Git and are injected only where they are needed
 
@@ -74,7 +75,7 @@ The interesting part is not the machine count. It is the set of boundaries aroun
 <DiagramFigure
   src="/diagrams/homelab-estate.svg"
   alt="High-level map of the KanterLabs homelab and Kantercloud environments"
-  caption="The home environment provides development, CI, and secrets; the remote environment provides the shared edge and isolated application zones."
+  caption="Both sites use explicit edge boundaries. The home environment provides development and CI plus an isolated edge; the remote environment provides the production edge and separated application zones."
   wide={true}
 />
 
@@ -86,9 +87,9 @@ That distinction matters. A merged change records the intended configuration and
 
 | Repository area | What it describes | How it reaches runtime |
 |---|---|---|
-| Edge configuration | Caddy routes, public and private listeners, workload interfaces | Validated and deliberately installed on the edge VM |
+| Edge configuration | Exact Caddy listeners, split-horizon DNS, Tailnet policy, and workload interfaces | Rendered from reviewed plans, validated, and deliberately installed on each edge VM |
 | Workload policy | Host firewall rules and private/public service bindings | Applied on the relevant workload |
-| Hypervisor networking | NAT, forwarding, and isolation between zones | Installed as a host-managed network script |
+| Hypervisor networking | VLAN-aware bridges, NAT, forwarding allowlists, and isolation between planes | Installed through guarded host-managed transactions |
 | CI platform | k3s, ARC, runner pods, custom images, verification, and dashboard | Installed with versioned scripts and Helm values |
 | GitHub workflows | Runner image publication and end-to-end smoke checks | Executed by GitHub Actions |
 
@@ -105,34 +106,37 @@ Secrets are intentionally absent. GitHub App credentials, deployment keys, and s
   wide={true}
 />
 
-## Public and Private Ingress
+## Four Ingress Planes, Two Edge Boundaries
 
-The edge VM owns application ingress. Workloads do not receive arbitrary inbound traffic from the Internet or from other workload zones.
+The edge VMs own application ingress. Workloads do not receive arbitrary inbound traffic from the Internet, the Tailnet, management networks, or neighboring workload zones. The platform verifies four independent HTTPS planes: remote public, remote private, home public, and home private.
 
 ### Public path
 
-Public requests pass through Cloudflare, reach the hypervisor's public forwarding boundary, and are sent only to the edge VM's public-zone interface. Caddy selects the hostname and proxies to the correct public workload.
+At the remote site, public requests pass through Cloudflare, reach the hypervisor's narrow forwarding boundary, and are sent only to the edge VM's public interface. At home, a connector creates outbound transport to Cloudflare without opening unsolicited inbound access. In both cases, Caddy accepts only intended hostnames and proxies to the matching origin.
 
-The portfolio origin and hosted application platform live behind that boundary. Their host firewalls permit application traffic from the edge, not from the entire network.
+Origins live behind those boundaries. Their host firewalls permit application traffic from the relevant edge source, not from an entire LAN or VLAN. TLS is re-established and verified on sensitive edge-to-origin paths rather than assuming that internal transport is trusted.
 
 ### Private path
 
-Private applications use Tailscale Serve as the only entrance. Tailscale terminates HTTPS on the edge and forwards to a loopback-only Caddy listener. That listener can reach the private workload zone, but it cannot be reached directly from the LAN or public interface.
+Private applications use named Tailscale services or deliberately retained Serve routes as their only entrance. Tailscale hands traffic to loopback-only or explicitly bound Caddy listeners, while split-horizon DNS prevents private names from becoming public discovery paths. Direct Tailnet routing into workload networks is not a substitute for the named service entrance.
 
 ### Zone policy
 
-The design separates three concerns:
+The design separates four concerns:
 
 1. **management** for administration during the migration period
-2. **public workloads** for services intentionally reachable through the edge
-3. **private workloads** for Tailnet-only applications
+2. **ingress** for edge-facing listeners and transport connectors
+3. **public origins** for services intentionally reachable through a public edge path
+4. **private origins** for Tailnet-only applications
 
-Forwarding between those zones is denied by default. Public and private workloads can make outbound connections, but they cannot route laterally into each other or use the management network as an alternate ingress path.
+Forwarding between those planes is denied by default and opened only for named flows. Edge input, forwarding, and output policy fail closed; interfaces and source addresses are matched explicitly. Public and private origins can receive the traffic they need, but they cannot route laterally or use management as an alternate application entrance.
+
+The same policy is exercised negatively: unknown hostnames, incorrect TLS names, cross-plane requests, plaintext origin access, spoofed proxy identity, and direct workload access must fail. Synthetic canaries prove each approved plane without depending on an application migration.
 
 <DiagramFigure
   src="/diagrams/homelab-trust-zones.svg"
-  alt="Public, private, and management traffic paths through the shared edge"
-  caption="Every application path crosses a named entrance. The management network remains an administration plane, not a shortcut around the edge."
+  alt="Public, private, and management traffic paths through hardened edge boundaries"
+  caption="Every application path crosses a named entrance and exact listener. Default-deny policy keeps management, ingress, public-origin, and private-origin traffic from silently substituting for one another."
   wide={true}
 />
 
@@ -205,6 +209,8 @@ The platform does not claim that running untrusted CI is risk-free. Docker-in-Do
 - workloads cannot move laterally between public, private, and management zones
 - secret values never enter the infrastructure repository
 
+The network follows the same philosophy. Configuration is rendered deterministically, rejected if it contains wildcard binds or unapproved routes, and applied through a guarded transaction. A timed rollback, independent management-path checks, configuration hashes, service health, positive canaries, and negative exposure tests must all succeed before a candidate becomes the retained state.
+
 This is a practical balance for my own organization: enough capability to run browser, Rust, Node, and container-heavy tests, with far less persistent state than the old runner fleet.
 
 ## What I Learned
@@ -212,9 +218,10 @@ This is a practical balance for my own organization: enough capability to run br
 The largest improvement came from treating infrastructure as a set of contracts instead of a collection of machines.
 
 - **Ingress contract:** every application has one intended entrance.
-- **Network contract:** workload zones cannot become accidental management paths.
+- **Network contract:** every allowed flow names its source, destination, interface, and purpose; everything else fails closed.
+- **Name and TLS contract:** public and private DNS views, hostnames, and certificates agree with the traffic plane.
 - **CI contract:** `runs-on: homelab` always means the same disposable environment.
 - **Repository contract:** reviewed files describe intended state, while secrets and host-local state remain outside Git.
-- **Recovery contract:** migrations keep an explicit fallback until the replacement has been exercised.
+- **Recovery contract:** network changes keep an automatic rollback and an independently tested management path until the replacement has been exercised.
 
 The result is still a homelab—small, resource-conscious, and operated by one person—but it now behaves like a platform I can reason about, review, and extend.

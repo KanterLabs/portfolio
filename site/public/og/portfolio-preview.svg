@@ -1,46 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627" role="img" aria-labelledby="title desc">
-  <title id="title">Shane Kanterman social preview</title>
-  <desc id="desc">Social preview card for Shane Kanterman's portfolio site.</desc>
+  <title id="title">Shane Kanterman — Linux platforms from bare metal to CI/CD</title>
+  <desc id="desc">Dark editorial social preview for Shane Kanterman's infrastructure and platform portfolio.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#f8fafc" />
-      <stop offset="100%" stop-color="#e4e4e7" />
-    </linearGradient>
-    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1e293b" />
-      <stop offset="100%" stop-color="#0f172a" />
-    </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#2563eb" />
-      <stop offset="100%" stop-color="#0f172a" />
-    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#080b0a"/><stop offset="58%" stop-color="#0c100e"/><stop offset="100%" stop-color="#121914"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#96f7c2"/><stop offset="100%" stop-color="#4ade80"/></linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#4ade80" stop-opacity=".18"/><stop offset="100%" stop-color="#4ade80" stop-opacity="0"/></radialGradient>
   </defs>
-
-  <rect width="1200" height="627" rx="32" fill="url(#bg)" />
-  <rect x="54" y="54" width="1092" height="519" rx="28" fill="#ffffff" stroke="#e4e4e7" stroke-width="2" />
-  <rect x="90" y="90" width="1020" height="14" rx="7" fill="url(#accent)" />
-
-  <rect x="90" y="136" width="132" height="132" rx="66" fill="url(#panel)" />
-  <text x="156" y="215" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="48" font-weight="800" fill="#ffffff">SK</text>
-
-  <text x="264" y="188" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700" fill="#18181b">Shane Kanterman</text>
-  <text x="90" y="340" font-family="Georgia, Times New Roman, serif" font-size="58" font-weight="700" fill="#18181b">Linux Platforms and</text>
-  <text x="90" y="406" font-family="Georgia, Times New Roman, serif" font-size="58" font-weight="700" fill="#1e293b">Deployment Tooling</text>
-  <text x="90" y="468" font-family="Inter, Arial, sans-serif" font-size="24" fill="#52525b">
-    <tspan x="90">From bare metal and production operations to isolated CI,</tspan>
-    <tspan x="90" dy="34">self-hosted platforms, and repeatable delivery systems.</tspan>
-  </text>
-
-  <g font-family="Inter, Arial, sans-serif" font-size="21" font-weight="600" fill="#334155">
-    <rect x="90" y="526" width="136" height="38" rx="19" fill="#eff6ff" />
-    <text x="158" y="551" text-anchor="middle">Proxmox</text>
-    <rect x="238" y="526" width="84" height="38" rx="19" fill="#eff6ff" />
-    <text x="280" y="551" text-anchor="middle">k3s</text>
-    <rect x="334" y="526" width="172" height="38" rx="19" fill="#eff6ff" />
-    <text x="420" y="551" text-anchor="middle">GitHub Actions</text>
-    <rect x="518" y="526" width="82" height="38" rx="19" fill="#eff6ff" />
-    <text x="559" y="551" text-anchor="middle">Rust</text>
-    <rect x="612" y="526" width="178" height="38" rx="19" fill="#eff6ff" />
-    <text x="701" y="551" text-anchor="middle">Data Center Ops</text>
+  <rect width="1200" height="627" fill="url(#bg)"/>
+  <circle cx="1050" cy="92" r="310" fill="url(#glow)"/>
+  <path d="M0 1H1200M0 626H1200" stroke="#26322c"/>
+  <g transform="translate(72 64)">
+    <rect width="1056" height="499" rx="22" fill="#101512" stroke="#2b3831" stroke-width="2"/>
+    <rect x="1" y="1" width="6" height="497" rx="3" fill="url(#accent)"/>
+    <g transform="translate(50 42)">
+      <rect width="58" height="58" rx="16" fill="#17221c" stroke="#385245"/>
+      <text x="29" y="38" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" fill="#b7f7d2">SK</text>
+      <text x="82" y="24" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="2.5" fill="#8ca397">SHANE KANTERMAN</text>
+      <text x="82" y="49" font-family="Inter, Arial, sans-serif" font-size="17" fill="#d8e3dd">Infrastructure · Platform Engineering · Data Center Operations</text>
+    </g>
+    <text x="50" y="203" font-family="Inter, Arial, sans-serif" font-size="61" font-weight="800" letter-spacing="-2.2" fill="#f4f7f5">I build Linux platforms,</text>
+    <text x="50" y="277" font-family="Inter, Arial, sans-serif" font-size="61" font-weight="800" letter-spacing="-2.2" fill="url(#accent)">from bare metal to CI/CD.</text>
+    <text x="50" y="336" font-family="Inter, Arial, sans-serif" font-size="23" fill="#aab9b1">Production hardware, hardened networking, ephemeral CI,</text>
+    <text x="50" y="370" font-family="Inter, Arial, sans-serif" font-size="23" fill="#aab9b1">and repeatable delivery across a two-site Proxmox estate.</text>
+    <g transform="translate(50 412)" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700">
+      <rect width="126" height="42" rx="21" fill="#17221c" stroke="#30443a"/><text x="63" y="27" text-anchor="middle" fill="#dce8e1">PROXMOX</text>
+      <rect x="140" width="104" height="42" rx="21" fill="#17221c" stroke="#30443a"/><text x="192" y="27" text-anchor="middle" fill="#dce8e1">LINUX</text>
+      <rect x="258" width="206" height="42" rx="21" fill="#17221c" stroke="#30443a"/><text x="361" y="27" text-anchor="middle" fill="#dce8e1">GITHUB ACTIONS</text>
+      <rect x="478" width="86" height="42" rx="21" fill="#17221c" stroke="#30443a"/><text x="521" y="27" text-anchor="middle" fill="#dce8e1">RUST</text>
+    </g>
+    <text x="1006" y="454" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#7f9489">SHANEKANTERMAN.DEV</text>
   </g>
 </svg>
