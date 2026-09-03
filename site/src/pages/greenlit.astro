@@ -303,4 +303,9 @@ const structuredData = {
     .details { padding: 0; }
     .details > div { padding: 2rem 1.4rem; }
   }
+  /* Enlarge the sub-44px tap targets (brand link, inline CTA) on touch. */
+  @media (pointer: coarse) {
+    .brand { padding-block: .5rem; }
+    .roadmap-panel > a { padding-block: .75rem; }
+  }
 </style>
