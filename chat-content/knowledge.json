@@ -8,7 +8,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/"
       },
-      "lastReviewed": "2026-08-30",
+      "lastReviewed": "2026-09-03",
       "topics": ["profile", "experience", "education", "contact"],
       "keywords": [
         "Shane Kanterman",
@@ -31,7 +31,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#contact"
       },
-      "lastReviewed": "2026-08-30",
+      "lastReviewed": "2026-09-03",
       "topics": ["contact", "email", "links"],
       "keywords": [
         "contact",
@@ -50,7 +50,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#architecture"
       },
-      "lastReviewed": "2026-08-30",
+      "lastReviewed": "2026-09-03",
       "topics": ["skills", "architecture", "delivery", "platform"],
       "keywords": [
         "Proxmox",
