@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import worker from '../src/index.ts';
+import type { D1DatabaseLike } from '../src/history.ts';
+import { KNOWLEDGE_VERSION } from '../src/knowledge.ts';
 
 const origin = 'https://beta.shanekanterman.dev';
 const env = {
   APP_ENV: 'beta',
   ALLOWED_ORIGIN: origin,
   OPENAI_MODEL: 'gpt-5.6-luna',
-  KNOWLEDGE_VERSION: '2026-08-16',
 };
 const visitorId = '123e4567-e89b-12d3-a456-426614174000';
 
@@ -47,8 +48,9 @@ describe('portfolio chat Worker endpoints', () => {
       status: 'ok',
       service: 'portfolio-chat',
       environment: 'beta',
-      knowledgeVersion: '2026-08-16',
+      knowledgeVersion: KNOWLEDGE_VERSION,
       configured: false,
+      historyConfigured: false,
     });
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -131,6 +133,65 @@ describe('portfolio chat Worker endpoints', () => {
     expect(response.headers.get('access-control-allow-origin')).toBe(origin);
     expect(eventNames(await response.text())).toEqual(['sources', 'delta', 'done']);
     expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it('records the accepted request and completed streamed answer in D1', async () => {
+    const calls: Array<{ query: string; values: unknown[] }> = [];
+    const database = {
+      prepare(query: string) {
+        const call = { query, values: [] as unknown[] };
+        calls.push(call);
+        return {
+          bind(...values: unknown[]) {
+            call.values = values;
+            return this;
+          },
+          async run() {
+            return { success: true };
+          },
+        };
+      },
+    } as D1DatabaseLike;
+    const pending: Promise<unknown>[] = [];
+    const ctx = {
+      waitUntil(promise: Promise<unknown>) {
+        pending.push(promise);
+      },
+    } as ExecutionContext;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(
+        'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"Stored answer."}\n\n' +
+          'event: response.completed\ndata: {"type":"response.completed"}\n\n',
+      )),
+    );
+
+    const response = await worker.fetch(
+      post({
+        message: 'Store this question',
+        history: [{ role: 'assistant', content: 'Earlier answer' }],
+        pagePath: '/projects/hostlet',
+        visitorId,
+      }),
+      { ...env, OPENAI_API_KEY: 'test-key', CHAT_HISTORY: database },
+      ctx,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.text()).resolves.toContain('Stored answer.');
+    await Promise.all(pending);
+    expect(calls).toHaveLength(2);
+    expect(calls[0]?.query).toContain('INSERT INTO chat_exchanges');
+    expect(calls[0]?.values).toEqual(expect.arrayContaining([
+      visitorId,
+      'beta',
+      '/projects/hostlet',
+      'Store this question',
+      '[{"role":"assistant","content":"Earlier answer"}]',
+    ]));
+    expect(calls[1]?.query).toContain('UPDATE chat_exchanges');
+    expect(calls[1]?.values[0]).toBe('completed');
+    expect(calls[1]?.values[1]).toBe('Stored answer.');
   });
 
   it('sanitises non-2xx upstream responses', async () => {

@@ -11,6 +11,14 @@ on:
         description: "Retained 40-character release SHA to activate on the selected branch environment"
         required: false
         type: string
+      promote_candidate_sha:
+        description: "Privately verified 40-character beta release SHA to promote to production"
+        required: false
+        type: string
+      promote_artifact_sha256:
+        description: "SHA-256 of the exact privately verified beta artifact"
+        required: false
+        type: string
 
 concurrency:
   group: portfolio-${{ github.ref }}
@@ -30,6 +38,7 @@ jobs:
           HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
           TARGET_REPOSITORY: ${{ github.repository }}
         run: |
+          # shellcheck disable=SC2029
           set -euo pipefail
           [ "$HEAD_REF" = "beta" ]
           [ "$HEAD_REPOSITORY" = "$TARGET_REPOSITORY" ]
@@ -59,6 +68,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
@@ -71,6 +82,8 @@ jobs:
         run: npm audit --package-lock-only --audit-level=low
       - name: Typecheck Worker
         run: npm run typecheck
+      - name: Audit knowledge freshness
+        run: npm run knowledge:audit
       - name: Run Worker tests
         run: npm test
       - name: Build Worker deployment bundle
@@ -84,7 +97,7 @@ jobs:
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
       # The chatbot ships in every build; the Worker route for the matching
       # hostname serves its API.
-      PUBLIC_CHAT_ENABLED: 'true'
+      PUBLIC_CHAT_ENABLED: "true"
     defaults:
       run:
         working-directory: site
@@ -114,12 +127,18 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Archive build output
-        run: tar -czf ../site-dist.tar.gz -C dist .
+        run: |
+          tar -czf ../site-dist.tar.gz -C dist .
+          sha256sum ../site-dist.tar.gz | awk '{print $1}' > ../site-dist.tar.gz.sha256
+          sha256sum dist/index.html | awk '{print $1}' > ../site-index.html.sha256
       - name: Upload build artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: site-dist
-          path: site-dist.tar.gz
+          path: |
+            site-dist.tar.gz
+            site-dist.tar.gz.sha256
+            site-index.html.sha256
           if-no-files-found: error
 
   deploy:
@@ -128,41 +147,30 @@ jobs:
     if: >-
       github.event_name != 'pull_request' &&
       (
-        (github.ref_name == 'main' && vars.DEPLOY_ENABLED == 'true') ||
-        (github.ref_name == 'beta' && vars.BETA_DEPLOY_ENABLED == 'true')
+        (github.ref_name == 'beta' && vars.BETA_DEPLOY_ENABLED == 'true') ||
+        (
+          github.ref_name == 'main' &&
+          github.event_name == 'workflow_dispatch' &&
+          vars.DEPLOY_ENABLED == 'true' &&
+          (
+            inputs.rollback_sha != '' ||
+            (inputs.promote_candidate_sha != '' && inputs.promote_artifact_sha256 != '')
+          )
+        )
       )
     needs: [dependency-audit, chat-worker-validate, build-and-test]
     runs-on: homelab
     timeout-minutes: 10
     environment:
       name: ${{ github.ref_name == 'beta' && 'beta' || 'production' }}
-      url: ${{ github.ref_name == 'beta' && 'https://beta.shanekanterman.dev' || 'https://shanekanterman.dev' }}
+      url: ${{ github.ref_name == 'beta' && 'https://kanter-edge.tail848b9c.ts.net:9445' || 'https://shanekanterman.dev' }}
     permissions:
       contents: read
     steps:
       - name: Check out deployment configuration
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - name: Set up Node.js for Worker deployment
-        if: inputs.rollback_sha == ''
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: "22.22.1"
-          cache: npm
-          cache-dependency-path: chat-worker/package-lock.json
-      - name: Install Worker dependencies
-        if: inputs.rollback_sha == ''
-        working-directory: chat-worker
-        run: npm ci
-      - name: Deploy chat Worker
-        if: inputs.rollback_sha == ''
-        working-directory: chat-worker
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          WORKER_ENV: ${{ github.ref_name == 'beta' && 'beta' || 'production' }}
-        run: npm run "deploy:$WORKER_ENV"
       - name: Download build artifact
-        if: inputs.rollback_sha == ''
+        if: github.ref_name == 'beta' && inputs.rollback_sha == ''
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: site-dist
@@ -170,30 +178,104 @@ jobs:
         env:
           PORTFOLIO_DEPLOY_SSH_KEY: ${{ secrets.PORTFOLIO_DEPLOY_SSH_KEY }}
         run: |
+          # shellcheck disable=SC2029
           set -euo pipefail
           install -m 0700 -d ~/.ssh
           printf '%s\n' "$PORTFOLIO_DEPLOY_SSH_KEY" > ~/.ssh/portfolio
           chmod 0600 ~/.ssh/portfolio
           install -m 0644 infrastructure/kantercloud/portfolio-known-hosts \
             ~/.ssh/known_hosts
-      - name: Deploy release
-        if: inputs.rollback_sha == ''
+          cat > ~/.ssh/config <<'EOF'
+          Host portfolio-ovh
+            HostName 10.40.0.32
+            User portfolio-deploy
+            IdentityFile ~/.ssh/portfolio
+            IdentitiesOnly yes
+          Host portfolio-ovh-beta
+            HostName 10.40.0.32
+            User portfolio-beta-deploy
+            IdentityFile ~/.ssh/portfolio
+            IdentitiesOnly yes
+          Host portfolio-homelab
+            HostName 10.0.30.13
+            User portfolio-deploy
+            ProxyJump debian@10.0.0.101
+            IdentityFile ~/.ssh/portfolio
+            IdentitiesOnly yes
+          Host portfolio-homelab-beta
+            HostName 10.0.30.13
+            User portfolio-beta-deploy
+            ProxyJump debian@10.0.0.101
+            IdentityFile ~/.ssh/portfolio
+            IdentitiesOnly yes
+          Host 10.0.0.101
+            IdentityFile ~/.ssh/portfolio
+            IdentitiesOnly yes
+          EOF
+          chmod 0600 ~/.ssh/config
+      - name: Verify private management deployment path
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import ipaddress
+          import socket
+
+          for value in ("10.40.0.32", "10.0.0.101", "10.0.30.13"):
+              if not ipaddress.ip_address(value).is_private:
+                  raise SystemExit("deployment target is not private")
+          for value in ("10.40.0.32", "10.0.0.101"):
+              with socket.create_connection((value, 22), timeout=5):
+                  pass
+          PY
+      - name: Deploy immutable candidate release
+        if: github.ref_name == 'beta' && inputs.rollback_sha == ''
         env:
-          DEPLOY_USER: ${{ github.ref_name == 'beta' && 'portfolio-beta-deploy' || 'portfolio-deploy' }}
           RELEASE_SHA: ${{ github.sha }}
         run: |
-          ssh -i ~/.ssh/portfolio "$DEPLOY_USER@10.40.0.32" "deploy $RELEASE_SHA" < site-dist.tar.gz
+          set -euo pipefail
+          ARTIFACT_SHA256=$(tr -d '\n' < site-dist.tar.gz.sha256)
+          printf '%s' "$ARTIFACT_SHA256" | grep -Eq '^[0-9a-f]{64}$'
+          printf '%s  %s\n' "$ARTIFACT_SHA256" site-dist.tar.gz | sha256sum --check --strict
+          for origin in portfolio-ovh-beta portfolio-homelab-beta; do
+            ssh "$origin" deploy "$RELEASE_SHA" "$ARTIFACT_SHA256" < site-dist.tar.gz
+          done
+      - name: Promote exact verified candidate
+        if: github.ref_name == 'main' && inputs.rollback_sha == ''
+        env:
+          CANDIDATE_SHA: ${{ inputs.promote_candidate_sha }}
+          ARTIFACT_SHA256: ${{ inputs.promote_artifact_sha256 }}
+          PRODUCTION_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$CANDIDATE_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          printf '%s' "$ARTIFACT_SHA256" | grep -Eq '^[0-9a-f]{64}$'
+          OVH_PREVIOUS=$(ssh portfolio-ovh current)
+          HOMELAB_PREVIOUS=$(ssh portfolio-homelab current)
+          for origin in portfolio-ovh portfolio-homelab; do
+            ssh "$origin" prepare-promote "$CANDIDATE_SHA" "$ARTIFACT_SHA256" "$PRODUCTION_SHA"
+          done
+          rollback_both() {
+            ssh portfolio-ovh rollback "$OVH_PREVIOUS" || true
+            ssh portfolio-homelab rollback "$HOMELAB_PREVIOUS" || true
+          }
+          trap rollback_both ERR
+          ssh portfolio-ovh activate-prepared "$PRODUCTION_SHA" "$ARTIFACT_SHA256"
+          ssh portfolio-homelab activate-prepared "$PRODUCTION_SHA" "$ARTIFACT_SHA256"
+          trap - ERR
       - name: Roll back to retained release
         if: inputs.rollback_sha != ''
         env:
-          DEPLOY_USER: ${{ github.ref_name == 'beta' && 'portfolio-beta-deploy' || 'portfolio-deploy' }}
+          DEPLOY_SUFFIX: ${{ github.ref_name == 'beta' && '-beta' || '' }}
           ROLLBACK_SHA: ${{ inputs.rollback_sha }}
         run: |
+          # shellcheck disable=SC2029
           printf '%s' "$ROLLBACK_SHA" | grep -Eq '^[0-9a-f]{40}$' || {
             echo "rollback_sha must be exactly 40 lowercase hexadecimal characters" >&2
             exit 1
           }
-          ssh -i ~/.ssh/portfolio "$DEPLOY_USER@10.40.0.32" "rollback $ROLLBACK_SHA"
+          # shellcheck disable=SC2029
+          ssh "portfolio-ovh$DEPLOY_SUFFIX" rollback "$ROLLBACK_SHA"
+          ssh "portfolio-homelab$DEPLOY_SUFFIX" rollback "$ROLLBACK_SHA"
       - name: Verify production health
         if: github.ref_name == 'main'
         run: |
@@ -205,19 +287,18 @@ jobs:
             --retry 5 --retry-delay 2 --retry-all-errors \
             https://shanekanterman.dev/api/chat/health)
           printf '%s' "$chat_health" | grep -q '"service":"portfolio-chat"'
-      - name: Verify beta Access gate
+      - name: Verify private candidate
         if: github.ref_name == 'beta'
+        env:
+          RELEASE_SHA: ${{ github.sha }}
         run: |
-          for url in \
-            https://beta.shanekanterman.dev/healthz \
-            https://beta.shanekanterman.dev/api/chat/health
-          do
-            status=$(curl --silent --show-error --output /dev/null \
-              --write-out '%{http_code}' \
-              --retry 5 --retry-delay 2 --retry-all-errors \
-              "$url")
-            [ "$status" = "302" ] || [ "$status" = "303" ]
+          # shellcheck disable=SC2029
+          set -euo pipefail
+          ARTIFACT_SHA256=$(tr -d '\n' < site-dist.tar.gz.sha256)
+          INDEX_SHA256=$(tr -d '\n' < site-index.html.sha256)
+          for origin in portfolio-ovh-beta portfolio-homelab-beta; do
+            ssh "$origin" verify "$RELEASE_SHA" "$ARTIFACT_SHA256" "$INDEX_SHA256"
           done
       - name: Remove deployment SSH identity
         if: always()
-        run: rm -f ~/.ssh/portfolio
+        run: rm -f ~/.ssh/portfolio ~/.ssh/config

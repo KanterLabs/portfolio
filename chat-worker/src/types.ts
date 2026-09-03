@@ -1,3 +1,5 @@
+import type { D1DatabaseLike } from './history.ts';
+
 export type ChatRole = 'user' | 'assistant';
 
 export interface ChatHistoryMessage {
@@ -40,7 +42,7 @@ export interface KnowledgeDocument {
 export interface Env {
   APP_ENV?: string;
   ALLOWED_ORIGIN?: string;
+  CHAT_HISTORY?: D1DatabaseLike;
   OPENAI_API_KEY?: string;
   OPENAI_MODEL?: string;
-  KNOWLEDGE_VERSION?: string;
 }

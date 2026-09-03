@@ -2,83 +2,90 @@
 
 ## Current topology
 
-The portfolio is a static Astro site hosted on Kantercloud. Public traffic and application workload are intentionally separated:
+The public and private-candidate planes are deployed to two verified HTTPS
+origins with independent ingress and deployment boundaries:
 
 ```text
-Internet
-   |
-Cloudflare DNS, CDN, and Full (strict) TLS
-   |
-Shared edge VM — Caddy on the public edge
-   |
-Private Kantercloud network
-   |
-portfolio LXC — Nginx serving static Astro releases
+Internet -> Cloudflare CDN/TLS -> dual-origin load balancer
+                               -> OVH Caddy -> private-CA HTTPS -> OVH Nginx
+                               -> homelab ingress -> private-CA HTTPS -> homelab Nginx
+
+CI runner -> 10.40.0.32:22 -> OVH forced-command deploy helper
+          -> 10.0.0.101 jump host -> 10.0.30.13:22 -> homelab helper
 ```
 
-Cloudflare remains the public entry point. The shared edge VM owns public ports 80 and 443, certificates, redirects, compression, and security headers. The portfolio LXC has no public address and accepts HTTP only from approved infrastructure addresses.
-
-The beta path is deliberately separate:
-
-```text
-Approved owner email
-   |
-Cloudflare Access and proxied beta DNS
-   |
-Dedicated outbound Cloudflare Tunnel
-   |
-portfolio LXC — Nginx beta virtual host
-```
-
-The tunnel runs inside the portfolio LXC and connects only to loopback Nginx.
-There is no beta route on the public Caddy edge, no new inbound firewall rule,
-and no public-origin fallback around Access. The connector validates the Access
-JWT before proxying a request.
+The preview vhosts have no public DNS, Funnel, Cloudflare Access application,
+Cloudflare Tunnel, or public Worker. Public traffic cannot reach either preview
+vhost, and deployment traffic never uses either ingress plane.
 
 ## Workload isolation
 
-The origin is an unprivileged Debian LXC sized for a static workload. Nginx serves `/srv/portfolio/current`, which is a symlink to a commit-addressed release. The container runs neither Docker nor Tailscale; remote administration and deployment reach it through the existing Kantercloud subnet router.
+Each origin serves production from
+`/srv/portfolio/current` and the private candidate from
+`/srv/portfolio-beta/current`; both are symlinks to immutable, commit-addressed
+releases. The container runs neither Docker nor Tailscale.
 
-The origin exposes `/healthz` for infrastructure checks. Its deny-by-default firewall permits:
+The OVH origin listens only on `10.40.30.32:443`; the homelab origin listens
+only on `10.0.30.13:443`. Both deny-by-default nftables policies permit only
+the reviewed management and ingress peers. Production and preview use separate
+SNI and Host identities on each origin certificate.
 
-- SSH from the Kantercloud subnet router
-- HTTP from the shared edge, approved monitoring, and the Proxmox host
-- established traffic, loopback, and required ICMP
+## Delivery and promotion
 
-## Delivery
+Browser work runs on `homelab-heavy`; validation and deploy orchestration run
+on `homelab`. A `beta` push uploads an archive over the management network to
+the candidate-only forced-command account. The deploy helper rejects malformed
+archives, path traversal, links, special files, digest mismatches, and commands
+outside its fixed lifecycle grammar.
 
-Pull requests build and run the browser test suite on GitHub-hosted runners. A successful push to `main` creates the same artifact, joins the tailnet with an ephemeral workload identity, and sends the archive through a forced-command SSH key.
+Each candidate stores its archive digest, tree digest, and index digest in an
+immutable manifest. Production activation is an explicit dispatch from `main`
+that names the exact privately verified candidate SHA and archive SHA-256. Both
+helpers revalidate and prepare that same artifact before either origin
+activates it. If either activation fails, the workflow restores both origins to
+their recorded previous release. Candidate and production have separate Unix
+accounts, release roots, locks, and rollback histories.
 
-The deploy command validates the commit SHA and archive, extracts into a temporary directory, switches the `current` symlink atomically, verifies local HTTP, and retains five releases. A failed health check restores the previous symlink. A manual rollback selects any retained commit SHA.
+## TLS and routing
 
-Production and beta use different forced-command SSH keys, Unix accounts,
-release roots, locks, and retained-release sets. The server maps the
-authenticated account to its fixed root and hostname; the workflow cannot
-choose a different target in its SSH command.
+Cloudflare uses Full (strict) mode and health-checks both public origins.
+`www.shanekanterman.dev` redirects to the canonical apex. The OVH edge connects
+to `10.40.30.32:443` with SNI `portfolio-origin.kantercloud.internal`; the
+homelab ingress connects to `10.0.30.13:443` with SNI
+`portfolio-origin.homelab.internal`. Both trust the tracked Portfolio origin CA.
 
-## TLS and public routing
+The preview vhosts use the corresponding preview SNI name. They add no-index
+headers and a deny-all `robots.txt` and are not registered as load-balancer
+origins.
 
-Cloudflare uses Full (strict) mode to verify the certificate Caddy obtains for `shanekanterman.dev`. The zone requires TLS 1.2 or newer from visitors. `www.shanekanterman.dev` redirects to the canonical apex hostname.
+The private origin leaf is issued for exactly the two internal names by a
+root-only CA on the Kantercloud Proxmox host. A daily systemd timer checks the
+chain, SAN set, key pairing, remaining lifetime, guest trust root, and Nginx
+configuration, and renews atomically when required.
 
-`beta.shanekanterman.dev` is a proxied CNAME to the dedicated tunnel. Its
-self-hosted Access application allows the same single owner email as Stashlet
-through one-time PIN authentication, keeps a seven-day session, and is hidden
-from the application launcher. Nginx adds no-index headers and serves a
-deny-all `robots.txt` on beta.
+## Production chatbot
 
-The previous Cloudflare Load Balancer is temporarily retained as a rollback switch. Its GCP origin is disabled, and the underlying proxied A record already targets Kantercloud. After the rollback window, the single-origin load balancer can be removed without changing the public address.
+`portfolio-chat` remains a production-only Cloudflare Worker bound to the
+retained `portfolio-chat-history` D1 database. Candidate CI validates the
+Worker package but does not publish a beta Worker. Worker release and rollback
+remain an explicit production-provider operation, separate from the static
+artifact promotion described above.
 
 ## Recovery
 
-- Application rollback: activate one of the five retained release SHAs.
-- Beta rollback: dispatch the deployment workflow from `beta` and activate one
-  of beta's independently retained release SHAs.
-- Container recovery: restore the nightly Proxmox snapshot or rebuild from the tracked configuration.
-- Edge recovery: validate and reload the tracked Caddy route; do not run Tailscale inside the workload LXC.
-- Beta tunnel recovery: rotate only the tunnel token, reinstall the hardened
-  connector service, and validate the Access redirect before changing DNS.
-- Temporary infrastructure rollback: re-enable the retained GCP origin and return Cloudflare origin mode to Flexible because that legacy origin does not serve HTTPS.
+- Candidate rollback changes only `/srv/portfolio-beta/current`.
+- Production rollback changes only `/srv/portfolio/current`.
+- The edge route lifecycle retains a validated last-known-good Caddy, nftables,
+  and Tailscale Serve transaction.
+- LXC 202 has a verified Proxmox archive; the origin CA also has an encrypted
+  recovery copy and an isolated restore proof.
+- The retired public beta unit and connector token are preserved only in the
+  root-only retirement backup. Restoring them would be an explicit rollback,
+  not an automatic fallback.
 
-## Architecture evolution
+## Retired paths
 
-The first production version used two GCP `e2-micro` origins and a Cloudflare Load Balancer. By the end of its life only one origin remained enabled. The Kantercloud migration trades nominal multi-zone redundancy for an honest, lower-cost design with clearer isolation, atomic delivery, private origin access, verified origin TLS, and local recovery.
+The prior `beta.shanekanterman.dev` CNAME, Access application, named Tunnel,
+`portfolio-chat-beta` Worker, connector service, token, binary, and service
+account are deleted. The earlier GCP topology remains documentation-only under
+`infrastructure/archive/gcp`; it is not part of the active release path.

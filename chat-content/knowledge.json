@@ -1,5 +1,5 @@
 {
-  "version": "2026-08-18",
+  "version": "2026-09-03",
   "entries": [
     {
       "id": "profile",
@@ -8,7 +8,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-09-03",
       "topics": ["profile", "experience", "education", "contact"],
       "keywords": [
         "Shane Kanterman",
@@ -31,7 +31,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#contact"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-09-03",
       "topics": ["contact", "email", "links"],
       "keywords": [
         "contact",
@@ -50,7 +50,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#architecture"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-09-03",
       "topics": ["skills", "architecture", "delivery", "platform"],
       "keywords": [
         "Proxmox",
@@ -82,7 +82,7 @@
         "path": "site/src/content/projects/kanterlabs-homelab.mdx",
         "href": "/projects/kanterlabs-homelab"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-09-03",
       "topics": ["project", "homelab", "platform", "networking", "ci"],
       "keywords": [
         "homelab",
@@ -95,12 +95,17 @@
         "Actions Runner Controller",
         "GitHub Actions",
         "Caddy",
+        "CoreDNS",
         "Cloudflare",
         "Tailscale",
+        "VLANs",
+        "nftables",
+        "private PKI",
+        "default-deny",
         "network policy",
         "GHCR"
       ],
-      "content": "The KanterLabs Homelab Platform turns a small collection of systems into an intentional platform. Its public case study describes separate public and private workload boundaries, a shared edge, and disposable GitHub Actions runner pods managed with Actions Runner Controller. It uses Proxmox, Linux, Caddy, Tailscale, k3s, Docker, and GHCR. The design keeps secrets outside Git and favors reviewed configuration, explicit operator checkpoints, bounded resources, and documented rollback paths."
+      "content": "The KanterLabs Homelab Platform turns a small collection of systems into an intentional two-site platform. Its public case study describes hardened edge VMs at both sites, distinct management, ingress, public-origin, and private-origin planes, exact service listeners, split-horizon private DNS, verified edge-to-origin TLS, and default-deny network policy. Public traffic uses dedicated Cloudflare paths, while named Tailscale services provide private entrances without direct workload-network access. Network changes use deterministic configuration, timed rollback, independent management checks, synthetic canaries, and negative exposure tests. GitHub Actions jobs run in disposable pods managed by Actions Runner Controller, with secrets kept outside Git."
     },
     {
       "id": "hostlet",
@@ -109,7 +114,7 @@
         "path": "site/src/content/projects/hostlet.mdx",
         "href": "/projects/hostlet"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-08-24",
       "topics": ["project", "deployment", "rust", "docker", "product"],
       "keywords": [
         "Hostlet",
@@ -135,7 +140,13 @@
         "href": "/projects/sandbox-factory"
       },
       "lastReviewed": "2026-08-18",
-      "topics": ["project", "sandbox", "virtualization", "control plane", "security"],
+      "topics": [
+        "project",
+        "sandbox",
+        "virtualization",
+        "control plane",
+        "security"
+      ],
       "keywords": [
         "Sandbox Factory",
         "development sandbox",
@@ -156,11 +167,11 @@
     {
       "id": "portfolio-infrastructure",
       "source": {
-        "title": "Portfolio Infrastructure Deployment",
+        "title": "Dual-Origin Portfolio Deployment",
         "path": "site/src/content/projects/multi-node-portfolio.mdx",
         "href": "/projects/multi-node-portfolio"
       },
-      "lastReviewed": "2026-08-16",
+      "lastReviewed": "2026-09-03",
       "topics": ["project", "portfolio", "astro", "delivery", "cloudflare"],
       "keywords": [
         "Astro",
@@ -168,14 +179,18 @@
         "Nginx",
         "Caddy",
         "Cloudflare",
-        "Proxmox",
+        "OVH",
+        "homelab",
+        "load balancing",
         "GitHub Actions",
         "atomic delivery",
         "rollback",
         "Full strict TLS",
-        "private origin"
+        "private origin",
+        "beta deployment",
+        "candidate verification"
       ],
-      "content": "The Portfolio Infrastructure Deployment case study describes a static Astro portfolio delivered through GitHub Actions to a private workload behind a shared Caddy edge. Cloudflare provides public TLS and routing, Nginx serves the generated site, and releases are activated atomically with retained rollback paths. The design keeps the runtime small while separating public ingress from the workload and validating the origin path."
+      "content": "The Dual-Origin Portfolio Deployment case study describes a static Astro portfolio delivered as the same immutable release to OVH and homelab Nginx origins. Cloudflare provides public TLS, health checks, and production load balancing. GitHub Actions deploys beta artifacts directly over private management paths to both isolated candidate lanes, verifies each candidate locally, then promotes the exact artifact to both production origins with coordinated rollback. The design separates public ingress, private deployment, and workload responsibilities while retaining commit-addressed releases for recovery."
     },
     {
       "id": "data-center-operations",
@@ -184,8 +199,14 @@
         "path": "site/src/content/projects/data-center-operations.mdx",
         "href": "/projects/data-center-operations"
       },
-      "lastReviewed": "2026-08-16",
-      "topics": ["experience", "data center", "hardware", "provisioning", "linux"],
+      "lastReviewed": "2026-08-24",
+      "topics": [
+        "experience",
+        "data center",
+        "hardware",
+        "provisioning",
+        "linux"
+      ],
       "keywords": [
         "InterServer",
         "data center",

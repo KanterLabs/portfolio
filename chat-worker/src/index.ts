@@ -1,4 +1,5 @@
 import { KNOWLEDGE_VERSION, retrieveKnowledge, sourceRefs } from './knowledge.ts';
+import { finalizeChatExchange, startChatExchange, type ChatExchangeHandle } from './history.ts';
 import { DEFAULT_MODEL, SYSTEM_INSTRUCTIONS, buildPromptInput } from './prompt.ts';
 import { createErrorStream, transformUpstreamSse } from './sse.ts';
 import { isAllowedOrigin, parseChatRequest } from './validation.ts';
@@ -69,8 +70,9 @@ function healthResponse(env: Env): Response {
     status: 'ok',
     service: 'portfolio-chat',
     environment: env.APP_ENV ?? 'unknown',
-    knowledgeVersion: env.KNOWLEDGE_VERSION ?? KNOWLEDGE_VERSION,
+    knowledgeVersion: KNOWLEDGE_VERSION,
     configured: Boolean(env.OPENAI_API_KEY?.trim()),
+    historyConfigured: Boolean(env.CHAT_HISTORY),
   });
 }
 
@@ -88,15 +90,50 @@ function openAiPayload(request: ChatRequest, selectedEntries: ReturnType<typeof 
   };
 }
 
-async function chatResponse(httpRequest: Request, request: ChatRequest, env: Env): Promise<Response> {
+function finishExchange(
+  ctx: ExecutionContext,
+  env: Env,
+  exchange: ChatExchangeHandle,
+  status: 'completed' | 'error' | 'aborted',
+  assistantMessage: string | null = null,
+  errorCode?: string,
+): void {
+  const persistence = finalizeChatExchange(env.CHAT_HISTORY, exchange, {
+    status,
+    assistantMessage,
+    errorCode,
+  });
+  if (typeof ctx.waitUntil === 'function') {
+    ctx.waitUntil(persistence);
+  }
+}
+
+async function chatResponse(
+  httpRequest: Request,
+  request: ChatRequest,
+  env: Env,
+  ctx: ExecutionContext,
+): Promise<Response> {
   const selectedEntries = retrieveKnowledge(request.message, request.pagePath);
   const sources = sourceRefs(selectedEntries);
   const origin = env.ALLOWED_ORIGIN;
+  const exchange = await startChatExchange(env.CHAT_HISTORY, {
+    visitorId: request.visitorId,
+    environment: env.APP_ENV,
+    pagePath: request.pagePath,
+    userMessage: request.message,
+    history: request.history,
+    sources,
+    model: env.OPENAI_MODEL ?? DEFAULT_MODEL,
+    knowledgeVersion: KNOWLEDGE_VERSION,
+  });
 
   if (!env.OPENAI_API_KEY?.trim()) {
+    finishExchange(ctx, env, exchange, 'error', null, 'not_configured');
     return validationResponse('not_configured', 503, origin, sources);
   }
   if ((env.OPENAI_MODEL ?? DEFAULT_MODEL) !== DEFAULT_MODEL) {
+    finishExchange(ctx, env, exchange, 'error', null, 'configuration_error');
     return validationResponse('configuration_error', 500, origin, sources);
   }
 
@@ -122,23 +159,41 @@ async function chatResponse(httpRequest: Request, request: ChatRequest, env: Env
     });
   } catch {
     cleanupAbort();
+    finishExchange(ctx, env, exchange, 'error', null, 'upstream_error');
     return validationResponse('upstream_error', 502, origin, sources);
   }
 
   if (!upstream.ok || !upstream.body) {
     cleanupAbort();
     await upstream.body?.cancel();
+    finishExchange(ctx, env, exchange, 'error', null, 'upstream_error');
     return validationResponse('upstream_error', 502, origin, sources);
   }
 
   return streamResponse(
-    transformUpstreamSse(upstream.body, sources, { onFinished: cleanupAbort }),
+    transformUpstreamSse(upstream.body, sources, {
+      onFinished: ({ reason, text }) => {
+        cleanupAbort();
+        finishExchange(
+          ctx,
+          env,
+          exchange,
+          reason,
+          text || null,
+          reason === 'error' ? 'upstream_error' : undefined,
+        );
+      },
+    }),
     200,
     origin,
   );
 }
 
-export async function handleRequest(request: Request, env: Env): Promise<Response> {
+export async function handleRequest(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext,
+): Promise<Response> {
   const url = new URL(request.url);
   if (url.pathname === '/api/chat/health') {
     return request.method === 'GET' ? healthResponse(env) : methodNotAllowed('GET');
@@ -160,12 +215,12 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return validationResponse(parsed.issue.code, parsed.issue.status, allowedOrigin);
   }
 
-  return chatResponse(request, parsed.value, env);
+  return chatResponse(request, parsed.value, env, ctx);
 }
 
 const worker = {
   fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
-    return handleRequest(request, env);
+    return handleRequest(request, env, _ctx);
   },
 };
 

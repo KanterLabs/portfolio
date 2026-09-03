@@ -595,7 +595,7 @@ test.describe('homepage', () => {
       'KanterLabs Homelab Platform',
       'Sandbox Factory',
       'Hostlet Self-Hosted Deployment Panel',
-      'Portfolio Infrastructure Deployment',
+      'Dual-Origin Portfolio Deployment',
     ]);
 
     await expect(page.getByRole('link', { name: 'Read experience notes' })).toHaveAttribute(
@@ -638,7 +638,7 @@ test.describe('homepage', () => {
     const caption = showcase.locator('.project-system-caption');
 
     await expect(caption).toBeVisible();
-    await expect(caption).toContainText('Public traffic enters through Cloudflare');
+    await expect(caption).toContainText('Public and private traffic enter through distinct Cloudflare and Tailscale paths');
 
     if (isMobile) {
       // Below 960px the diagram panel is hidden (same precedent as the
@@ -679,13 +679,13 @@ test.describe('homepage', () => {
       expect(cta).not.toBeNull();
       expect(Math.abs(cta!.y + cta!.height - (panel!.y + panel!.height))).toBeLessThanOrEqual(10);
 
-      // The 220px void is gone: the footer hairline sits close behind the
-      // last piece of narrative copy, not floating in empty space.
+      // The old 220px void is gone: even when denser system copy makes the
+      // diagram column taller, the footer stays within one compact rhythm.
       const stack = await showcase.locator('.project-stack').boundingBox();
       const footer = await showcase.locator('.project-showcase-footer').boundingBox();
       expect(stack).not.toBeNull();
       expect(footer).not.toBeNull();
-      expect(footer!.y - (stack!.y + stack!.height)).toBeLessThan(40);
+      expect(footer!.y - (stack!.y + stack!.height)).toBeLessThan(64);
 
       const footerChrome = await showcase.locator('.project-showcase-footer').evaluate((el) => {
         const style = getComputedStyle(el);
