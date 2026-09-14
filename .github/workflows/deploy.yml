@@ -164,7 +164,9 @@ jobs:
     timeout-minutes: 10
     environment:
       name: ${{ github.ref_name == 'beta' && 'beta' || 'production' }}
-      url: ${{ github.ref_name == 'beta' && 'https://kanter-edge.tail848b9c.ts.net:9445' || 'https://shanekanterman.dev' }}
+      # The owner-only beta URL is canonical. The legacy Tailnet :9445 endpoint
+      # remains an explicit rollback target and is intentionally not this link.
+      url: ${{ github.ref_name == 'beta' && 'https://beta.home.shanekanterman.dev' || 'https://shanekanterman.dev' }}
     permissions:
       contents: read
     steps:
