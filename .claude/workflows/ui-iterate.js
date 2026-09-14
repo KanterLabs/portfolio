@@ -60,7 +60,8 @@ const themeList = THEMES.join(',')
 
 const HOUSE_RULES = `
 Repo: ${REPO} (Astro 6 + Tailwind v4 static portfolio). All site work happens in ${SITE}.
-Current branch is \`beta\`; \`beta\` pushes deploy to beta.shanekanterman.dev, so keep it green.
+Current branch is \`beta\`; \`beta\` pushes deploy to the owner-only private beta at
+\`https://beta.home.shanekanterman.dev\`, so keep it green.
 
 Standing rules for this site — violating any of these is a defect, not a preference:
 - NO screenshot-diff baselines. Never add \`toHaveScreenshot()\`. Visual guarantees are
