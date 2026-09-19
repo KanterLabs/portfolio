@@ -26,7 +26,7 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
 
   expect(metrics.hasHorizontalOverflow).toBe(false);
   expect(metrics.scrollHeight).toBeLessThan(12000);
-  expect(metrics.h1).toContain('I build Linux platforms');
+  expect(metrics.h1).toContain('I keep production infrastructure moving');
   expect(metrics.heroParagraph).toContain('Data Center Technician at InterServer');
   expect(metrics.contactText).toContain('shanekanterman04@gmail.com');
   expect(metrics.contactText).toContain('Cranford');
