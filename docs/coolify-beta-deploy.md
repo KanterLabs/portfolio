@@ -26,6 +26,19 @@ confirms the run commit is still the remote `beta` tip.
 Production is a different Coolify application and is not addressable by this
 workflow.
 
+## Private network contract
+
+The `homelab` runner joins the tailnet as `tag:ci-runners`. Tailscale grants
+that tag TCP 443 access only to `svc:coolify` for the API transaction and
+`svc:portfolio-beta` for post-deploy health and revision checks. The beta
+hostname remains private split DNS; the workflow does not add public DNS,
+Funnel, direct-origin exposure, or access to the production application.
+
+If the deploy job cannot reach Coolify, verify the `svc:coolify` CI grant. If
+Coolify finishes but route verification fails, verify the
+`svc:portfolio-beta` CI grant. Do not work around either failure by exposing a
+dashboard or workload port publicly.
+
 ## Credential ownership
 
 The API identity is named `portfolio-beta-ci`. It has Coolify `read`, `write`,
@@ -64,3 +77,20 @@ Rotate before the current token expires:
 For emergency revocation, revoke `portfolio-beta-ci` in Coolify immediately
 and remove the GitHub environment secret. Image publication continues, but the
 deployment job fails before changing the application.
+
+## Acceptance and rollback drill
+
+After changing this path:
+
+1. Record the current beta and production digests.
+2. Push a harmless commit to `beta` and require the complete workflow to pass.
+3. Confirm the workflow's published digest equals the beta application's
+   configured digest, `/healthz` returns `ok`, and `/_meta/revision` equals the
+   pushed commit.
+4. Confirm the production application and digest did not change and public DNS
+   still does not publish the beta hostname.
+5. In a controlled window, deploy a known prior beta digest while requesting a
+   revision it cannot serve. The helper must fail the validation, redeploy the
+   recorded accepted digest, and report that the previous digest was restored.
+6. Recheck beta health, revision, and configured digest after rollback. A
+   rollback is not accepted solely because the API mutation returned success.
