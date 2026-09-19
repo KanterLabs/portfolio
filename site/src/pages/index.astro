@@ -19,8 +19,8 @@ const supportingProjects = portfolioProjects.filter((project) => !project.data.f
 const dataCenterExperience = sorted.find((entry) => entry.data.kind === 'experience')!;
 
 const navItems = [
-  { label: 'Projects', href: '#projects' },
   { label: 'Experience', href: '#about' },
+  { label: 'Projects', href: '#projects' },
   { label: 'Architecture', href: '#architecture' },
   { label: 'Skills', href: '#skills' },
   { label: 'Contact', href: '#contact' },
@@ -48,6 +48,7 @@ const capabilityGroups = [
 // shares the fold with the headline — anything that wraps past two lines
 // stops being a glance and starts being a paragraph.
 const systemSummary = [
+  { label: 'Current role', value: 'Data Center Technician at InterServer' },
   { label: 'Operations', value: 'Rack, image, and troubleshoot production servers' },
   { label: 'Platform', value: 'Two-site Proxmox estate, public and private zones' },
   { label: 'Delivery', value: 'Ephemeral CI, atomic releases, rollback retained' },
@@ -118,8 +119,8 @@ const structuredData = [
     '@type': 'WebSite',
     name: 'Shane Kanterman',
     url: siteUrl,
-      description:
-        'Infrastructure and platform portfolio for Shane Kanterman featuring Linux systems, deployment tooling, ephemeral CI, and hands-on data center operations.',
+    description:
+      'Portfolio of Shane Kanterman, a Data Center Technician at InterServer, featuring production server operations, Linux systems, deployment tooling, and infrastructure projects.',
   },
   {
     '@context': 'https://schema.org',
@@ -152,8 +153,8 @@ const structuredData = [
 ---
 
 <BaseLayout
-  title="Shane Kanterman | Infrastructure and Platform Projects"
-  description="Infrastructure and platform portfolio for Shane Kanterman featuring Linux systems, deployment tooling, ephemeral CI, and hands-on data center operations."
+  title="Shane Kanterman | Data Center Technician and Infrastructure Work"
+  description="Portfolio of Shane Kanterman, a Data Center Technician at InterServer, featuring production server operations, Linux systems, deployment tooling, and infrastructure projects."
   image="/og/portfolio-preview-2026.png"
   imageAlt="Shane Kanterman portfolio preview"
   structuredData={structuredData}
@@ -170,7 +171,7 @@ const structuredData = [
       >
         <div>
           <p class="eyebrow hero-reveal hero-reveal-1">
-            Computer Science Student &middot; Data Center Technician
+            Data Center Technician at InterServer &middot; Computer Science Student
           </p>
           <h1
             class="hero-reveal hero-reveal-2 mb-6 max-w-[24ch] font-extrabold overflow-wrap-break-word text-text-base"
@@ -178,21 +179,24 @@ const structuredData = [
             {/* A comma, not an em dash: a break is permitted after an em dash,
                 so at narrow widths the dash wraps to the head of the next
                 line. A comma can never start a line. */}
-            I build Linux platforms, <span class="gradient-text">from bare metal to CI/CD.</span>
+            I keep production infrastructure moving, <span class="gradient-text">from rack to release.</span>
           </h1>
           <p class="hero-reveal hero-reveal-3 text-text-muted leading-[1.7] text-[1.08rem] max-w-[36rem]">
-            Data Center Technician at InterServer and a CS student at SCSU. I provision
-            production hardware at work, and build the Linux platform, CI, and deployment
-            tooling that runs my own two-site Proxmox estate.
+            I am a Data Center Technician at InterServer, where I provision production hardware,
+            image servers, and troubleshoot physical infrastructure. Outside the data center, I
+            build the Linux platform, CI, and deployment tooling that runs my own two-site Proxmox estate.
           </p>
 
           <div class="hero-reveal hero-reveal-4 flex flex-wrap gap-4 mt-8 max-[780px]:flex-col max-[780px]:items-stretch">
-            <a class="btn btn-primary" href="#projects">
-              View Selected Work
+            <a class="btn btn-primary" href={`/projects/${dataCenterExperience.id}`}>
+              Explore Data Center Work
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
                 <path d="M7 17L17 7" />
                 <path d="M9 7h8v8" />
               </svg>
+            </a>
+            <a class="btn btn-secondary" href="#projects">
+              View Platform Projects
             </a>
             <a
               class="btn btn-secondary"
@@ -269,9 +273,9 @@ const structuredData = [
         delay={1}
       >
         <SectionIntro
-          eyebrow="Experience"
-          title="From production hardware to platform delivery."
-          body="Physical infrastructure work shaped how I approach software: keep systems understandable, deploy them cleanly, and plan for how they fail."
+          eyebrow="Current role"
+          title="Hands-on in a live data center."
+          body="At InterServer, I work directly with the production hardware and deployment workflows that make reliable infrastructure possible."
         />
 
         <GlassCard
@@ -281,9 +285,9 @@ const structuredData = [
         >
           <div>
             <p class="text-text-muted leading-[1.75] text-[1.04rem]">
-              CS student at SCSU and Data Center Technician at InterServer. Experience in
-              rack-and-stack, PXE boot imaging, Linux administration, and hardware troubleshooting
-              in a live production environment.
+              Data Center Technician at InterServer, with hands-on experience in rack-and-stack,
+              PXE boot imaging, Linux administration, and hardware troubleshooting in a live
+              production environment. I am also pursuing a Computer Science degree at SCSU.
             </p>
             <p class="text-text-muted leading-[1.75] text-[1.04rem] mt-4">
               That background changed how I evaluate software work: not only what gets built, but
@@ -431,11 +435,11 @@ const structuredData = [
             <h2
               class="text-[length:var(--step-title)] leading-[1.08] tracking-[-0.02em] mb-5 font-extrabold text-text-base"
             >
-              Early-career infrastructure and platform roles.
+              Data center and infrastructure roles.
             </h2>
             <p class="text-text-muted leading-[1.75] text-[1.04rem]">
-              Most interested in work where Linux systems, networking, deployment automation,
-              and software delivery share the same operational owner.
+              Most interested in work where production operations, Linux systems, networking,
+              deployment automation, and software delivery share the same operational owner.
             </p>
 
             <dl class="contact-details">
