@@ -77,6 +77,14 @@ jobs:
       - name: Build Worker deployment bundle
         run: npm run deploy:dry-run
 
+  deployment-helper-test:
+    runs-on: homelab
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Test transactional Coolify deployment helper
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+
   browser-test:
     runs-on: homelab-heavy
     env:
@@ -112,8 +120,10 @@ jobs:
           retention-days: 7
 
   container:
-    needs: [dependency-audit, chat-worker-validate, browser-test]
+    needs: [dependency-audit, chat-worker-validate, deployment-helper-test, browser-test]
     runs-on: homelab-heavy
+    outputs:
+      image_digest: ${{ steps.publish.outputs.image_digest }}
     permissions:
       contents: read
       packages: write
@@ -146,7 +156,8 @@ jobs:
           container_port=$(docker port "$container_id" 8080/tcp | sed 's/.*://')
           for delay in 0 1 1 1 1; do
             sleep "$delay"
-            if curl --fail --silent "http://127.0.0.1:${container_port}/healthz" | grep -qx ok; then
+            if curl --fail --silent "http://127.0.0.1:${container_port}/healthz" | grep -qx ok &&
+               curl --fail --silent "http://127.0.0.1:${container_port}/_meta/revision" | grep -qx "$GITHUB_SHA"; then
               exit 0
             fi
           done
@@ -158,6 +169,7 @@ jobs:
           GHCR_TOKEN: ${{ github.token }}
         run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
       - name: Publish immutable and branch tags
+        id: publish
         if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
@@ -166,8 +178,53 @@ jobs:
           docker tag "$immutable" "$branch"
           docker push "$immutable"
           docker push "$branch"
-          digest=$(docker image inspect "$immutable" --format "{{index .RepoDigests 0}}" | cut -d@ -f2)
+          digest=$(docker buildx imagetools inspect --format '{{json .Manifest}}' "$branch" |
+            python3 -c 'import json,sys; print(json.load(sys.stdin)["digest"])')
+          printf '%s\n' "$digest" | grep -Eq '^sha256:[0-9a-f]{64}$'
+          printf 'image_digest=%s\n' "$digest" >> "$GITHUB_OUTPUT"
           printf 'Published %s@%s\n' "$IMAGE" "$digest" >> "$GITHUB_STEP_SUMMARY"
       - name: Remove GHCR credentials
         if: always() && github.event_name != 'pull_request'
         run: docker logout ghcr.io
+
+  deploy-beta:
+    if: github.event_name == 'push' && github.ref_name == 'beta'
+    needs: container
+    runs-on: homelab
+    timeout-minutes: 15
+    environment:
+      name: beta
+      url: https://beta.home.shanekanterman.dev
+    permissions:
+      contents: read
+    env:
+      COOLIFY_API_URL: ${{ vars.COOLIFY_API_URL }}
+      COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+      COOLIFY_APPLICATION_UUID: ${{ vars.COOLIFY_APPLICATION_UUID }}
+      COOLIFY_APPLICATION_NAME: ${{ vars.COOLIFY_APPLICATION_NAME }}
+      COOLIFY_DESTINATION_UUID: ${{ vars.COOLIFY_DESTINATION_UUID }}
+      COOLIFY_SERVER_UUID: ${{ vars.COOLIFY_SERVER_UUID }}
+      COOLIFY_ENVIRONMENT_UUID: ${{ vars.COOLIFY_ENVIRONMENT_UUID }}
+      PORTFOLIO_IMAGE_DIGEST: ${{ needs.container.outputs.image_digest }}
+      PORTFOLIO_GIT_SHA: ${{ github.sha }}
+      PORTFOLIO_BETA_URL: https://beta.home.shanekanterman.dev
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Confirm this commit is still the beta tip
+        id: freshness
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          current=$(git ls-remote "https://github.com/${REPOSITORY}.git" refs/heads/beta | awk '{print $1}')
+          printf '%s\n' "$current" | grep -Eq '^[0-9a-f]{40}$'
+          if [ "$current" = "$GITHUB_SHA" ]; then
+            echo 'deploy=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'deploy=false' >> "$GITHUB_OUTPUT"
+            printf 'Skipping stale beta commit %s; current beta is %s\n' "$GITHUB_SHA" "$current" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Deploy exact digest through Coolify
+        if: steps.freshness.outputs.deploy == 'true'
+        run: python3 scripts/coolify_deploy.py
