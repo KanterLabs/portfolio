@@ -3,6 +3,7 @@ import GithubSlugger from 'github-slugger';
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
+import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -15,6 +16,17 @@ const isExperience = kind === 'experience';
 const contentLabel = isExperience ? 'Experience Notes' : 'Case Study';
 const returnHref = isExperience ? '/#about' : '/#projects';
 const returnLabel = isExperience ? 'Back to experience' : 'Back to selected work';
+
+// Siblings stay inside the entry's own `kind`, so an experience note never
+// hands the reader off into the case-study sequence (and vice versa). With a
+// single experience entry this correctly resolves to no pager at all.
+const siblings = (await getCollection('projects', ({ data }) => !data.draft))
+  .filter((entry) => entry.data.kind === kind)
+  .sort((a, b) => a.data.order - b.data.order);
+const currentIndex = siblings.findIndex((entry) => entry.id === project.id);
+const previousProject = currentIndex > 0 ? siblings[currentIndex - 1] : undefined;
+const nextProject =
+  currentIndex >= 0 && currentIndex < siblings.length - 1 ? siblings[currentIndex + 1] : undefined;
 
 const formatted = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -217,6 +229,25 @@ const structuredData = {
       </div>
 
       <div class="case-footer">
+        {(previousProject || nextProject) && (
+          <nav class="case-pager" aria-label="More case studies">
+            {previousProject ? (
+              <a class="case-pager-link" href={`/projects/${previousProject.id}`} rel="prev">
+                <span class="field-label">Previous</span>
+                <span class="case-pager-title">{previousProject.data.title}</span>
+              </a>
+            ) : (
+              <span class="case-pager-spacer" aria-hidden="true"></span>
+            )}
+            {nextProject && (
+              <a class="case-pager-link case-pager-next" href={`/projects/${nextProject.id}`} rel="next">
+                <span class="field-label">Next</span>
+                <span class="case-pager-title">{nextProject.data.title}</span>
+              </a>
+            )}
+          </nav>
+        )}
+
         <a
           href={returnHref}
           class="inline-flex items-center gap-2 min-h-11 text-text-muted hover:text-text-base transition-colors duration-[180ms] font-medium"

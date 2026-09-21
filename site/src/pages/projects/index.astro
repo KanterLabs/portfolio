@@ -1,0 +1,102 @@
+---
+import AnimatedSection from '../../components/AnimatedSection.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GlassCard from '../../components/GlassCard.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import ProjectShowcase from '../../components/ProjectShowcase.astro';
+import SectionIntro from '../../components/SectionIntro.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { getCollection } from 'astro:content';
+
+const allProjects = await getCollection('projects', ({ data }) => !data.draft);
+const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
+const caseStudies = sorted.filter((project) => project.data.kind === 'project');
+const featuredProject = caseStudies.find((project) => project.data.featured)!;
+const supportingProjects = caseStudies.filter((project) => !project.data.featured);
+const experienceEntries = sorted.filter((entry) => entry.data.kind === 'experience');
+
+const siteUrl = Astro.site?.toString() ?? 'https://shanekanterman.dev';
+const pageUrl = new URL('/projects/', siteUrl).toString();
+
+const description =
+  'Infrastructure and platform case studies by Shane Kanterman, covering Linux systems, ephemeral CI, deployment tooling, and data center operations.';
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Projects',
+    description,
+    url: pageUrl,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: sorted.map((project, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: project.data.title,
+      url: new URL(`/projects/${project.id}/`, siteUrl).toString(),
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Projects | Shane Kanterman"
+  description={description}
+  structuredData={structuredData}
+  chatEnabled={true}
+>
+  <div class="page-shell editorial-shell relative z-10 pb-10">
+    <SiteHeader backHref="/" backLabel="Home" />
+
+    <main class="pt-10 max-[780px]:pt-6" id="main-content">
+      <AnimatedSection id="projects">
+        <SectionIntro
+          eyebrow="Selected work"
+          title="Every case study, in one place."
+          body="Each write-up covers the boundaries, failure modes, and release decisions behind the system—not just the finished interface."
+        />
+
+        <div class="project-collection">
+          <ProjectShowcase project={featuredProject} />
+
+          <div class="project-card-grid">
+            {supportingProjects.map((project) => (
+              <ProjectCard project={project} />
+            ))}
+          </div>
+        </div>
+      </AnimatedSection>
+
+      {experienceEntries.length > 0 && (
+        <AnimatedSection id="experience">
+          <SectionIntro
+            eyebrow="Experience notes"
+            title="Production work outside the repositories."
+            body="Hands-on data center operations that shape how I evaluate everything above."
+          />
+
+          <div class="project-card-grid">
+            {experienceEntries.map((entry) => (
+              <GlassCard class="grid content-start gap-3 p-8 max-[780px]:p-6" hover={true}>
+                <p class="eyebrow">Experience</p>
+                <h3 class="project-title">
+                  <a href={`/projects/${entry.id}`} class="project-title-link">
+                    {entry.data.title}
+                  </a>
+                </h3>
+                <p class="project-summary">{entry.data.summary}</p>
+                <a href={`/projects/${entry.id}`} class="text-link w-fit">
+                  Read experience notes
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </GlassCard>
+            ))}
+          </div>
+        </AnimatedSection>
+      )}
+    </main>
+  </div>
+</BaseLayout>
