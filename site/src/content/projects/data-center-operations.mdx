@@ -1,11 +1,11 @@
 ---
 title: InterServer Data Center Operations
-summary: Hands-on production experience as a Data Center Technician at InterServer performing rack-and-stack, hardware modification and upgrades, PXE imaging, server deployment, decommissioning, hardware troubleshooting, and the buildout of a roughly 72-rack data center deployment.
+summary: Hands-on production experience as a Data Center Technician at InterServer performing rack-and-stack, hardware modification and upgrades, server deployment, decommissioning, hardware troubleshooting, the buildout of a roughly 72-rack data center deployment, and PXE-based imaging.
 highlight: Production data center work that made infrastructure responsibilities concrete.
 impact: Supported repeatable server deployment, imaging, hardware lifecycle work, and a new ~72-rack data center buildout in an environment serving real customer systems.
 constraint: The work had to be accurate under production conditions where mistakes affect live infrastructure.
 role: Data Center Technician at InterServer.
-scope: Rack-and-stack, hardware mods, decommissioning, structured wiring, PXE imaging, hardware diagnostics, RAID, and out-of-band management.
+scope: Rack-and-stack, hardware mods, decommissioning, structured wiring, hardware diagnostics, RAID, out-of-band management, and PXE imaging.
 keyOutcome: Built the operational habits and physical-layer understanding behind later software and infrastructure work.
 kind: experience
 featured: false
@@ -14,9 +14,9 @@ stack:
   - Linux
   - Windows
   - Proxmox
-  - PXE Boot
   - Server Hardware
   - IPMI / iDRAC
+  - PXE Boot
 status: shipped
 date: 2025-05-01
 socialImage: /og/project-data-center-operations.png
@@ -26,7 +26,7 @@ socialImage: /og/project-data-center-operations.png
 
 This is hands-on production infrastructure work I have performed at **InterServer** since June 2025.
 
-The role covers server building and deployment, hardware modification and upgrades, OS installation, PXE-based imaging, hardware troubleshooting, decommissioning, and cable management. More recently it has grown into a full deployment buildout: roughly 72 racks stood up and wired inside a data center. That experience matters because it changed infrastructure from something abstract into something physical, procedural, and operationally sensitive.
+The role covers server building and deployment, hardware modification and upgrades, OS installation, hardware troubleshooting, decommissioning, and cable management. More recently it has grown into a full deployment buildout: roughly 72 racks stood up and wired inside a data center. That experience matters because it changed infrastructure from something abstract into something physical, procedural, and operationally sensitive.
 
 ## What I Did
 
@@ -35,21 +35,13 @@ My day-to-day work included:
 - building servers from components and performing hardware mods and upgrades
 - racking and cabling servers and networking equipment
 - installing and configuring Linux, Windows, and Proxmox on new hardware
-- running PXE-based imaging and deployment workflows
 - checking hardware inventory and preparing systems for deployment
 - troubleshooting failed drives, memory issues, NIC problems, and boot failures
 - decommissioning systems: safe teardown, drive handling, and returning rack space and capacity
 - helping maintain labeling, cable organization, and deployment documentation
+- running PXE-based imaging and deployment workflows
 
 The work happened in an environment where nearby systems were already serving customers. That made accuracy, communication, and sequencing matter.
-
-## PXE and Deployment Work
-
-One of the most useful parts of the job was seeing how repeatable provisioning works at scale.
-
-Instead of installing every operating system manually, servers could boot from the network, pull a standard image, and complete installation through automated configuration. That required understanding how DHCP, network booting, imaging infrastructure, and post-install configuration fit together.
-
-The value was not just speed. It was consistency. Imaging workflows reduce drift, make setup repeatable, and help teams bring hardware online without reinventing the process each time.
 
 ## Data Center Deployment Buildout
 
@@ -82,6 +74,14 @@ Common cases included:
 
 That work built a useful discipline: gather evidence, form a hypothesis, test it, and document what changed. The tools are different from application debugging, but the mindset transfers directly.
 
+## PXE and Imaging
+
+This is depth I have rather than a daily task. Most of the current work is physical and hardware-side, but network-boot provisioning is something I know well from doing it at volume.
+
+Instead of installing every operating system manually, servers boot from the network, pull a standard image, and complete installation through automated configuration. Working with it meant understanding how DHCP, network booting, imaging infrastructure, and post-install configuration fit together.
+
+The value was not just speed. It was consistency. Imaging workflows reduce drift, make setup repeatable, and let a team bring hardware online without reinventing the process each time — the same argument I now make for automated deployment in software.
+
 ## Working in Production
 
 The biggest lesson was not technical complexity. It was operational discipline.
@@ -96,8 +96,8 @@ This experience gave me the foundation behind the software and infrastructure wo
 
 - **physical infrastructure understanding**: what deployment looks like before anything reaches the cloud abstraction layer
 - **Linux on real hardware**: installation, configuration, and troubleshooting outside a VM-only environment
-- **network-boot and provisioning fundamentals**: how repeatable server setup works in practice
 - **hardware diagnosis**: reading symptoms, isolating faults, and verifying fixes
 - **build-out at scale**: rack layout, structured wiring, and staged delivery across roughly 72 racks
 - **lifecycle thinking**: deployment and decommissioning as two halves of the same process
 - **production habits**: documentation, care around live systems, and clear communication under operational constraints
+- **network-boot and provisioning fundamentals**: how repeatable server setup works in practice
