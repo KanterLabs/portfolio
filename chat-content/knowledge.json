@@ -31,7 +31,7 @@
         "data center buildout",
         "racking"
       ],
-      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. He is also an active member of the university football program. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with building servers and hardware modifications, rack-and-stack work, Linux administration, server deployment, decommissioning, hardware troubleshooting, and practical software delivery, including a recent data center deployment buildout of roughly 72 racks and their wiring. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025)."
+      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. He is also an active member of the university football program. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with building servers and hardware modifications, rack-and-stack work, Linux administration, server deployment, decommissioning, hardware troubleshooting, and practical software delivery, including a recent data center deployment buildout of roughly 72 racks, racked and wired end to end. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025)."
     },
     {
       "id": "contact",
@@ -266,7 +266,7 @@
         "iDRAC",
         "server deployment"
       ],
-      "content": "Shane's InterServer Data Center Technician experience covers building servers, hardware modifications and upgrades, rack-and-stack, cabling and wiring, Linux, Windows and Proxmox installation, PXE-based imaging, inventory checks, hardware diagnostics, failed-drive and memory troubleshooting, NIC and boot troubleshooting, decommissioning retired systems, and deployment documentation. More recently the work has included setting up a new deployment inside a data center of roughly 72 racks, including the wiring — rack layout, power and network runs, labeling, and staged build order at scale. The case study emphasizes evidence-based diagnosis, deliberate sequencing, communication, repeatable patterns, and operational care around live infrastructure."
+      "content": "Shane's InterServer Data Center Technician experience covers building servers, hardware modifications and upgrades, rack-and-stack, cabling and wiring, Linux, Windows and Proxmox installation, PXE-based imaging, inventory checks, hardware diagnostics, failed-drive and memory troubleshooting, NIC and boot troubleshooting, decommissioning retired systems, and deployment documentation. More recently the work has included a full deployment buildout: roughly 72 racks stood up inside a data center and wired end to end, covering rack layout, power and network runs, labeling, and staged build order at scale. The case study emphasizes evidence-based diagnosis, deliberate sequencing, communication, repeatable patterns, and operational care around live infrastructure."
     }
   ]
 }
