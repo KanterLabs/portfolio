@@ -6,6 +6,14 @@ COPY site/package.json site/package-lock.json ./
 RUN npm ci
 COPY site/ ./
 ENV PUBLIC_CHAT_ENABLED=true
+
+# Declared here, after `npm ci`, so a new stamp never busts the dependency
+# layer. `.git` is dockerignored and this stage has no git binary, so the
+# footer build stamp has to be injected rather than derived.
+ARG VCS_REF=unknown
+ARG BUILD_DATE=""
+ENV PORTFOLIO_BUILD_SHA="$VCS_REF" \
+    PORTFOLIO_BUILD_DATE="$BUILD_DATE"
 RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.29.5-alpine3.23@sha256:42a7d7f2ee23e9f5a1dcdf3647ba5c585bbd18f79e79cd817e70e8cd61c55779
