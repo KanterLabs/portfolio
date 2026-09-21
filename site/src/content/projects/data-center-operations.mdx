@@ -1,11 +1,11 @@
 ---
 title: InterServer Data Center Operations
-summary: Hands-on production experience as a Data Center Technician at InterServer performing rack-and-stack, PXE imaging, server deployment, hardware troubleshooting, and infrastructure support in a live data center.
+summary: Hands-on production experience as a Data Center Technician at InterServer performing rack-and-stack, hardware modification and upgrades, PXE imaging, server deployment, decommissioning, hardware troubleshooting, and the buildout of a roughly 72-rack data center deployment.
 highlight: Production data center work that made infrastructure responsibilities concrete.
-impact: Supported repeatable server deployment, imaging, and hardware troubleshooting in an environment serving real customer systems.
+impact: Supported repeatable server deployment, imaging, hardware lifecycle work, and a new ~72-rack data center buildout in an environment serving real customer systems.
 constraint: The work had to be accurate under production conditions where mistakes affect live infrastructure.
 role: Data Center Technician at InterServer.
-scope: Rack-and-stack, PXE imaging, hardware diagnostics, RAID, and out-of-band management.
+scope: Rack-and-stack, hardware mods, decommissioning, structured wiring, PXE imaging, hardware diagnostics, RAID, and out-of-band management.
 keyOutcome: Built the operational habits and physical-layer understanding behind later software and infrastructure work.
 kind: experience
 featured: false
@@ -26,17 +26,19 @@ socialImage: /og/project-data-center-operations.png
 
 This is hands-on production infrastructure work I have performed at **InterServer** since June 2025.
 
-The role covered server deployment, OS installation, PXE-based imaging, hardware troubleshooting, cable management, and general operational support inside a live data center. That experience matters because it changed infrastructure from something abstract into something physical, procedural, and operationally sensitive.
+The role covers server building and deployment, hardware modification and upgrades, OS installation, PXE-based imaging, hardware troubleshooting, decommissioning, cable management, and — more recently — standing up a new deployment inside a data center: roughly 72 racks, including the wiring. That experience matters because it changed infrastructure from something abstract into something physical, procedural, and operationally sensitive.
 
 ## What I Did
 
 My day-to-day work included:
 
+- building servers from components and performing hardware mods and upgrades
 - racking and cabling servers and networking equipment
 - installing and configuring Linux, Windows, and Proxmox on new hardware
 - running PXE-based imaging and deployment workflows
 - checking hardware inventory and preparing systems for deployment
 - troubleshooting failed drives, memory issues, NIC problems, and boot failures
+- decommissioning systems: safe teardown, drive handling, and returning rack space and capacity
 - helping maintain labeling, cable organization, and deployment documentation
 
 The work happened in an environment where nearby systems were already serving customers. That made accuracy, communication, and sequencing matter.
@@ -48,6 +50,24 @@ One of the most useful parts of the job was seeing how repeatable provisioning w
 Instead of installing every operating system manually, servers could boot from the network, pull a standard image, and complete installation through automated configuration. That required understanding how DHCP, network booting, imaging infrastructure, and post-install configuration fit together.
 
 The value was not just speed. It was consistency. Imaging workflows reduce drift, make setup repeatable, and help teams bring hardware online without reinventing the process each time.
+
+## Data Center Deployment Buildout
+
+More recently the work moved from individual servers to a whole deployment: setting up around **72 racks** inside a data center, including the wiring that ties them together.
+
+At that scale the job is less about any one machine and more about a repeatable pattern — a rack layout that is the same every time, power and network runs that land where the next person expects them, cable routing and labeling that stay legible under a full load, and a build order that lets racks come online in batches instead of all at the end.
+
+It also makes the cost of inconsistency obvious. A shortcut taken once is a shortcut taken seventy-two times, and every one of them has to be walked back by hand.
+
+## Hardware Mods and Lifecycle
+
+Hardware work here runs the full lifecycle rather than just intake.
+
+- **building and modifying**: assembling servers, swapping and upgrading drives, memory, NICs, and other components to meet a target spec
+- **deployment**: imaging, configuration, and bringing systems into service
+- **decommissioning**: safe teardown of retired systems, drive handling, and reclaiming rack, power, and network capacity for reuse
+
+Decommissioning turned out to be as procedural as deployment. Pulling a system out cleanly — with the right things tracked, wiped, and unwired — is what keeps the room from accumulating dead weight and stale cabling.
 
 ## Hardware Troubleshooting
 
@@ -78,4 +98,6 @@ This experience gave me the foundation behind the software and infrastructure wo
 - **Linux on real hardware**: installation, configuration, and troubleshooting outside a VM-only environment
 - **network-boot and provisioning fundamentals**: how repeatable server setup works in practice
 - **hardware diagnosis**: reading symptoms, isolating faults, and verifying fixes
+- **build-out at scale**: rack layout, structured wiring, and staged delivery across roughly 72 racks
+- **lifecycle thinking**: deployment and decommissioning as two halves of the same process
 - **production habits**: documentation, care around live systems, and clear communication under operational constraints
