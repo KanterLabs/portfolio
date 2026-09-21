@@ -1,5 +1,11 @@
 ---
 import '../styles/global.css';
+// The @fontsource imports live inside global.css, so the two above-the-fold
+// weights are only discovered after the stylesheet parses. `?url` hands back
+// the hashed path Vite actually emits, which is what makes preloading them
+// safe across builds.
+import interLatin400 from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
+import interLatin700 from '@fontsource/inter/files/inter-latin-700-normal.woff2?url';
 import { getSiteBuildVersion } from '../lib/siteVersion';
 import PortfolioChat from '../components/PortfolioChat.astro';
 
@@ -45,7 +51,7 @@ const jsonLdItems = structuredData
 <html lang="en" class="no-js" data-theme={theme === 'dark' ? 'dark' : undefined}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#0c0e0d" />
@@ -64,6 +70,8 @@ const jsonLdItems = structuredData
     <meta name="twitter:description" content={description} />
     {socialImageUrl && <meta name="twitter:image" content={socialImageUrl} />}
     {socialImageUrl && <meta name="twitter:image:alt" content={imageAlt} />}
+    <link rel="preload" as="font" type="font/woff2" href={interLatin400} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={interLatin700} crossorigin />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     {jsonLdItems.map((entry) => (
@@ -100,6 +108,10 @@ const jsonLdItems = structuredData
       document.addEventListener('DOMContentLoaded', () => {
         const sections = document.querySelectorAll<HTMLElement>('.observe-animate');
         const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        // On phone-sized viewports the IntersectionObserver reveal reads as
+        // content "loading" late while scrolling — skip it and show every
+        // section immediately (matches the reduced-motion path).
+        const smallViewportQuery = window.matchMedia('(width < 780px)');
 
         const revealAll = () => {
           sections.forEach((section) => {
@@ -107,7 +119,7 @@ const jsonLdItems = structuredData
           });
         };
 
-        if (sections.length === 0 || reducedMotionQuery.matches || !('IntersectionObserver' in window)) {
+        if (sections.length === 0 || reducedMotionQuery.matches || smallViewportQuery.matches || !('IntersectionObserver' in window)) {
           revealAll();
           return;
         }

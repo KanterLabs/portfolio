@@ -1,0 +1,11 @@
+.git
+.github
+.env*
+**/node_modules
+**/dist
+**/.astro
+**/.ui-iterate
+**/playwright-report
+**/test-results
+chat-worker
+infrastructure

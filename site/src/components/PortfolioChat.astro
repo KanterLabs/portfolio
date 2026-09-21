@@ -1087,6 +1087,13 @@
     .portfolio-chat-body {
       padding-inline: max(0.75rem, env(safe-area-inset-left)) max(0.75rem, env(safe-area-inset-right));
     }
+
+    /* iOS Safari zooms the page when a focused input is under 16px; the
+       sheet already owns the screen at this width, so a larger input font
+       costs nothing and prevents the zoom. */
+    .portfolio-chat-input {
+      font-size: 1rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

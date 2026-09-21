@@ -9,10 +9,10 @@ test.describe('homepage', () => {
     await page.goto('/');
     const primaryNav = page.locator('nav[aria-label="Primary"]');
 
-    await expect(page).toHaveTitle('Shane Kanterman | Infrastructure and Platform Projects');
+    await expect(page).toHaveTitle('Shane Kanterman | Data Center Technician and Infrastructure Work');
     await expect(
       page.getByRole('heading', {
-        name: 'I build Linux platforms, from bare metal to CI/CD.',
+        name: 'I keep production infrastructure moving, from rack to release.',
       }),
     ).toBeVisible();
     await expect(
@@ -39,10 +39,13 @@ test.describe('homepage', () => {
       maxTop: 480,
     });
     await page.goto('/');
-    await expectHashLinkToReachSection(
-      page,
-      () => page.getByRole('link', { name: 'View Selected Work' }).click(),
-      'projects',
+    await expect(page.getByRole('link', { name: 'Explore Data Center Work' })).toHaveAttribute(
+      'href',
+      '/projects/data-center-operations',
+    );
+    await expect(page.getByRole('link', { name: 'View Platform Projects' })).toHaveAttribute(
+      'href',
+      '#projects',
     );
 
     await expect(page.getByRole('link', { name: 'Resume' })).toHaveCount(0);
@@ -61,11 +64,11 @@ test.describe('homepage', () => {
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://shanekanterman.dev/');
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      'Infrastructure and platform portfolio for Shane Kanterman featuring Linux systems, deployment tooling, ephemeral CI, and hands-on data center operations.',
+      'Portfolio of Shane Kanterman, a Data Center Technician at InterServer, featuring production server operations, Linux systems, deployment tooling, and infrastructure projects.',
     );
 
     await expect(page.getByLabel('Site footer')).toContainText('Build');
-    await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
+    await expect(page.getByText(/Build \d{2}-\d{2}-\d{4} · [0-9a-f]{7}/)).toBeVisible();
   });
 
   test('mobile menu works and layout does not overflow', async ({ page, isMobile }) => {
@@ -85,7 +88,7 @@ test.describe('homepage', () => {
       'projects',
     );
     await expectNoHorizontalOverflow(page);
-    await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
+    await expect(page.getByText(/Build \d{2}-\d{2}-\d{4} · [0-9a-f]{7}/)).toBeVisible();
   });
 
   test('case studies render as bordered cards, not a flat list', async ({ page }) => {
@@ -896,7 +899,7 @@ test.describe('homepage', () => {
     const heroParagraphBox = await heroParagraph.boundingBox();
     expect(heroParagraphBox).not.toBeNull();
 
-    const heroCta = page.getByRole('link', { name: 'View Selected Work' });
+    const heroCta = page.getByRole('link', { name: 'Explore Data Center Work' });
     const heroCtaBox = await heroCta.boundingBox();
     expect(heroCtaBox).not.toBeNull();
     expect(Math.abs(heroCtaBox!.x - heroParagraphBox!.x)).toBeLessThanOrEqual(2);

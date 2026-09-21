@@ -1,0 +1,33 @@
+# syntax=docker/dockerfile:1.7
+FROM node:22.22.1-alpine3.23@sha256:8094c002d08262dba12645a3b4a15cd6cd627d30bc782f53229a2ec13ee22a00 AS build
+
+WORKDIR /build/site
+COPY site/package.json site/package-lock.json ./
+RUN npm ci
+COPY site/ ./
+ENV PUBLIC_CHAT_ENABLED=true
+
+# Declared here, after `npm ci`, so a new stamp never busts the dependency
+# layer. `.git` is dockerignored and this stage has no git binary, so the
+# footer build stamp has to be injected rather than derived.
+ARG VCS_REF=unknown
+ARG BUILD_DATE=""
+ENV PORTFOLIO_BUILD_SHA="$VCS_REF" \
+    PORTFOLIO_BUILD_DATE="$BUILD_DATE"
+RUN npm run build
+
+FROM nginxinc/nginx-unprivileged:1.29.5-alpine3.23@sha256:42a7d7f2ee23e9f5a1dcdf3647ba5c585bbd18f79e79cd817e70e8cd61c55779
+
+ARG VCS_REF=unknown
+LABEL org.opencontainers.image.source="https://github.com/KanterLabs/portfolio" \
+      org.opencontainers.image.revision="$VCS_REF" \
+      org.opencontainers.image.description="Shane Kanterman's static portfolio"
+
+ENV PORTFOLIO_REVISION="$VCS_REF" \
+    PORTFOLIO_X_ROBOTS_TAG=""
+COPY container/default.conf.template /etc/nginx/templates/default.conf.template
+COPY --from=build /build/site/dist/ /usr/share/nginx/html/
+
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:8080/healthz || exit 1
