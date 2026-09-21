@@ -68,7 +68,7 @@ test.describe('homepage', () => {
     );
 
     await expect(page.getByLabel('Site footer')).toContainText('Build');
-    await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
+    await expect(page.getByText(/Build \d{2}-\d{2}-\d{4} · [0-9a-f]{7}/)).toBeVisible();
   });
 
   test('mobile menu works and layout does not overflow', async ({ page, isMobile }) => {
@@ -88,7 +88,7 @@ test.describe('homepage', () => {
       'projects',
     );
     await expectNoHorizontalOverflow(page);
-    await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
+    await expect(page.getByText(/Build \d{2}-\d{2}-\d{4} · [0-9a-f]{7}/)).toBeVisible();
   });
 
   test('case studies render as bordered cards, not a flat list', async ({ page }) => {

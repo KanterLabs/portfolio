@@ -140,6 +140,7 @@ jobs:
           docker build \
             --pull \
             --build-arg "VCS_REF=$GITHUB_SHA" \
+            --build-arg "BUILD_DATE=$(date -u +%Y-%m-%d)" \
             --tag "$image:sha-$GITHUB_SHA" \
             .
           printf 'IMAGE=%s\n' "$image" >> "$GITHUB_ENV"
@@ -156,8 +157,13 @@ jobs:
           container_port=$(docker port "$container_id" 8080/tcp | sed 's/.*://')
           for delay in 0 1 1 1 1; do
             sleep "$delay"
+            # The footer build stamp is injected at image-build time, so a
+            # broken injection can only be caught against the built image --
+            # never against a dev build, which can still fall back to git.
             if curl --fail --silent "http://127.0.0.1:${container_port}/healthz" | grep -qx ok &&
-               curl --fail --silent "http://127.0.0.1:${container_port}/_meta/revision" | grep -qx "$GITHUB_SHA"; then
+               curl --fail --silent "http://127.0.0.1:${container_port}/_meta/revision" | grep -qx "$GITHUB_SHA" &&
+               curl --fail --silent "http://127.0.0.1:${container_port}/" |
+                 grep -q "site-footer-build\">Build .*${GITHUB_SHA:0:7}"; then
               exit 0
             fi
           done
