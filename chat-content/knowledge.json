@@ -1,5 +1,5 @@
 {
-  "version": "2026-09-19",
+  "version": "2026-09-21",
   "entries": [
     {
       "id": "profile",
@@ -8,8 +8,13 @@
         "path": "site/src/pages/index.astro",
         "href": "/"
       },
-      "lastReviewed": "2026-09-19",
-      "topics": ["profile", "experience", "education", "contact"],
+      "lastReviewed": "2026-09-21",
+      "topics": [
+        "profile",
+        "experience",
+        "education",
+        "contact"
+      ],
       "keywords": [
         "Shane Kanterman",
         "computer science",
@@ -20,9 +25,13 @@
         "SCSU",
         "football",
         "Linux",
-        "networking"
+        "networking",
+        "hardware mods",
+        "decommissioning",
+        "data center buildout",
+        "racking"
       ],
-      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. He is also an active member of the university football program. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with rack-and-stack work, Linux administration, server deployment, troubleshooting, and practical software delivery. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025)."
+      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. He is also an active member of the university football program. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with building servers and hardware modifications, rack-and-stack work, Linux administration, server deployment, decommissioning, hardware troubleshooting, and practical software delivery, including a recent data center deployment buildout of roughly 72 racks and their wiring. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025)."
     },
     {
       "id": "contact",
@@ -32,7 +41,11 @@
         "href": "/#contact"
       },
       "lastReviewed": "2026-09-19",
-      "topics": ["contact", "email", "links"],
+      "topics": [
+        "contact",
+        "email",
+        "links"
+      ],
       "keywords": [
         "contact",
         "email",
@@ -51,7 +64,12 @@
         "href": "/#architecture"
       },
       "lastReviewed": "2026-09-19",
-      "topics": ["skills", "architecture", "delivery", "platform"],
+      "topics": [
+        "skills",
+        "architecture",
+        "delivery",
+        "platform"
+      ],
       "keywords": [
         "Proxmox",
         "Nginx",
@@ -83,7 +101,13 @@
         "href": "/projects/kanterlabs-homelab"
       },
       "lastReviewed": "2026-09-03",
-      "topics": ["project", "homelab", "platform", "networking", "ci"],
+      "topics": [
+        "project",
+        "homelab",
+        "platform",
+        "networking",
+        "ci"
+      ],
       "keywords": [
         "homelab",
         "Proxmox",
@@ -115,7 +139,13 @@
         "href": "/projects/hostlet"
       },
       "lastReviewed": "2026-08-24",
-      "topics": ["project", "deployment", "rust", "docker", "product"],
+      "topics": [
+        "project",
+        "deployment",
+        "rust",
+        "docker",
+        "product"
+      ],
       "keywords": [
         "Hostlet",
         "Rust",
@@ -172,7 +202,13 @@
         "href": "/projects/multi-node-portfolio"
       },
       "lastReviewed": "2026-09-03",
-      "topics": ["project", "portfolio", "astro", "delivery", "cloudflare"],
+      "topics": [
+        "project",
+        "portfolio",
+        "astro",
+        "delivery",
+        "cloudflare"
+      ],
       "keywords": [
         "Astro",
         "static portfolio",
@@ -199,18 +235,27 @@
         "path": "site/src/content/projects/data-center-operations.mdx",
         "href": "/projects/data-center-operations"
       },
-      "lastReviewed": "2026-08-24",
+      "lastReviewed": "2026-09-21",
       "topics": [
         "experience",
         "data center",
         "hardware",
         "provisioning",
-        "linux"
+        "linux",
+        "decommissioning",
+        "buildout"
       ],
       "keywords": [
         "InterServer",
         "data center",
         "rack-and-stack",
+        "hardware mods",
+        "server building",
+        "decommissioning",
+        "72 racks",
+        "data center buildout",
+        "wiring",
+        "structured cabling",
         "PXE",
         "Linux",
         "Windows",
@@ -221,7 +266,7 @@
         "iDRAC",
         "server deployment"
       ],
-      "content": "Shane's InterServer Data Center Technician experience covers rack-and-stack, cabling, Linux, Windows and Proxmox installation, PXE-based imaging, inventory checks, hardware diagnostics, failed-drive and memory troubleshooting, NIC and boot troubleshooting, and deployment documentation. The case study emphasizes evidence-based diagnosis, deliberate sequencing, communication, and operational care around live infrastructure."
+      "content": "Shane's InterServer Data Center Technician experience covers building servers, hardware modifications and upgrades, rack-and-stack, cabling and wiring, Linux, Windows and Proxmox installation, PXE-based imaging, inventory checks, hardware diagnostics, failed-drive and memory troubleshooting, NIC and boot troubleshooting, decommissioning retired systems, and deployment documentation. More recently the work has included setting up a new deployment inside a data center of roughly 72 racks, including the wiring — rack layout, power and network runs, labeling, and staged build order at scale. The case study emphasizes evidence-based diagnosis, deliberate sequencing, communication, repeatable patterns, and operational care around live infrastructure."
     }
   ]
 }
