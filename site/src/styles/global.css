@@ -1,8 +1,8 @@
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/inter/700.css";
-@import "@fontsource/inter/800.css";
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/inter/latin-600.css";
+@import "@fontsource/inter/latin-700.css";
+@import "@fontsource/inter/latin-800.css";
 @import "tailwindcss";
 
 @theme {
@@ -1120,6 +1120,21 @@ select {
   transform-origin: top;
 }
 
+/* The architecture diagram is the page's strongest proof, and the rules
+   above hide it until the IntersectionObserver in BaseLayout stamps
+   .visible on the section. Without JavaScript that class never lands, so
+   the whole right-hand column would stay blank. Mirror the reduced-motion
+   resting state instead. */
+.no-js .architecture-boot-node,
+.no-js .architecture-boot-footer-item {
+  opacity: 1;
+  transform: none;
+}
+
+.no-js .architecture-boot-connector {
+  transform: none;
+}
+
 /* The top-to-bottom order still reads as a boot sequence, but the whole
    cascade now finishes inside the ~500ms budget above. It used to run to
    1240ms, which meant scrolling past the section at a normal speed showed
@@ -1217,6 +1232,61 @@ select {
   border-top: 1px solid var(--line);
   margin-top: var(--space-section);
   padding-top: 2.5rem;
+}
+
+/* Same panel language as every other card on the site (--panel on --line,
+   --radius-md) — do not flatten these into bare links. */
+.case-pager {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (width >= 780px) {
+  .case-pager {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.case-pager-link {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+  min-height: 3.3rem;
+  padding: 1.25rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--transition),
+    background-color var(--transition);
+}
+
+.case-pager-link:hover {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--panel) 70%, var(--color-text-base) 3%);
+}
+
+.case-pager-next {
+  text-align: right;
+}
+
+.case-pager-title {
+  color: var(--color-text-base);
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+
+/* Keeps a lone "Next" card in the right-hand column on two-column widths. */
+.case-pager-spacer {
+  display: none;
+}
+
+@media (width >= 780px) {
+  .case-pager-spacer {
+    display: block;
+  }
 }
 
 .case-prose {

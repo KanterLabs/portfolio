@@ -1,5 +1,11 @@
 ---
 import '../styles/global.css';
+// The @fontsource imports live inside global.css, so the two above-the-fold
+// weights are only discovered after the stylesheet parses. `?url` hands back
+// the hashed path Vite actually emits, which is what makes preloading them
+// safe across builds.
+import interLatin400 from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
+import interLatin700 from '@fontsource/inter/files/inter-latin-700-normal.woff2?url';
 import { getSiteBuildVersion } from '../lib/siteVersion';
 import PortfolioChat from '../components/PortfolioChat.astro';
 
@@ -64,6 +70,8 @@ const jsonLdItems = structuredData
     <meta name="twitter:description" content={description} />
     {socialImageUrl && <meta name="twitter:image" content={socialImageUrl} />}
     {socialImageUrl && <meta name="twitter:image:alt" content={imageAlt} />}
+    <link rel="preload" as="font" type="font/woff2" href={interLatin400} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={interLatin700} crossorigin />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     {jsonLdItems.map((entry) => (
