@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import '../styles/kanterlabs.css';
 // The @fontsource imports live inside global.css, so the two above-the-fold
 // weights are only discovered after the stylesheet parses. `?url` hands back
 // the hashed path Vite actually emits, which is what makes preloading them
@@ -8,6 +9,8 @@ import interLatin400 from '@fontsource/inter/files/inter-latin-400-normal.woff2?
 import interLatin700 from '@fontsource/inter/files/inter-latin-700-normal.woff2?url';
 import { getSiteBuildVersion } from '../lib/siteVersion';
 import PortfolioChat from '../components/PortfolioChat.astro';
+import KanterLabsMark from '../components/KanterLabsMark.astro';
+import { HOSTLET_CLOUD_URL, KANTERLABS_ORG_URL } from '../lib/kanterlabs';
 
 interface StructuredDataEntry {
   [key: string]: unknown;
@@ -27,7 +30,7 @@ interface Props {
 const {
   title,
   description,
-  image = '/og/portfolio-preview-2026.png',
+  image = '/og/portfolio-preview-kanterlabs.png',
   imageAlt = `${title} social preview`,
   type = 'website',
   structuredData,
@@ -54,7 +57,7 @@ const jsonLdItems = structuredData
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#0c0e0d" />
+    <meta name="theme-color" content="#141416" />
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -73,7 +76,8 @@ const jsonLdItems = structuredData
     <link rel="preload" as="font" type="font/woff2" href={interLatin400} crossorigin />
     <link rel="preload" as="font" type="font/woff2" href={interLatin700} crossorigin />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     {jsonLdItems.map((entry) => (
       <script type="application/ld+json" set:html={JSON.stringify(entry)} />
     ))}
@@ -88,7 +92,7 @@ const jsonLdItems = structuredData
       document.documentElement.dataset.themeMode = resolvedMode;
       document.querySelector('meta[name="theme-color"]')?.setAttribute(
         'content',
-        resolvedTheme === 'light' ? '#f7f8f6' : '#0c0e0d',
+        resolvedTheme === 'light' ? '#f6f1e7' : '#141416',
       );
     </script>
     <script is:inline>
@@ -101,7 +105,18 @@ const jsonLdItems = structuredData
     <slot />
     {shouldRenderChat && <PortfolioChat />}
     <footer class="site-footer" aria-label="Site footer">
-      <p>© {new Date().getFullYear()} Shane Kanterman. Built with Astro and deployed on Kantercloud.</p>
+      <div class="site-footer-brand">
+        <a class="site-footer-lockup" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
+          <KanterLabsMark size={28} />
+          <span class="site-footer-wordmark">Kanter<span>Labs</span></span>
+        </a>
+        <ul class="site-footer-links">
+          <li><a href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href={`${KANTERLABS_ORG_URL}/portfolio`} target="_blank" rel="noopener noreferrer">Site source</a></li>
+          <li><a href={HOSTLET_CLOUD_URL} target="_blank" rel="noopener noreferrer">hostlet.cloud</a></li>
+        </ul>
+      </div>
+      <p>© {new Date().getFullYear()} Shane Kanterman · A KanterLabs project, built with Astro and deployed on Kantercloud.</p>
       <p class="site-footer-build">Build {siteBuildVersion}</p>
     </footer>
     <script>

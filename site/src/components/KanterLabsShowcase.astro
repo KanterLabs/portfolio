@@ -1,0 +1,121 @@
+---
+import GitHubIcon from './GitHubIcon.astro';
+import KanterLabsMark from './KanterLabsMark.astro';
+import LabFeatureCard from './LabFeatureCard.astro';
+import LabRepoCard from './LabRepoCard.astro';
+import {
+  HOSTLET_CLOUD_URL,
+  KANTERLABS_ORG_URL,
+  allPublicRepos,
+  flagshipRepos,
+  languageCount,
+  moreRepos,
+  studioPillars,
+} from '../lib/kanterlabs';
+
+const studioStats = [
+  { value: String(allPublicRepos.length), label: 'Public repos' },
+  { value: String(languageCount), label: 'Languages' },
+  { value: String(studioPillars.length), label: 'Product lines' },
+];
+---
+
+<div class="lab-showcase">
+  <div class="lab-banner" data-lab-banner>
+    <div class="lab-banner-identity">
+      <div class="lab-lockup">
+        <KanterLabsMark size={72} class="lab-lockup-mark" />
+        <p class="lab-wordmark">Kanter<span class="lab-wordmark-accent">Labs</span></p>
+      </div>
+      <p class="lab-banner-tagline">
+        Developer tools, self-hosted platforms, and practical software, built with the
+        infrastructure to run them.
+      </p>
+      <p class="lab-banner-copy">
+        KanterLabs is the independent product and infrastructure studio I founded and operate.
+        The same Proxmox platform, ephemeral CI fleet, and release discipline from my case
+        studies ship every project below, and all of it is open on GitHub.
+      </p>
+      <div class="lab-banner-actions">
+        <a class="btn btn-primary" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
+          <GitHubIcon size={18} />
+          Follow KanterLabs on GitHub
+        </a>
+        <a class="btn btn-secondary" href={HOSTLET_CLOUD_URL} target="_blank" rel="noopener noreferrer">
+          Visit hostlet.cloud
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="lab-banner-facts">
+      <dl class="lab-stats">
+        {studioStats.map((stat) => (
+          <div>
+            <dt class="field-label">{stat.label}</dt>
+            <dd>{stat.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <ul class="lab-pillars">
+        {studioPillars.map((pillar) => (
+          <li>
+            <strong>{pillar.title}</strong>
+            <span>{pillar.body}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <div class="lab-feature-grid">
+    {flagshipRepos.map((repo) => (
+      <LabFeatureCard repo={repo} />
+    ))}
+  </div>
+
+  <div class="lab-more">
+    <div class="lab-more-header">
+      <h3 class="lab-more-title">More from the lab</h3>
+      <a class="text-link" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
+        Every repository on github.com/KanterLabs
+        <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+    <div class="lab-repo-grid">
+      {moreRepos.map((repo) => (
+        <LabRepoCard repo={repo} />
+      ))}
+    </div>
+  </div>
+</div>
+
+<script>
+  // The NFL Scores gamecast loops only while it is on screen, and never under
+  // reduced motion: without JS, or with motion reduced, the poster frame is
+  // the whole presentation.
+  const videos = document.querySelectorAll<HTMLVideoElement>('[data-lab-video]');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (videos.length > 0 && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting && !reducedMotion.matches) {
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.35 },
+    );
+
+    videos.forEach((video) => observer.observe(video));
+
+    reducedMotion.addEventListener('change', (event) => {
+      if (event.matches) videos.forEach((video) => video.pause());
+    });
+  }
+</script>

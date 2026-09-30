@@ -2,7 +2,9 @@
 import AnimatedSection from '../components/AnimatedSection.astro';
 import ArchitectureSnapshot from '../components/ArchitectureSnapshot.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import GitHubIcon from '../components/GitHubIcon.astro';
 import GlassCard from '../components/GlassCard.astro';
+import KanterLabsShowcase from '../components/KanterLabsShowcase.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import ProjectShowcase from '../components/ProjectShowcase.astro';
 import SectionIntro from '../components/SectionIntro.astro';
@@ -10,6 +12,7 @@ import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
 import SystemConstellation from '../components/SystemConstellation.astro';
 import { getCollection } from 'astro:content';
+import { HOSTLET_CLOUD_URL, KANTERLABS_ORG_URL, allPublicRepos } from '../lib/kanterlabs';
 
 const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
@@ -21,6 +24,7 @@ const dataCenterExperience = sorted.find((entry) => entry.data.kind === 'experie
 const navItems = [
   { label: 'Experience', href: '#about' },
   { label: 'Projects', href: '#projects' },
+  { label: 'Open Source', href: '#kanterlabs' },
   { label: 'Architecture', href: '#architecture' },
   { label: 'Skills', href: '#skills' },
   { label: 'Contact', href: '#contact' },
@@ -52,13 +56,13 @@ const systemSummary = [
   { label: 'Operations', value: 'Build, rack, image, and decommission production servers' },
   { label: 'Platform', value: 'Two-site Proxmox estate, public and private zones' },
   { label: 'Delivery', value: 'Ephemeral CI, atomic releases, rollback retained' },
-  { label: 'Product', value: 'Rust and Next.js deploy tooling for self-hosted apps' },
+  { label: 'Open source', value: 'KanterLabs: platforms, dev tools, and desktop apps' },
 ];
 
 const heroMetrics = [
   { value: '2 sites', label: 'Proxmox platform' },
   { value: '1–3 runners', label: 'Ephemeral CI capacity' },
-  { value: 'Rust + Next.js', label: 'Hostlet control plane' },
+  { value: `${allPublicRepos.length} repos`, label: 'Public on KanterLabs GitHub' },
 ];
 
 const profilePoints = [
@@ -107,7 +111,7 @@ const timelineEntries = [
   },
 ];
 
-const githubUrl = 'https://github.com/ShaneKanterman04';
+const personalGithubUrl = 'https://github.com/ShaneKanterman04';
 const linkedInUrl = 'https://www.linkedin.com/in/shane-kanterman-4511a2234';
 const emailUrl = 'mailto:shanekanterman04@gmail.com';
 
@@ -127,7 +131,7 @@ const structuredData = [
     '@type': 'Person',
     name: 'Shane Kanterman',
     url: siteUrl,
-    sameAs: [linkedInUrl, githubUrl],
+    sameAs: [linkedInUrl, KANTERLABS_ORG_URL, personalGithubUrl],
     email: 'mailto:shanekanterman04@gmail.com',
     alumniOf: {
       '@type': 'CollegeOrUniversity',
@@ -149,14 +153,25 @@ const structuredData = [
     ],
     jobTitle: 'Data Center Technician',
   },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'KanterLabs',
+    url: KANTERLABS_ORG_URL,
+    logo: new URL('/apple-touch-icon.png', siteUrl).toString(),
+    description:
+      'Independent product and infrastructure studio building developer tools, self-hosted platforms, and practical software.',
+    founder: { '@type': 'Person', name: 'Shane Kanterman', url: siteUrl },
+    sameAs: [KANTERLABS_ORG_URL, HOSTLET_CLOUD_URL],
+  },
 ];
 ---
 
 <BaseLayout
   title="Shane Kanterman | Data Center Technician and Infrastructure Work"
   description="Portfolio of Shane Kanterman, a Data Center Technician at InterServer, featuring production server operations, Linux systems, deployment tooling, and infrastructure projects."
-  image="/og/portfolio-preview-2026.png"
-  imageAlt="Shane Kanterman portfolio preview"
+  image="/og/portfolio-preview-kanterlabs.png"
+  imageAlt="Shane Kanterman · KanterLabs portfolio preview"
   structuredData={structuredData}
   chatEnabled={true}
 >
@@ -183,8 +198,8 @@ const structuredData = [
           </h1>
           <p class="hero-reveal hero-reveal-3 text-text-muted leading-[1.7] text-[1.08rem] max-w-[36rem]">
             I am a Data Center Technician at InterServer, where I provision production hardware,
-            image servers, and troubleshoot physical infrastructure. Outside the data center, I
-            build the Linux platform, CI, and deployment tooling that runs my own two-site Proxmox estate.
+            image servers, and troubleshoot physical infrastructure. Outside the data center, I run
+            KanterLabs, my open-source studio, and the two-site Proxmox platform and CI that ship it.
           </p>
 
           <div class="hero-reveal hero-reveal-4 flex flex-wrap gap-4 mt-8 max-[780px]:flex-col max-[780px]:items-stretch">
@@ -207,12 +222,13 @@ const structuredData = [
               LinkedIn
             </a>
             <a
-              class="btn btn-secondary"
-              href={githubUrl}
+              class="btn btn-secondary kl-btn-github"
+              href={KANTERLABS_ORG_URL}
               target="_blank"
               rel="noopener noreferrer"
             >
-              GitHub
+              <GitHubIcon size={18} />
+              KanterLabs on GitHub
             </a>
           </div>
         </div>
@@ -266,6 +282,19 @@ const structuredData = [
             ))}
           </div>
         </div>
+      </AnimatedSection>
+
+      <AnimatedSection
+        id="kanterlabs"
+        delay={1}
+      >
+        <SectionIntro
+          eyebrow="Open source · KanterLabs"
+          title="Everything I build ships from KanterLabs."
+          body={`${allPublicRepos.length} public projects across self-hosted platforms, developer tools, and desktop software. The flagships lead, the rest of the catalog follows, and every card links straight to the source.`}
+        />
+
+        <KanterLabsShowcase />
       </AnimatedSection>
 
       <AnimatedSection
@@ -467,12 +496,22 @@ const structuredData = [
               LinkedIn
             </a>
             <a
-              class="btn btn-secondary max-[780px]:w-full"
-              href={githubUrl}
+              class="btn btn-secondary kl-btn-github max-[780px]:w-full"
+              href={KANTERLABS_ORG_URL}
               target="_blank"
               rel="noopener noreferrer"
             >
-              GitHub
+              <GitHubIcon size={18} />
+              KanterLabs on GitHub
+            </a>
+            <a
+              class="text-link w-fit justify-self-center text-[0.88rem]"
+              href={personalGithubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Personal GitHub
+              <span aria-hidden="true">↗</span>
             </a>
           </div>
         </GlassCard>
@@ -482,7 +521,7 @@ const structuredData = [
   </div>
 
   <script>
-    const sectionIds = ['projects', 'about', 'architecture', 'skills', 'contact'];
+    const sectionIds = ['projects', 'kanterlabs', 'about', 'architecture', 'skills', 'contact'];
     const sectionLinks = Array.from(document.querySelectorAll('[data-nav-link]'));
 
     const setActiveSection = (sectionId) => {

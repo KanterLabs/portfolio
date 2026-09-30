@@ -1,0 +1,105 @@
+---
+import { Image } from 'astro:assets';
+import { categoryLabels, repoUrl, type LabRepo } from '../lib/kanterlabs';
+
+interface Props {
+  repo: LabRepo;
+}
+
+const { repo } = Astro.props;
+const { media } = repo;
+const href = repoUrl(repo);
+---
+
+<article class="lab-card lab-feature" data-lab-repo={repo.slug}>
+  {media && (
+    <div class:list={['lab-media', `lab-media-${media.kind}`]}>
+      {media.kind === 'image' && (
+        <Image
+          src={media.src}
+          alt={media.alt}
+          widths={[420, 720]}
+          sizes="(width >= 960px) 22rem, (width >= 780px) 45vw, 92vw"
+          loading="lazy"
+          decoding="async"
+          style={`object-fit: ${media.fit}; object-position: ${media.position ?? 'center'};`}
+        />
+      )}
+      {media.kind === 'themed-image' && (
+        <>
+          <img class="lab-themed-light" src={media.light} alt={media.alt} width={media.width} height={media.height} loading="lazy" decoding="async" />
+          <img class="lab-themed-dark" src={media.dark} alt="" width={media.width} height={media.height} loading="lazy" decoding="async" />
+        </>
+      )}
+      {media.kind === 'video' && (
+        <video
+          muted
+          loop
+          playsinline
+          preload="none"
+          poster={media.poster}
+          width={media.width}
+          height={media.height}
+          aria-label={media.alt}
+          data-lab-video
+        >
+          <source src={media.webm} type="video/webm" />
+          <source src={media.mp4} type="video/mp4" />
+        </video>
+      )}
+      {media.kind === 'terminal' && (
+        <div class="lab-terminal" role="img" aria-label={`${repo.name} quick start: ${media.lines.filter((l) => l.command).map((l) => l.command).join(', ')}`}>
+          <div class="lab-terminal-bar" aria-hidden="true">
+            <span></span><span></span><span></span>
+            <em>{media.title}</em>
+          </div>
+          <div class="lab-terminal-body" aria-hidden="true">
+            {media.lines.map((line) => (
+              <p>
+                {line.command && (<><span class="lab-terminal-prompt">$</span> {line.command}</>)}
+                {line.note && <span class="lab-terminal-note">{line.command ? '  # ' : '# '}{line.note}</span>}
+              </p>
+            ))}
+            <p><span class="lab-terminal-prompt">$</span> <span class="lab-terminal-cursor"></span></p>
+          </div>
+        </div>
+      )}
+    </div>
+  )}
+
+  <div class="lab-card-body">
+    <div class="lab-card-meta">
+      <p class="field-label">{categoryLabels[repo.category]}</p>
+      <span class="lab-status">{repo.status}</span>
+    </div>
+    <h3 class="lab-card-title">
+      <a href={href} target="_blank" rel="noopener noreferrer">{repo.name}</a>
+    </h3>
+    <p class="lab-card-summary">{repo.summary}</p>
+    <p class="project-stack lab-card-stack">
+      {repo.stack.map((item) => (
+        <span> {item} </span>
+      ))}
+    </p>
+    <div class="lab-card-links">
+      <a class="text-link" href={href} target="_blank" rel="noopener noreferrer">
+        KanterLabs/{repo.slug}
+        <span aria-hidden="true">↗</span>
+      </a>
+      {repo.caseStudy && (
+        <a class="text-link" href={repo.caseStudy.href}>
+          {repo.caseStudy.label}
+        </a>
+      )}
+      {repo.site && (
+        <a
+          class="text-link"
+          href={repo.site.href}
+          {...(repo.site.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+        >
+          {repo.site.label}
+        </a>
+      )}
+    </div>
+  </div>
+</article>
