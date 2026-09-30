@@ -36,7 +36,7 @@ const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`
     />
     <!-- Zoom hint overlay -->
     <span
-      class="diagram-zoom-hint absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[0.72rem] font-medium text-[#d8e0ec] opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+      class="diagram-zoom-hint absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[0.72rem] font-medium text-[#ece6da] opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
       aria-hidden="true"
     >
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -50,7 +50,7 @@ const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`
   </button>
 
   {caption && (
-    <figcaption class="mt-3 text-center text-[0.82rem] text-[#7c8a81] leading-relaxed px-4">
+    <figcaption class="mt-3 text-center text-[0.82rem] text-[#8f8a7f] leading-relaxed px-4">
       {caption}
     </figcaption>
   )}
@@ -98,14 +98,14 @@ const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`
   }
 
   .diagram-trigger:focus-visible {
-    outline: 2px solid #8fb8a3;
+    outline: 2px solid #9db07a;
     outline-offset: 3px;
   }
 
   .diagram-zoom-hint {
-    background: rgba(10, 18, 32, 0.78);
+    background: rgba(20, 20, 22, 0.78);
     backdrop-filter: blur(6px);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    border: 1px solid rgba(214, 206, 190, 0.2);
   }
 
   /* ── Dialog backdrop + box ── */
@@ -122,7 +122,7 @@ const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`
     /* The scrim lives on the dialog itself (it spans the viewport), not
        on ::backdrop — tools like axe can't composite ::backdrop, so a
        transparent dialog reads as caption-on-page-background. */
-    background: rgba(4, 9, 18, 0.92);
+    background: rgba(12, 12, 14, 0.92);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     display: flex;
@@ -167,14 +167,14 @@ const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`
     height: auto;
     object-fit: contain;
     border-radius: 16px;
-    border: 1px solid rgba(148, 163, 184, 0.18);
+    border: 1px solid rgba(214, 206, 190, 0.18);
     box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
     cursor: zoom-out;
   }
 
   /* ── Caption ── */
   .diagram-dialog-caption {
-    color: #9aa9a0; /* AA on the dialog scrim even over a light body */
+    color: #aba69b; /* AA on the dialog scrim even over a light body */
     font-size: 0.82rem;
     text-align: center;
     line-height: 1.5;
@@ -192,22 +192,22 @@ const id = `diagram-${src.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')}`
     width: 2.75rem;
     height: 2.75rem;
     border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, 0.22);
-    background: rgba(10, 18, 32, 0.82);
-    color: #a0afc4;
+    border: 1px solid rgba(214, 206, 190, 0.22);
+    background: rgba(20, 20, 22, 0.82);
+    color: #bdb7ab;
     cursor: pointer;
     transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
     z-index: 101;
   }
 
   .diagram-dialog-close:hover {
-    color: #f1f4f9;
-    background: rgba(20, 30, 50, 0.95);
-    border-color: rgba(148, 163, 184, 0.4);
+    color: #f6f1e7;
+    background: rgba(36, 36, 40, 0.95);
+    border-color: rgba(214, 206, 190, 0.4);
   }
 
   .diagram-dialog-close:focus-visible {
-    outline: 2px solid #8fb8a3;
+    outline: 2px solid #9db07a;
     outline-offset: 3px;
   }
 </style>

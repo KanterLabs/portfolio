@@ -1,10 +1,13 @@
 ---
 import GithubSlugger from 'github-slugger';
 import BaseLayout from './BaseLayout.astro';
+import GitHubIcon from '../components/GitHubIcon.astro';
+import KanterLabsMark from '../components/KanterLabsMark.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
+import { KANTERLABS_ORG_URL, allPublicRepos } from '../lib/kanterlabs';
 
 interface Props {
   project: CollectionEntry<'projects'>;
@@ -59,7 +62,7 @@ for (const match of headingMatches) {
 }
 
 const projectUrl = Astro.site ? new URL(`/projects/${project.id}/`, Astro.site).toString() : undefined;
-const projectImagePath = socialImage ?? heroImage?.src ?? '/og/portfolio-preview-2026.png';
+const projectImagePath = socialImage ?? heroImage?.src ?? '/og/portfolio-preview-kanterlabs.png';
 const projectImageUrl = projectImagePath
   ? Astro.site
     ? new URL(projectImagePath, Astro.site).toString()
@@ -247,6 +250,21 @@ const structuredData = {
             )}
           </nav>
         )}
+
+        <div class="glass case-lab-cta mb-8">
+          <KanterLabsMark size={44} />
+          <p class="case-lab-cta-copy">
+            <strong>More from KanterLabs</strong>
+            <span>
+              {allPublicRepos.length} public projects across self-hosted platforms, developer
+              tools, and desktop software, all open on GitHub.
+            </span>
+          </p>
+          <a class="btn btn-secondary kl-btn-github" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
+            <GitHubIcon size={18} />
+            KanterLabs on GitHub
+          </a>
+        </div>
 
         <a
           href={returnHref}

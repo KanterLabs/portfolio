@@ -1,0 +1,72 @@
+---
+// The KanterLabs mark: a black English lop rabbit. Geometry and colors are
+// copied verbatim from KanterLabs/.github assets/brand/kanterlabs-mark-dark.svg.
+// That variant has a cream halo so the ink rabbit holds its shape on a dark
+// page; on the cream light theme the halo simply disappears into the page.
+// Paths are inlined rather than <use>d so the mark can appear several times
+// on one page without colliding element ids.
+interface Props {
+  size?: number;
+  class?: string;
+  label?: string;
+}
+
+const { size = 32, class: className = '', label } = Astro.props;
+
+const head =
+  'M256 112 C 318 112 360 148 366 204 C 372 258 358 304 324 330 C 304 346 282 352 256 352 C 230 352 208 346 188 330 C 154 304 140 258 146 204 C 152 148 194 112 256 112 Z';
+const ear =
+  'M224 130 C 180 108 120 130 96 190 C 72 254 72 338 86 404 C 94 446 124 468 148 452 C 170 438 176 404 172 366 C 168 328 150 298 152 258 C 154 212 176 164 224 130 Z';
+const inner =
+  'M184 164 C 144 172 120 214 112 262 C 104 314 108 370 118 408 C 124 428 138 432 146 420 C 152 404 150 378 146 350 C 140 312 128 282 132 248 C 136 214 156 184 184 164 Z';
+const mirror = 'matrix(-1 0 0 1 512 0)';
+---
+
+<svg
+  class={`kl-mark ${className}`}
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 512 512"
+  width={size}
+  height={size}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  focusable="false"
+>
+  <g transform="translate(256 256) scale(0.96) translate(-256 -278)">
+    <g fill="#F6F1E7" stroke="#F6F1E7" stroke-width="18" stroke-linejoin="round">
+      <path d={head} />
+      <path d={ear} />
+      <path d={ear} transform={mirror} />
+    </g>
+    <path fill="#1B1B1D" d={head} />
+    <g fill="#1B1B1D" stroke="#F6F1E7" stroke-width="10" stroke-linejoin="round">
+      <path d={ear} />
+      <path d={ear} transform={mirror} />
+    </g>
+    <g fill="#2C2C30">
+      <path d={inner} />
+      <path d={inner} transform={mirror} />
+    </g>
+    <g fill="#F6F1E7">
+      <ellipse cx="208" cy="228" rx="14" ry="16" />
+      <ellipse cx="304" cy="228" rx="14" ry="16" />
+    </g>
+    <g fill="#1B1B1D">
+      <ellipse cx="209" cy="230" rx="9" ry="11" />
+      <ellipse cx="305" cy="230" rx="9" ry="11" />
+    </g>
+    <g fill="#F6F1E7">
+      <circle cx="213" cy="225" r="3.5" />
+      <circle cx="309" cy="225" r="3.5" />
+    </g>
+    <path fill="#9DB07A" d="M243 274 Q 256 267 269 274 Q 264 286 256 288 Q 248 286 243 274 Z" />
+    <path
+      fill="none"
+      stroke="#F6F1E7"
+      stroke-width="5"
+      stroke-linecap="round"
+      d="M256 288 V 299 M256 299 Q 246 309 235 303 M256 299 Q 266 309 277 303"
+    />
+  </g>
+</svg>
