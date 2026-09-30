@@ -26,6 +26,7 @@ LABEL org.opencontainers.image.source="https://github.com/KanterLabs/portfolio" 
 ENV PORTFOLIO_REVISION="$VCS_REF" \
     PORTFOLIO_X_ROBOTS_TAG=""
 COPY container/default.conf.template /etc/nginx/templates/default.conf.template
+COPY container/snippets/ /etc/nginx/templates/snippets/
 COPY --from=build /build/site/dist/ /usr/share/nginx/html/
 
 EXPOSE 8080
