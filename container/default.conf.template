@@ -8,17 +8,14 @@ server {
     server_tokens off;
     absolute_redirect off;
 
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Permissions-Policy "camera=(), geolocation=(), microphone=()" always;
-    add_header X-Robots-Tag "${PORTFOLIO_X_ROBOTS_TAG}" always;
+    # Rendered from templates/snippets/ by the image's envsubst entrypoint.
+    include /etc/nginx/conf.d/snippets/security-headers.conf;
 
     location = /healthz {
         access_log off;
         default_type text/plain;
         add_header Cache-Control "no-store" always;
-        add_header X-Robots-Tag "${PORTFOLIO_X_ROBOTS_TAG}" always;
+        include /etc/nginx/conf.d/snippets/security-headers.conf;
         return 200 "ok\n";
     }
 
@@ -26,31 +23,26 @@ server {
         access_log off;
         default_type text/plain;
         add_header Cache-Control "no-store" always;
-        add_header X-Robots-Tag "${PORTFOLIO_X_ROBOTS_TAG}" always;
+        include /etc/nginx/conf.d/snippets/security-headers.conf;
         return 200 "${PORTFOLIO_REVISION}\n";
     }
 
     location /_astro/ {
         try_files $uri =404;
         add_header Cache-Control "public, max-age=31536000, immutable" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header X-Robots-Tag "${PORTFOLIO_X_ROBOTS_TAG}" always;
+        include /etc/nginx/conf.d/snippets/security-headers.conf;
     }
 
     location / {
         try_files $uri $uri/ $uri.html =404;
         add_header Cache-Control "no-cache" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header X-Frame-Options "SAMEORIGIN" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header Permissions-Policy "camera=(), geolocation=(), microphone=()" always;
-        add_header X-Robots-Tag "${PORTFOLIO_X_ROBOTS_TAG}" always;
+        include /etc/nginx/conf.d/snippets/security-headers.conf;
     }
 
     error_page 404 /404.html;
     location = /404.html {
         internal;
         add_header Cache-Control "no-cache" always;
-        add_header X-Robots-Tag "${PORTFOLIO_X_ROBOTS_TAG}" always;
+        include /etc/nginx/conf.d/snippets/security-headers.conf;
     }
 }

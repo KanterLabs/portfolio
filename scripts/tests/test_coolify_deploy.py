@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import http.server
 import os
 import sys
+import threading
 import unittest
 from unittest import mock
 from pathlib import Path
@@ -142,6 +144,44 @@ class CoolifyDeployTests(unittest.TestCase):
         self.assertEqual("already-current", result["status"])
         self.assertEqual(["a" * 40], verified)
         self.assertFalse(any(call[0] in {"PATCH", "POST"} for call in client.calls))
+
+
+
+class RedirectingHandler(http.server.BaseHTTPRequestHandler):
+    seen_authorization: list[str | None] = []
+
+    def do_GET(self) -> None:  # noqa: N802
+        RedirectingHandler.seen_authorization.append(self.headers.get("Authorization"))
+        if self.path.startswith("/api/v1/"):
+            self.send_response(302)
+            self.send_header("Location", "/elsewhere")
+            self.end_headers()
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(b"{}")
+
+    def log_message(self, *_: Any) -> None:
+        pass
+
+
+class CoolifyClientRedirectTests(unittest.TestCase):
+    def test_redirects_are_refused_without_forwarding_the_token(self) -> None:
+        RedirectingHandler.seen_authorization = []
+        server = http.server.HTTPServer(("127.0.0.1", 0), RedirectingHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        client = deployer.CoolifyClient(
+            f"http://127.0.0.1:{server.server_port}/api/v1", "secret-token"
+        )
+
+        with self.assertRaisesRegex(deployer.DeployError, "HTTP 302"):
+            client.get("/applications/app-uuid")
+
+        self.assertEqual(RedirectingHandler.seen_authorization, ["Bearer secret-token"])
 
 
 if __name__ == "__main__":

@@ -91,11 +91,24 @@ class Config:
             raise DeployError("deployment timeouts and polling interval must be positive")
 
 
+class RejectRedirects(urllib.request.HTTPRedirectHandler):
+    """Refuse redirects so the bearer token never follows one to another host.
+
+    urllib copies the Authorization header onto redirected requests, including
+    cross-host and HTTPS-to-HTTP hops. Returning None surfaces the 3xx as an
+    HTTPError instead.
+    """
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: ANN001
+        return None
+
+
 class CoolifyClient:
     def __init__(self, base_url: str, token: str, timeout: int = 20):
         self.base_url = base_url.rstrip("/")
         self.token = token
         self.timeout = timeout
+        self.opener = urllib.request.build_opener(RejectRedirects)
 
     def request(self, method: str, path: str, body: dict[str, Any] | None = None) -> Any:
         if not path.startswith("/"):
@@ -113,7 +126,7 @@ class CoolifyClient:
             },
         )
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            with self.opener.open(request, timeout=self.timeout) as response:
                 payload = response.read(1_048_577)
                 if len(payload) > 1_048_576:
                     raise DeployError(f"Coolify {method} {path} returned an oversized response")
