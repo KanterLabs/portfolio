@@ -1,5 +1,5 @@
 {
-  "version": "2026-09-21",
+  "version": "2026-09-30",
   "entries": [
     {
       "id": "profile",
@@ -8,7 +8,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/"
       },
-      "lastReviewed": "2026-09-21",
+      "lastReviewed": "2026-09-30",
       "topics": [
         "profile",
         "experience",
@@ -29,9 +29,10 @@
         "hardware mods",
         "decommissioning",
         "data center buildout",
-        "racking"
+        "racking",
+        "KanterLabs"
       ],
-      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. He is also an active member of the university football program. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with building servers and hardware modifications, rack-and-stack work, Linux administration, server deployment, decommissioning, hardware troubleshooting, and practical software delivery, including a recent data center deployment buildout of roughly 72 racks, racked and wired end to end. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025)."
+      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. He is also an active member of the university football program. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with building servers and hardware modifications, rack-and-stack work, Linux administration, server deployment, decommissioning, hardware troubleshooting, and practical software delivery, including a recent data center deployment buildout of roughly 72 racks, racked and wired end to end. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025). Outside InterServer he founded and operates KanterLabs, an independent product and infrastructure studio whose public projects are on GitHub at github.com/KanterLabs."
     },
     {
       "id": "contact",
@@ -40,7 +41,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#contact"
       },
-      "lastReviewed": "2026-09-21",
+      "lastReviewed": "2026-09-30",
       "topics": [
         "contact",
         "email",
@@ -51,10 +52,46 @@
         "email",
         "reach Shane",
         "GitHub",
+        "KanterLabs",
         "LinkedIn",
         "professional inquiries"
       ],
-      "content": "For professional inquiries, the public portfolio contact section lists Shane's email address: shanekanterman04@gmail.com. That section also provides his public GitHub and LinkedIn links."
+      "content": "For professional inquiries, the public portfolio contact section lists Shane's email address: shanekanterman04@gmail.com. That section also links his LinkedIn profile, the KanterLabs GitHub organization (github.com/KanterLabs), where his public projects live, and his personal GitHub profile."
+    },
+    {
+      "id": "kanterlabs",
+      "source": {
+        "title": "KanterLabs open source",
+        "path": "site/src/lib/kanterlabs.ts",
+        "href": "/#kanterlabs"
+      },
+      "lastReviewed": "2026-09-30",
+      "topics": [
+        "kanterlabs",
+        "open source",
+        "projects",
+        "github"
+      ],
+      "keywords": [
+        "KanterLabs",
+        "open source",
+        "GitHub organization",
+        "Hostlet Core",
+        "Helm",
+        "ActionView",
+        "NFL Scores",
+        "Zeus OS",
+        "Greenlit",
+        "Zeus Code",
+        "Linkshare",
+        "Pulse",
+        "ncspot",
+        "RunComp",
+        "Patchwork Pirates",
+        "GNOME Shell extension",
+        "self-hosted"
+      ],
+      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio lists 15 public projects. Flagships: Hostlet Core (Rust and Next.js; turns GitHub repositories into live apps on your own Linux server with builds, containers, routing, health checks, and rollback; pre-1.0 beta and the engine behind hostlet.cloud), Helm (Go and Svelte self-hosted project board with scoped agent automation), ActionView (GNOME Shell extension showing the KanterLabs self-hosted GitHub Actions runner fleet), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Zeus OS (a Fedora bootc laptop desktop, 0.1 preview), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). Other public projects: Hostlet (portfolio and demo hosting service, in development), Zeus Code (terminal workspace for Codex and OpenCode conversations), Linkshare (Go link inbox for a person and their coding agents), Pulse (GNOME Spotify command center, pre-alpha), an ncspot fork, Hostlet deploy fixtures, RunComp (running-competition app used to test Hostlet), Patchwork Pirates (co-op roguelite in pre-production), and this portfolio's source."
     },
     {
       "id": "skills-and-architecture",
@@ -63,7 +100,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#architecture"
       },
-      "lastReviewed": "2026-09-21",
+      "lastReviewed": "2026-09-30",
       "topics": [
         "skills",
         "architecture",
@@ -138,7 +175,7 @@
         "path": "site/src/content/projects/hostlet.mdx",
         "href": "/projects/hostlet"
       },
-      "lastReviewed": "2026-09-21",
+      "lastReviewed": "2026-09-30",
       "topics": [
         "project",
         "deployment",

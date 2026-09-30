@@ -645,15 +645,15 @@
 
 <style is:global>
   .portfolio-chat {
-    --chat-surface: var(--panel-strong, #141816);
-    --chat-surface-soft: var(--panel-soft, #0f1210);
-    --chat-text: var(--color-text-base, #e6e8e7);
-    --chat-muted: var(--color-text-muted, #9aa3a0);
-    --chat-soft: var(--color-text-soft, #78837d);
+    --chat-surface: var(--panel-strong, #1f1f22);
+    --chat-surface-soft: var(--panel-soft, #18181a);
+    --chat-text: var(--color-text-base, #f2ede3);
+    --chat-muted: var(--color-text-muted, #aba69b);
+    --chat-soft: var(--color-text-soft, #8f8a7f);
     --chat-line: var(--line, rgba(255, 255, 255, 0.08));
     --chat-line-strong: var(--line-strong, rgba(255, 255, 255, 0.16));
-    --chat-accent: var(--accent-color, #8fb8a3);
-    --chat-accent-ink: var(--accent-ink, #0c0e0d);
+    --chat-accent: var(--accent-color, #9db07a);
+    --chat-accent-ink: var(--accent-ink, #141416);
     color: var(--chat-text);
     font-family: var(--font-family-sans);
   }
@@ -673,7 +673,7 @@
     border-radius: 999px;
     color: var(--chat-text);
     background: color-mix(in srgb, var(--chat-surface) 92%, var(--chat-accent) 8%);
-    box-shadow: 0 0.75rem 2rem color-mix(in srgb, var(--color-bg, #0c0e0d) 38%, transparent);
+    box-shadow: 0 0.75rem 2rem color-mix(in srgb, var(--color-bg, #141416) 38%, transparent);
     font-size: 0.82rem;
     font-weight: 700;
     cursor: pointer;
@@ -715,7 +715,7 @@
     border: 1px solid var(--chat-line-strong);
     border-radius: 1.15rem;
     background: var(--chat-surface);
-    box-shadow: 0 1.25rem 4rem color-mix(in srgb, var(--color-bg, #0c0e0d) 48%, transparent);
+    box-shadow: 0 1.25rem 4rem color-mix(in srgb, var(--color-bg, #141416) 48%, transparent);
   }
 
   .portfolio-chat-panel:not([hidden]) {
