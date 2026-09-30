@@ -43,7 +43,7 @@
     document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.themeMode = mode;
     const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute('content', theme === 'light' ? '#f7f8f6' : '#0c0e0d');
+    meta?.setAttribute('content', theme === 'light' ? '#f6f1e7' : '#141416');
 
     document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((toggle) => {
       toggle.setAttribute('aria-label', `Theme: ${mode}. Switch to ${nextMode(mode)} theme`);

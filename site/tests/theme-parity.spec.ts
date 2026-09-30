@@ -266,7 +266,14 @@ test('.project-card is an opaque, shadowed surface in light theme', async ({ pag
   const parsed = parseColor(backgroundColor);
   expect(parsed, `unparseable color ${backgroundColor}`).not.toBeNull();
   expect(parsed!.alpha, `.project-card backgroundColor ${backgroundColor} must be opaque`).toBe(1);
-  expect(parsed!.rgb, `.project-card backgroundColor ${backgroundColor} must be white`).toEqual([255, 255, 255]);
+  // KanterLabs warm white (#fffdf8), lifted clearly off the cream page.
+  const pageBg = parseColor(await page.evaluate(() => getComputedStyle(document.body).backgroundColor))!;
+  for (let i = 0; i < 3; i += 1) {
+    expect(
+      parsed!.rgb[i] - pageBg.rgb[i],
+      `.project-card ${backgroundColor} must sit lighter than the page ${pageBg.rgb.join(',')}`,
+    ).toBeGreaterThanOrEqual(8);
+  }
 
   expect(boxShadow, '.project-card resting box-shadow').not.toBe('none');
 });

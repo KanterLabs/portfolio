@@ -1,33 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627" role="img" aria-labelledby="title desc">
-  <title id="title">Shane Kanterman — Linux platforms from bare metal to CI/CD</title>
-  <desc id="desc">Dark editorial social preview for Shane Kanterman's infrastructure and platform portfolio.</desc>
+  <title id="title">Shane Kanterman · KanterLabs — production infrastructure, from rack to release</title>
+  <desc id="desc">KanterLabs-branded social preview: the English lop rabbit mark, the portfolio headline, and core skills on warm ink.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#080b0a"/><stop offset="58%" stop-color="#0c100e"/><stop offset="100%" stop-color="#121914"/></linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#96f7c2"/><stop offset="100%" stop-color="#4ade80"/></linearGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#4ade80" stop-opacity=".18"/><stop offset="100%" stop-color="#4ade80" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1080 40) scale(560 420)"><stop offset="0%" stop-color="#9db07a" stop-opacity=".22"/><stop offset="100%" stop-color="#9db07a" stop-opacity="0"/></radialGradient>
   </defs>
-  <rect width="1200" height="627" fill="url(#bg)"/>
-  <circle cx="1050" cy="92" r="310" fill="url(#glow)"/>
-  <path d="M0 1H1200M0 626H1200" stroke="#26322c"/>
-  <g transform="translate(72 64)">
-    <rect width="1056" height="499" rx="22" fill="#101512" stroke="#2b3831" stroke-width="2"/>
-    <rect x="1" y="1" width="6" height="497" rx="3" fill="url(#accent)"/>
-    <g transform="translate(50 42)">
-      <rect width="58" height="58" rx="16" fill="#17221c" stroke="#385245"/>
-      <text x="29" y="38" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" fill="#b7f7d2">SK</text>
-      <text x="82" y="24" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="2.5" fill="#8ca397">SHANE KANTERMAN</text>
-      <text x="82" y="49" font-family="Inter, Arial, sans-serif" font-size="17" fill="#d8e3dd">Infrastructure · Platform Engineering · Data Center Operations</text>
+  <rect width="1200" height="627" fill="#141416"/>
+  <rect width="1200" height="627" fill="url(#glow)"/>
+  <g transform="translate(64 56)">
+    <rect width="1072" height="515" rx="24" fill="#1b1b1d" stroke="#2e2e33" stroke-width="2"/>
+    <rect x="1" y="1" width="6" height="513" rx="3" fill="#9db07a"/>
+    <g transform="translate(52 44)">
+      <svg width="64" height="64" viewBox="0 0 512 512"><g transform="translate(256 256) scale(0.96) translate(-256 -278)">
+      <g fill="#F6F1E7" stroke="#F6F1E7" stroke-width="18" stroke-linejoin="round"><path d="M256 112 C 318 112 360 148 366 204 C 372 258 358 304 324 330 C 304 346 282 352 256 352 C 230 352 208 346 188 330 C 154 304 140 258 146 204 C 152 148 194 112 256 112 Z"/><path d="M224 130 C 180 108 120 130 96 190 C 72 254 72 338 86 404 C 94 446 124 468 148 452 C 170 438 176 404 172 366 C 168 328 150 298 152 258 C 154 212 176 164 224 130 Z"/><path d="M224 130 C 180 108 120 130 96 190 C 72 254 72 338 86 404 C 94 446 124 468 148 452 C 170 438 176 404 172 366 C 168 328 150 298 152 258 C 154 212 176 164 224 130 Z" transform="matrix(-1 0 0 1 512 0)"/></g>
+      <path fill="#1B1B1D" d="M256 112 C 318 112 360 148 366 204 C 372 258 358 304 324 330 C 304 346 282 352 256 352 C 230 352 208 346 188 330 C 154 304 140 258 146 204 C 152 148 194 112 256 112 Z"/>
+      <g fill="#1B1B1D" stroke="#F6F1E7" stroke-width="10" stroke-linejoin="round"><path d="M224 130 C 180 108 120 130 96 190 C 72 254 72 338 86 404 C 94 446 124 468 148 452 C 170 438 176 404 172 366 C 168 328 150 298 152 258 C 154 212 176 164 224 130 Z"/><path d="M224 130 C 180 108 120 130 96 190 C 72 254 72 338 86 404 C 94 446 124 468 148 452 C 170 438 176 404 172 366 C 168 328 150 298 152 258 C 154 212 176 164 224 130 Z" transform="matrix(-1 0 0 1 512 0)"/></g>
+      <g fill="#2C2C30"><path d="M184 164 C 144 172 120 214 112 262 C 104 314 108 370 118 408 C 124 428 138 432 146 420 C 152 404 150 378 146 350 C 140 312 128 282 132 248 C 136 214 156 184 184 164 Z"/><path d="M184 164 C 144 172 120 214 112 262 C 104 314 108 370 118 408 C 124 428 138 432 146 420 C 152 404 150 378 146 350 C 140 312 128 282 132 248 C 136 214 156 184 184 164 Z" transform="matrix(-1 0 0 1 512 0)"/></g>
+      <g fill="#F6F1E7"><ellipse cx="208" cy="228" rx="14" ry="16"/><ellipse cx="304" cy="228" rx="14" ry="16"/></g>
+      <g fill="#1B1B1D"><ellipse cx="209" cy="230" rx="9" ry="11"/><ellipse cx="305" cy="230" rx="9" ry="11"/></g>
+      <g fill="#F6F1E7"><circle cx="213" cy="225" r="3.5"/><circle cx="309" cy="225" r="3.5"/></g>
+      <path fill="#9DB07A" d="M243 274 Q 256 267 269 274 Q 264 286 256 288 Q 248 286 243 274 Z"/>
+      <path fill="none" stroke="#F6F1E7" stroke-width="5" stroke-linecap="round" d="M256 288 V 299 M256 299 Q 246 309 235 303 M256 299 Q 266 309 277 303"/>
+    </g></svg>
+      <text x="84" y="28" font-family="Inter" font-size="22" font-weight="700" fill="#f6f1e7">Shane Kanterman</text>
+      <text x="84" y="54" font-family="Inter" font-size="18" font-weight="600" fill="#f6f1e7">Kanter<tspan fill="#9db07a">Labs</tspan><tspan fill="#8f8a7f" font-weight="500">  ·  Data Center Technician at InterServer</tspan></text>
     </g>
-    <text x="50" y="203" font-family="Inter, Arial, sans-serif" font-size="61" font-weight="800" letter-spacing="-2.2" fill="#f4f7f5">I build Linux platforms,</text>
-    <text x="50" y="277" font-family="Inter, Arial, sans-serif" font-size="61" font-weight="800" letter-spacing="-2.2" fill="url(#accent)">from bare metal to CI/CD.</text>
-    <text x="50" y="336" font-family="Inter, Arial, sans-serif" font-size="23" fill="#aab9b1">Production hardware, hardened networking, ephemeral CI,</text>
-    <text x="50" y="370" font-family="Inter, Arial, sans-serif" font-size="23" fill="#aab9b1">and repeatable delivery across a two-site Proxmox estate.</text>
-    <g transform="translate(50 412)" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700">
-      <rect width="126" height="42" rx="21" fill="#17221c" stroke="#30443a"/><text x="63" y="27" text-anchor="middle" fill="#dce8e1">PROXMOX</text>
-      <rect x="140" width="104" height="42" rx="21" fill="#17221c" stroke="#30443a"/><text x="192" y="27" text-anchor="middle" fill="#dce8e1">LINUX</text>
-      <rect x="258" width="206" height="42" rx="21" fill="#17221c" stroke="#30443a"/><text x="361" y="27" text-anchor="middle" fill="#dce8e1">GITHUB ACTIONS</text>
-      <rect x="478" width="86" height="42" rx="21" fill="#17221c" stroke="#30443a"/><text x="521" y="27" text-anchor="middle" fill="#dce8e1">RUST</text>
-    </g>
-    <text x="1006" y="454" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#7f9489">SHANEKANTERMAN.DEV</text>
+    <text x="52" y="222" font-family="Inter" font-size="64" font-weight="800" letter-spacing="-2.2" fill="#f6f1e7">I keep production infrastructure</text>
+    <text x="52" y="298" font-family="Inter" font-size="64" font-weight="800" letter-spacing="-2.2" fill="#f6f1e7">moving, <tspan fill="#9db07a">from rack to release.</tspan></text>
+    <text x="52" y="356" font-family="Inter" font-size="23" fill="#aba69b">Server builds and a ~72-rack buildout by day; a two-site Proxmox platform,</text>
+    <text x="52" y="388" font-family="Inter" font-size="23" fill="#aba69b">ephemeral CI, and open-source tools at KanterLabs.</text>
+    <g transform="translate(52 424)" font-family="Inter" font-size="15" font-weight="700" letter-spacing="0.6"><rect x="0" width="128" height="40" rx="20" fill="#1f1f22" stroke="#34343a"/><text x="64.0" y="26" text-anchor="middle" fill="#e4ded2">PROXMOX</text><rect x="140" width="100" height="40" rx="20" fill="#1f1f22" stroke="#34343a"/><text x="190.0" y="26" text-anchor="middle" fill="#e4ded2">LINUX</text><rect x="252" width="196" height="40" rx="20" fill="#1f1f22" stroke="#34343a"/><text x="350.0" y="26" text-anchor="middle" fill="#e4ded2">GITHUB ACTIONS</text><rect x="460" width="84" height="40" rx="20" fill="#1f1f22" stroke="#34343a"/><text x="502.0" y="26" text-anchor="middle" fill="#e4ded2">RUST</text><rect x="556" width="262" height="40" rx="20" fill="#232a1c" stroke="#5d6e43"/><text x="687.0" y="26" text-anchor="middle" fill="#c9d8ab">15 OPEN-SOURCE REPOS</text></g>
+    <text x="1020" y="92" text-anchor="end" font-family="Inter" font-size="16" font-weight="700" letter-spacing="1.5" fill="#8f8a7f">SHANEKANTERMAN.DEV</text>
+    <text x="1020" y="116" text-anchor="end" font-family="Inter" font-size="16" font-weight="700" letter-spacing="1.5" fill="#6e8450">GITHUB.COM/KANTERLABS</text>
   </g>
 </svg>

@@ -30,6 +30,12 @@ test.describe('homepage', () => {
     await page.goto('/');
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Projects' }).click(), 'projects');
     await page.goto('/');
+    await expectHashLinkToReachSection(
+      page,
+      () => primaryNav.getByRole('link', { name: 'Open Source' }).click(),
+      'kanterlabs',
+    );
+    await page.goto('/');
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Skills' }).click(), 'skills');
     await page.goto('/');
     // The panel-to-footer void shrank on purpose (see #contact padding-bottom
@@ -53,7 +59,11 @@ test.describe('homepage', () => {
       'href',
       'https://www.linkedin.com/in/shane-kanterman-4511a2234',
     );
-    await expect(page.getByRole('link', { name: 'GitHub' }).first()).toHaveAttribute(
+    await expect(page.locator('#top').getByRole('link', { name: 'KanterLabs on GitHub' })).toHaveAttribute(
+      'href',
+      'https://github.com/KanterLabs',
+    );
+    await expect(page.getByRole('link', { name: 'Personal GitHub' })).toHaveAttribute(
       'href',
       'https://github.com/ShaneKanterman04',
     );
@@ -446,7 +456,8 @@ test.describe('homepage', () => {
     const railCenter = railBox!.y + railBox!.height / 2;
     expect(Math.abs(railCenter - panelCenter)).toBeLessThanOrEqual(6);
 
-    const footerParagraph = page.locator('.site-footer p').first();
+    // The footer now opens with the KanterLabs brand row; measure to its top.
+    const footerParagraph = page.locator('.site-footer > :first-child');
     const footerBox1440 = await footerParagraph.boundingBox();
     expect(footerBox1440).not.toBeNull();
     const gap1440 = footerBox1440!.y - (panelBox!.y + panelBox!.height);
@@ -479,7 +490,7 @@ test.describe('homepage', () => {
     expect(lineCount390).toBeLessThanOrEqual(4.2);
 
     const panelBox390 = await page.locator('#contact .glass').boundingBox();
-    const footerBox390 = await page.locator('.site-footer p').first().boundingBox();
+    const footerBox390 = await page.locator('.site-footer > :first-child').boundingBox();
     expect(panelBox390).not.toBeNull();
     expect(footerBox390).not.toBeNull();
     const gap390 = footerBox390!.y - (panelBox390!.y + panelBox390!.height);
@@ -522,11 +533,12 @@ test.describe('homepage', () => {
       await page.setViewportSize({ width, height: 1000 });
       await page.goto('/');
 
-      // #projects, #about, #architecture, and #skills each open with a real
-      // <SectionIntro>; #contact is the page's closing statement and never
-      // used the component, so it is deliberately not part of this count.
+      // #projects, #kanterlabs, #about, #architecture, and #skills each open
+      // with a real <SectionIntro>; #contact is the page's closing statement
+      // and never used the component, so it is deliberately not part of this
+      // count.
       const intros = page.locator('[data-section-intro]');
-      await expect(intros).toHaveCount(4);
+      await expect(intros).toHaveCount(5);
       const margins = await intros.evaluateAll((els) => els.map((el) => getComputedStyle(el).marginBottom));
       const unique = new Set(margins);
       expect(unique.size, `margin-bottom values at ${width}px: ${margins.join(', ')}`).toBe(1);
@@ -589,7 +601,7 @@ test.describe('homepage', () => {
     const sectionOrder = await page.locator('main > section').evaluateAll((sections) =>
       sections.map((section) => section.id).filter(Boolean),
     );
-    expect(sectionOrder.slice(0, 3)).toEqual(['top', 'projects', 'about']);
+    expect(sectionOrder.slice(0, 4)).toEqual(['top', 'projects', 'kanterlabs', 'about']);
 
     const titles = await page
       .locator('#projects .project-title')
