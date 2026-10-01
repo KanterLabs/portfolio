@@ -1,0 +1,32 @@
+---
+import { categoryLabels, repoUrl, type LabRepo } from '../lib/kanterlabs';
+
+interface Props {
+  repo: LabRepo;
+}
+
+const { repo } = Astro.props;
+const href = repoUrl(repo);
+---
+
+<article class="lab-card lab-repo" data-lab-repo={repo.slug}>
+  <div class="lab-card-meta">
+    <p class="field-label">{categoryLabels[repo.category]}</p>
+    <span class="lab-status">{repo.status}</span>
+  </div>
+  <h4 class="lab-card-title">
+    <a href={href} target="_blank" rel="noopener noreferrer">{repo.name}</a>
+  </h4>
+  <p class="lab-card-summary">{repo.summary}</p>
+  <div class="lab-repo-footer">
+    <span class="lab-language">
+      <span class="lab-language-dot" data-language={repo.language} aria-hidden="true"></span>
+      {repo.language}
+    </span>
+    {repo.license && <span class="lab-license">{repo.license}</span>}
+    <a class="text-link lab-repo-link" href={href} target="_blank" rel="noopener noreferrer">
+      <span class="sr-only">{repo.name} on GitHub</span>
+      <span aria-hidden="true">GitHub ↗</span>
+    </a>
+  </div>
+</article>

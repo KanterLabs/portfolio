@@ -9,10 +9,10 @@ test.describe('homepage', () => {
     await page.goto('/');
     const primaryNav = page.locator('nav[aria-label="Primary"]');
 
-    await expect(page).toHaveTitle('Shane Kanterman | Infrastructure and Platform Projects');
+    await expect(page).toHaveTitle('Shane Kanterman | Data Center Technician and Infrastructure Work');
     await expect(
       page.getByRole('heading', {
-        name: 'I build Linux platforms, from bare metal to CI/CD.',
+        name: 'I keep production infrastructure moving, from rack to release.',
       }),
     ).toBeVisible();
     await expect(
@@ -30,6 +30,12 @@ test.describe('homepage', () => {
     await page.goto('/');
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Projects' }).click(), 'projects');
     await page.goto('/');
+    await expectHashLinkToReachSection(
+      page,
+      () => primaryNav.getByRole('link', { name: 'Open Source' }).click(),
+      'kanterlabs',
+    );
+    await page.goto('/');
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Skills' }).click(), 'skills');
     await page.goto('/');
     // The panel-to-footer void shrank on purpose (see #contact padding-bottom
@@ -39,10 +45,13 @@ test.describe('homepage', () => {
       maxTop: 480,
     });
     await page.goto('/');
-    await expectHashLinkToReachSection(
-      page,
-      () => page.getByRole('link', { name: 'View Selected Work' }).click(),
-      'projects',
+    await expect(page.getByRole('link', { name: 'Explore Data Center Work' })).toHaveAttribute(
+      'href',
+      '/projects/data-center-operations',
+    );
+    await expect(page.getByRole('link', { name: 'View Platform Projects' })).toHaveAttribute(
+      'href',
+      '#projects',
     );
 
     await expect(page.getByRole('link', { name: 'Resume' })).toHaveCount(0);
@@ -50,7 +59,11 @@ test.describe('homepage', () => {
       'href',
       'https://www.linkedin.com/in/shane-kanterman-4511a2234',
     );
-    await expect(page.getByRole('link', { name: 'GitHub' }).first()).toHaveAttribute(
+    await expect(page.locator('#top').getByRole('link', { name: 'KanterLabs on GitHub' })).toHaveAttribute(
+      'href',
+      'https://github.com/KanterLabs',
+    );
+    await expect(page.getByRole('link', { name: 'Personal GitHub' })).toHaveAttribute(
       'href',
       'https://github.com/ShaneKanterman04',
     );
@@ -61,11 +74,11 @@ test.describe('homepage', () => {
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://shanekanterman.dev/');
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      'Infrastructure and platform portfolio for Shane Kanterman featuring Linux systems, deployment tooling, ephemeral CI, and hands-on data center operations.',
+      'Portfolio of Shane Kanterman, a Data Center Technician at InterServer, featuring production server operations, Linux systems, deployment tooling, and infrastructure projects.',
     );
 
     await expect(page.getByLabel('Site footer')).toContainText('Build');
-    await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
+    await expect(page.getByText(/Build \d{2}-\d{2}-\d{4} · [0-9a-f]{7}/)).toBeVisible();
   });
 
   test('mobile menu works and layout does not overflow', async ({ page, isMobile }) => {
@@ -85,7 +98,7 @@ test.describe('homepage', () => {
       'projects',
     );
     await expectNoHorizontalOverflow(page);
-    await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
+    await expect(page.getByText(/Build \d{2}-\d{2}-\d{4} · [0-9a-f]{7}/)).toBeVisible();
   });
 
   test('case studies render as bordered cards, not a flat list', async ({ page }) => {
@@ -443,7 +456,8 @@ test.describe('homepage', () => {
     const railCenter = railBox!.y + railBox!.height / 2;
     expect(Math.abs(railCenter - panelCenter)).toBeLessThanOrEqual(6);
 
-    const footerParagraph = page.locator('.site-footer p').first();
+    // The footer now opens with the KanterLabs brand row; measure to its top.
+    const footerParagraph = page.locator('.site-footer > :first-child');
     const footerBox1440 = await footerParagraph.boundingBox();
     expect(footerBox1440).not.toBeNull();
     const gap1440 = footerBox1440!.y - (panelBox!.y + panelBox!.height);
@@ -476,7 +490,7 @@ test.describe('homepage', () => {
     expect(lineCount390).toBeLessThanOrEqual(4.2);
 
     const panelBox390 = await page.locator('#contact .glass').boundingBox();
-    const footerBox390 = await page.locator('.site-footer p').first().boundingBox();
+    const footerBox390 = await page.locator('.site-footer > :first-child').boundingBox();
     expect(panelBox390).not.toBeNull();
     expect(footerBox390).not.toBeNull();
     const gap390 = footerBox390!.y - (panelBox390!.y + panelBox390!.height);
@@ -519,11 +533,12 @@ test.describe('homepage', () => {
       await page.setViewportSize({ width, height: 1000 });
       await page.goto('/');
 
-      // #projects, #about, #architecture, and #skills each open with a real
-      // <SectionIntro>; #contact is the page's closing statement and never
-      // used the component, so it is deliberately not part of this count.
+      // #projects, #kanterlabs, #about, #architecture, and #skills each open
+      // with a real <SectionIntro>; #contact is the page's closing statement
+      // and never used the component, so it is deliberately not part of this
+      // count.
       const intros = page.locator('[data-section-intro]');
-      await expect(intros).toHaveCount(4);
+      await expect(intros).toHaveCount(5);
       const margins = await intros.evaluateAll((els) => els.map((el) => getComputedStyle(el).marginBottom));
       const unique = new Set(margins);
       expect(unique.size, `margin-bottom values at ${width}px: ${margins.join(', ')}`).toBe(1);
@@ -586,7 +601,7 @@ test.describe('homepage', () => {
     const sectionOrder = await page.locator('main > section').evaluateAll((sections) =>
       sections.map((section) => section.id).filter(Boolean),
     );
-    expect(sectionOrder.slice(0, 3)).toEqual(['top', 'projects', 'about']);
+    expect(sectionOrder.slice(0, 4)).toEqual(['top', 'projects', 'kanterlabs', 'about']);
 
     const titles = await page
       .locator('#projects .project-title')
@@ -896,7 +911,7 @@ test.describe('homepage', () => {
     const heroParagraphBox = await heroParagraph.boundingBox();
     expect(heroParagraphBox).not.toBeNull();
 
-    const heroCta = page.getByRole('link', { name: 'View Selected Work' });
+    const heroCta = page.getByRole('link', { name: 'Explore Data Center Work' });
     const heroCtaBox = await heroCta.boundingBox();
     expect(heroCtaBox).not.toBeNull();
     expect(Math.abs(heroCtaBox!.x - heroParagraphBox!.x)).toBeLessThanOrEqual(2);

@@ -62,7 +62,7 @@ test.describe('case studies', () => {
       'href',
       'https://github.com/KanterLabs/portfolio',
     );
-    await expect(page.getByText(/Build (\d{2}-\d{2}-\d{4}-\d+|unavailable)/)).toBeVisible();
+    await expect(page.getByText(/Build \d{2}-\d{2}-\d{4} · [0-9a-f]{7}/)).toBeVisible();
   });
 
   test('back to selected work returns to homepage projects anchor', async ({ page }) => {

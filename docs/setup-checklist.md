@@ -39,7 +39,7 @@
 - [ ] neither preview origin is a public or load-balanced backend
 - [ ] the candidate index digest matches the uploaded artifact manifest
 - [ ] `X-Robots-Tag` is present and `robots.txt` disallows crawling
-- [ ] `beta.shanekanterman.dev` has no public DNS, Access application, Tunnel, or Worker
+- [ ] `beta.home.shanekanterman.dev` has no public DNS, Access application, Tunnel, or Worker
 
 ## Recovery
 

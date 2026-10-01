@@ -25,8 +25,11 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
   console.log('Mobile metrics:', JSON.stringify(metrics, null, 2));
 
   expect(metrics.hasHorizontalOverflow).toBe(false);
-  expect(metrics.scrollHeight).toBeLessThan(12000);
-  expect(metrics.h1).toContain('I build Linux platforms');
+  // The KanterLabs catalog (#kanterlabs: studio banner, six flagship media
+  // cards, nine repo cards) adds roughly 6000px of single-column content on
+  // a phone. The budget still catches runaway growth past that.
+  expect(metrics.scrollHeight).toBeLessThan(18500);
+  expect(metrics.h1).toContain('I keep production infrastructure moving');
   expect(metrics.heroParagraph).toContain('Data Center Technician at InterServer');
   expect(metrics.contactText).toContain('shanekanterman04@gmail.com');
   expect(metrics.contactText).toContain('Cranford');
@@ -50,7 +53,8 @@ test('mobile nav panel is compact', async ({ page }) => {
   const navHeight = await page.locator('#mobile-nav').evaluate((el) => el.getBoundingClientRect().height);
   console.log('Mobile nav panel height:', navHeight);
 
-  expect(navHeight).toBeLessThan(260);
+  // Six section anchors plus the KanterLabs GitHub link, 44px each.
+  expect(navHeight).toBeLessThan(340);
 });
 
 test('mobile case study pages layout', async ({ page }) => {

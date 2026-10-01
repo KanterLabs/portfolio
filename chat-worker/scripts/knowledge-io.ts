@@ -33,9 +33,12 @@ export function createAuditIo(): AuditIo {
   return {
     lastCommitDate(path) {
       try {
-        // %cd with --date=short gives the committer date as YYYY-MM-DD, which
-        // compares correctly as a plain string against `lastReviewed`.
-        const out = git(['log', '-1', '--format=%cd', '--date=short', '--', path]);
+        // %ad with --date=short gives the author date as YYYY-MM-DD, which
+        // compares correctly as a plain string against `lastReviewed`. Author
+        // date, not committer date: a rebase or force-push rewrites committer
+        // dates without changing content, which would flag every rebased
+        // source as stale.
+        const out = git(['log', '-1', '--format=%ad', '--date=short', '--', path]);
         return out || null;
       } catch {
         return null;

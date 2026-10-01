@@ -18,6 +18,11 @@ The preview vhosts have no public DNS, Funnel, Cloudflare Access application,
 Cloudflare Tunnel, or public Worker. Public traffic cannot reach either preview
 vhost, and deployment traffic never uses either ingress plane.
 
+The owner-only beta canonical URL is
+`https://beta.home.shanekanterman.dev`; it has no public DNS record. The legacy
+`https://kanter-edge.tail848b9c.ts.net:9445` endpoint remains available only as
+an explicit rollback target.
+
 ## Workload isolation
 
 Each origin serves production from
