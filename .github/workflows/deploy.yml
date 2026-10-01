@@ -213,23 +213,65 @@ jobs:
       COOLIFY_ENVIRONMENT_UUID: ${{ vars.COOLIFY_ENVIRONMENT_UUID }}
       PORTFOLIO_IMAGE_DIGEST: ${{ needs.container.outputs.image_digest }}
       PORTFOLIO_GIT_SHA: ${{ github.sha }}
-      PORTFOLIO_BETA_URL: https://beta.home.shanekanterman.dev
+      PORTFOLIO_SITE_URL: https://beta.home.shanekanterman.dev
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - name: Confirm this commit is still the beta tip
+      - name: Confirm this commit is still the branch tip
         id: freshness
         env:
           REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
-          current=$(git ls-remote "https://github.com/${REPOSITORY}.git" refs/heads/beta | awk '{print $1}')
+          current=$(git ls-remote "https://github.com/${REPOSITORY}.git" "refs/heads/${GITHUB_REF_NAME}" | awk '{print $1}')
           printf '%s\n' "$current" | grep -Eq '^[0-9a-f]{40}$'
           if [ "$current" = "$GITHUB_SHA" ]; then
             echo 'deploy=true' >> "$GITHUB_OUTPUT"
           else
             echo 'deploy=false' >> "$GITHUB_OUTPUT"
-            printf 'Skipping stale beta commit %s; current beta is %s\n' "$GITHUB_SHA" "$current" >> "$GITHUB_STEP_SUMMARY"
+            printf 'Skipping stale %s commit %s; current tip is %s\n' "$GITHUB_REF_NAME" "$GITHUB_SHA" "$current" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Deploy exact digest through Coolify
+        if: steps.freshness.outputs.deploy == 'true'
+        run: python3 scripts/coolify_deploy.py
+
+  deploy-production:
+    if: github.event_name == 'push' && github.ref_name == 'main'
+    needs: container
+    runs-on: homelab
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://shanekanterman.dev
+    permissions:
+      contents: read
+    env:
+      COOLIFY_API_URL: ${{ vars.COOLIFY_API_URL }}
+      COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+      COOLIFY_APPLICATION_UUID: ${{ vars.COOLIFY_APPLICATION_UUID }}
+      COOLIFY_APPLICATION_NAME: ${{ vars.COOLIFY_APPLICATION_NAME }}
+      COOLIFY_DESTINATION_UUID: ${{ vars.COOLIFY_DESTINATION_UUID }}
+      COOLIFY_SERVER_UUID: ${{ vars.COOLIFY_SERVER_UUID }}
+      COOLIFY_ENVIRONMENT_UUID: ${{ vars.COOLIFY_ENVIRONMENT_UUID }}
+      PORTFOLIO_IMAGE_DIGEST: ${{ needs.container.outputs.image_digest }}
+      PORTFOLIO_GIT_SHA: ${{ github.sha }}
+      PORTFOLIO_SITE_URL: https://shanekanterman.dev
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Confirm this commit is still the branch tip
+        id: freshness
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          current=$(git ls-remote "https://github.com/${REPOSITORY}.git" "refs/heads/${GITHUB_REF_NAME}" | awk '{print $1}')
+          printf '%s\n' "$current" | grep -Eq '^[0-9a-f]{40}$'
+          if [ "$current" = "$GITHUB_SHA" ]; then
+            echo 'deploy=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'deploy=false' >> "$GITHUB_OUTPUT"
+            printf 'Skipping stale %s commit %s; current tip is %s\n' "$GITHUB_REF_NAME" "$GITHUB_SHA" "$current" >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Deploy exact digest through Coolify
         if: steps.freshness.outputs.deploy == 'true'

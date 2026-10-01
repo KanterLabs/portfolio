@@ -32,7 +32,7 @@ def config(digest: str = NEW) -> deployer.Config:
         environment_uuid="environment-uuid",
         image_digest=digest,
         git_sha="a" * 40,
-        beta_url="https://beta.example.test",
+        site_url="https://beta.example.test",
         deployment_timeout=3,
         health_timeout=3,
         poll_seconds=1,
@@ -93,7 +93,7 @@ class CoolifyDeployTests(unittest.TestCase):
             "COOLIFY_ENVIRONMENT_UUID": "environment-uuid",
             "PORTFOLIO_IMAGE_DIGEST": "beta",
             "PORTFOLIO_GIT_SHA": "a" * 40,
-            "PORTFOLIO_BETA_URL": "https://beta.example.test",
+            "PORTFOLIO_SITE_URL": "https://beta.example.test",
         }
         with mock.patch.dict(os.environ, values, clear=True):
             with self.assertRaisesRegex(deployer.DeployError, "sha256 digest"):
