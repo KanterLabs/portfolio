@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Deploy the exact Portfolio beta image digest through Coolify.
+"""Deploy the exact Portfolio image digest to a Coolify application.
 
-The command is intentionally environment-driven so GitHub Actions can keep the
-API token in its protected beta environment. API error bodies are never echoed:
-Coolify application responses can contain nested secret-bearing settings.
+The command is intentionally environment-driven so GitHub Actions can keep each
+lane's API token in its protected environment (`beta` or `production`). API
+error bodies are never echoed: Coolify application responses can contain nested
+secret-bearing settings.
 """
 
 from __future__ import annotations
@@ -41,7 +42,7 @@ class Config:
     environment_uuid: str
     image_digest: str
     git_sha: str
-    beta_url: str
+    site_url: str
     deployment_timeout: int = 600
     health_timeout: int = 180
     poll_seconds: int = 3
@@ -64,7 +65,7 @@ class Config:
             environment_uuid=required("COOLIFY_ENVIRONMENT_UUID"),
             image_digest=required("PORTFOLIO_IMAGE_DIGEST"),
             git_sha=required("PORTFOLIO_GIT_SHA"),
-            beta_url=required("PORTFOLIO_BETA_URL").rstrip("/"),
+            site_url=required("PORTFOLIO_SITE_URL").rstrip("/"),
             deployment_timeout=int(os.environ.get("COOLIFY_DEPLOYMENT_TIMEOUT", "600")),
             health_timeout=int(os.environ.get("COOLIFY_HEALTH_TIMEOUT", "180")),
             poll_seconds=int(os.environ.get("COOLIFY_POLL_SECONDS", "3")),
@@ -74,15 +75,15 @@ class Config:
 
     def validate(self) -> None:
         api = urllib.parse.urlsplit(self.api_url)
-        beta = urllib.parse.urlsplit(self.beta_url)
+        site = urllib.parse.urlsplit(self.site_url)
         if api.scheme != "https" or not api.hostname or api.username or api.password:
             raise DeployError("COOLIFY_API_URL must be an HTTPS URL without user information")
         if api.query or api.fragment or not api.path.endswith("/api/v1"):
             raise DeployError("COOLIFY_API_URL must end with /api/v1")
-        if beta.scheme != "https" or not beta.hostname or beta.username or beta.password:
-            raise DeployError("PORTFOLIO_BETA_URL must be an HTTPS URL without user information")
-        if beta.query or beta.fragment:
-            raise DeployError("PORTFOLIO_BETA_URL must not include a query or fragment")
+        if site.scheme != "https" or not site.hostname or site.username or site.password:
+            raise DeployError("PORTFOLIO_SITE_URL must be an HTTPS URL without user information")
+        if site.query or site.fragment:
+            raise DeployError("PORTFOLIO_SITE_URL must not include a query or fragment")
         if not DIGEST_RE.fullmatch(self.image_digest):
             raise DeployError("PORTFOLIO_IMAGE_DIGEST must be a sha256 digest")
         if not SHA_RE.fullmatch(self.git_sha):
@@ -122,7 +123,7 @@ class CoolifyClient:
                 "Authorization": f"Bearer {self.token}",
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "User-Agent": "portfolio-beta-deployer/1",
+                "User-Agent": "portfolio-deployer/1",
             },
         )
         try:
@@ -240,27 +241,27 @@ def wait_for_healthy(
 
 
 def fetch_text(url: str, timeout: int = 15) -> str:
-    request = urllib.request.Request(url, headers={"User-Agent": "portfolio-beta-deployer/1"})
+    request = urllib.request.Request(url, headers={"User-Agent": "portfolio-deployer/1"})
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             payload = response.read(4097)
     except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
-        raise DeployError("Portfolio beta verification request failed") from exc
+        raise DeployError("Portfolio verification request failed") from exc
     if len(payload) > 4096:
-        raise DeployError("Portfolio beta verification response was oversized")
+        raise DeployError("Portfolio verification response was oversized")
     try:
         return payload.decode().strip()
     except UnicodeDecodeError as exc:
-        raise DeployError("Portfolio beta verification response was invalid") from exc
+        raise DeployError("Portfolio verification response was invalid") from exc
 
 
 def verify_route(cfg: Config, expected_revision: str | None) -> None:
-    if fetch_text(cfg.beta_url + "/healthz") != "ok":
-        raise DeployError("Portfolio beta health response did not match")
+    if fetch_text(cfg.site_url + "/healthz") != "ok":
+        raise DeployError("Portfolio health response did not match")
     if expected_revision is not None:
-        revision = fetch_text(cfg.beta_url + "/_meta/revision")
+        revision = fetch_text(cfg.site_url + "/_meta/revision")
         if revision != expected_revision:
-            raise DeployError("Portfolio beta revision did not match the requested commit")
+            raise DeployError("Portfolio revision did not match the requested commit")
 
 
 def deploy(
@@ -302,10 +303,10 @@ def deploy(
             verify(cfg, None)
         except Exception as rollback:
             raise DeployError(
-                f"beta deployment failed ({original}); rollback also failed ({rollback})"
+                f"deployment failed ({original}); rollback also failed ({rollback})"
             ) from rollback
         raise DeployError(
-            f"beta deployment failed and the previous digest was restored ({original})"
+            f"deployment failed and the previous digest was restored ({original})"
         ) from original
 
     return {
@@ -324,7 +325,7 @@ def main() -> int:
         print(json.dumps(result, sort_keys=True, separators=(",", ":")))
         return 0
     except (DeployError, ValueError) as exc:
-        print(f"portfolio-beta-deploy: {exc}", file=sys.stderr)
+        print(f"portfolio-deploy: {exc}", file=sys.stderr)
         return 1
 
 
