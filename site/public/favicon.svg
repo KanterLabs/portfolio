@@ -1,13 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Shane Kanterman favicon">
-  <rect x="6" y="6" width="52" height="52" rx="14" fill="#1e293b" />
-  <rect x="18" y="14" width="28" height="36" rx="5" fill="#f4f4f5" />
-  <rect x="22" y="19" width="20" height="7" rx="2" fill="#1e293b" />
-  <rect x="22" y="29" width="20" height="7" rx="2" fill="#1e293b" />
-  <rect x="22" y="39" width="20" height="7" rx="2" fill="#1e293b" />
-  <circle cx="26" cy="22.5" r="1.5" fill="#f4f4f5" />
-  <circle cx="26" cy="32.5" r="1.5" fill="#f4f4f5" />
-  <circle cx="26" cy="42.5" r="1.5" fill="#f4f4f5" />
-  <path d="M31 22.5h7" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" />
-  <path d="M31 32.5h7" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" />
-  <path d="M31 42.5h7" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#141416"/>
+  <defs>
+    <path id="ear" d="M224 130 C 180 108 120 130 96 190 C 72 254 72 338 86 404 C 94 446 124 468 148 452 C 170 438 176 404 172 366 C 168 328 150 298 152 258 C 154 212 176 164 224 130 Z"/>
+    <path id="inner" d="M184 164 C 144 172 120 214 112 262 C 104 314 108 370 118 408 C 124 428 138 432 146 420 C 152 404 150 378 146 350 C 140 312 128 282 132 248 C 136 214 156 184 184 164 Z"/>
+  </defs>
+  <g transform="translate(256 256) scale(0.96) translate(-256 -278)">
+    <g fill="#F6F1E7" stroke="#F6F1E7" stroke-width="18" stroke-linejoin="round">
+      <path d="M256 112 C 318 112 360 148 366 204 C 372 258 358 304 324 330 C 304 346 282 352 256 352 C 230 352 208 346 188 330 C 154 304 140 258 146 204 C 152 148 194 112 256 112 Z"/><use href="#ear"/><use href="#ear" transform="matrix(-1 0 0 1 512 0)"/>
+    </g>
+    <path fill="#1B1B1D" d="M256 112 C 318 112 360 148 366 204 C 372 258 358 304 324 330 C 304 346 282 352 256 352 C 230 352 208 346 188 330 C 154 304 140 258 146 204 C 152 148 194 112 256 112 Z"/>
+    <g fill="#1B1B1D" stroke="#F6F1E7" stroke-width="10" stroke-linejoin="round">
+      <use href="#ear"/><use href="#ear" transform="matrix(-1 0 0 1 512 0)"/>
+    </g>
+    <g fill="#2C2C30"><use href="#inner"/><use href="#inner" transform="matrix(-1 0 0 1 512 0)"/></g>
+    <g fill="#F6F1E7"><ellipse cx="208" cy="228" rx="14" ry="16"/><ellipse cx="304" cy="228" rx="14" ry="16"/></g>
+    <g fill="#1B1B1D"><ellipse cx="209" cy="230" rx="9" ry="11"/><ellipse cx="305" cy="230" rx="9" ry="11"/></g>
+    <g fill="#F6F1E7"><circle cx="213" cy="225" r="3.5"/><circle cx="309" cy="225" r="3.5"/></g>
+    <path fill="#9DB07A" d="M243 274 Q 256 267 269 274 Q 264 286 256 288 Q 248 286 243 274 Z"/>
+    <path fill="none" stroke="#F6F1E7" stroke-width="5" stroke-linecap="round" d="M256 288 V 299 M256 299 Q 246 309 235 303 M256 299 Q 266 309 277 303"/>
+  </g>
 </svg>

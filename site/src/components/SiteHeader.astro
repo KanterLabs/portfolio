@@ -11,6 +11,9 @@ interface Props {
   backLabel?: string;
 }
 
+import GitHubIcon from './GitHubIcon.astro';
+import KanterLabsMark from './KanterLabsMark.astro';
+import { KANTERLABS_ORG_URL } from '../lib/kanterlabs';
 import ThemeToggle from './ThemeToggle.astro';
 
 const {
@@ -21,14 +24,15 @@ const {
 } = Astro.props;
 ---
 
-<header class="site-header sticky top-0 z-20" data-site-header>
+<header class="site-header sticky top-0 z-20" data-site-header data-home={home ? '' : undefined}>
   <div
     class="header-inner flex items-center justify-between gap-4 py-5 border-b border-transparent transition-[background-color,border-color,padding] duration-[180ms] ease-out"
   >
     <a class="inline-flex items-center gap-2.5 min-w-0 min-h-11" href={home ? '#top' : '/'} aria-label="Shane Kanterman home">
-      <strong class="text-[0.95rem] leading-tight text-text-base font-semibold">Shane Kanterman</strong>
-      <span class="text-[0.82rem] leading-tight text-text-soft max-[780px]:hidden">
-        Infrastructure and Platform Projects
+      <KanterLabsMark size={30} class="shrink-0" />
+      <span class="header-brand-text grid gap-0.5">
+        <strong class="text-[0.95rem] leading-tight text-text-base font-semibold whitespace-nowrap">Shane Kanterman</strong>
+        <span class="kl-header-sub text-[0.74rem] leading-tight tracking-[0.02em]">KanterLabs</span>
       </span>
     </a>
 
@@ -44,6 +48,16 @@ const {
               {item.label}
             </a>
           ))}
+          <a
+            class="header-github"
+            href={KANTERLABS_ORG_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="KanterLabs on GitHub"
+            title="KanterLabs on GitHub"
+          >
+            <GitHubIcon size={17} />
+          </a>
         </nav>
 
         <button
@@ -52,9 +66,9 @@ const {
           aria-expanded="false"
           aria-controls="mobile-nav"
         >
-          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#e6e8e7] rounded-full transition-transform duration-[180ms]"></span>
-          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#e6e8e7] rounded-full transition-[transform,opacity] duration-[180ms]"></span>
-          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#e6e8e7] rounded-full transition-transform duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#f2ede3] rounded-full transition-transform duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#f2ede3] rounded-full transition-[transform,opacity] duration-[180ms]"></span>
+          <span class="block w-[1.1rem] h-[2px] my-[3px] mx-auto bg-[#f2ede3] rounded-full transition-transform duration-[180ms]"></span>
           <span class="sr-only">Toggle navigation</span>
         </button>
         <ThemeToggle />
@@ -91,6 +105,16 @@ const {
           {item.label}
         </a>
       ))}
+      <a
+        href={KANTERLABS_ORG_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="nav-link flex items-center gap-2 min-h-11 px-4 py-2 rounded-xl text-text-muted hover:text-text-base hover:bg-[rgba(255,255,255,0.04)] transition-colors duration-[180ms] text-[0.95rem]"
+      >
+        <GitHubIcon size={16} />
+        KanterLabs on GitHub
+        <span aria-hidden="true">↗</span>
+      </a>
     </nav>
   )}
 </header>

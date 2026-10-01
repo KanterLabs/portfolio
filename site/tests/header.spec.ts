@@ -69,7 +69,9 @@ test.describe('site header', () => {
     const themeToggleBox = (await themeToggle.boundingBox())!;
 
     expect(themeToggleBox.x - (navBox.x + navBox.width)).toBeLessThan(40);
-    expect(navBox.x).toBeGreaterThan(headerInnerBox.x + headerInnerBox.width * 0.5);
+    // Six section anchors plus the KanterLabs GitHub link: the group starts
+    // a little left of center at 1440 but stays anchored to the right edge.
+    expect(navBox.x).toBeGreaterThan(headerInnerBox.x + headerInnerBox.width * 0.35);
 
     await page.goto('/projects/hostlet');
     const backLink = page.locator('[data-site-header]').getByRole('link', { name: 'Selected work' });

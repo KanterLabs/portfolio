@@ -2,7 +2,9 @@
 import AnimatedSection from '../components/AnimatedSection.astro';
 import ArchitectureSnapshot from '../components/ArchitectureSnapshot.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import GitHubIcon from '../components/GitHubIcon.astro';
 import GlassCard from '../components/GlassCard.astro';
+import KanterLabsShowcase from '../components/KanterLabsShowcase.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import ProjectShowcase from '../components/ProjectShowcase.astro';
 import SectionIntro from '../components/SectionIntro.astro';
@@ -10,6 +12,7 @@ import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
 import SystemConstellation from '../components/SystemConstellation.astro';
 import { getCollection } from 'astro:content';
+import { HOSTLET_CLOUD_URL, KANTERLABS_ORG_URL, allPublicRepos } from '../lib/kanterlabs';
 
 const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
@@ -19,8 +22,9 @@ const supportingProjects = portfolioProjects.filter((project) => !project.data.f
 const dataCenterExperience = sorted.find((entry) => entry.data.kind === 'experience')!;
 
 const navItems = [
-  { label: 'Projects', href: '#projects' },
   { label: 'Experience', href: '#about' },
+  { label: 'Projects', href: '#projects' },
+  { label: 'Open Source', href: '#kanterlabs' },
   { label: 'Architecture', href: '#architecture' },
   { label: 'Skills', href: '#skills' },
   { label: 'Contact', href: '#contact' },
@@ -48,16 +52,17 @@ const capabilityGroups = [
 // shares the fold with the headline — anything that wraps past two lines
 // stops being a glance and starts being a paragraph.
 const systemSummary = [
-  { label: 'Operations', value: 'Rack, image, and troubleshoot production servers' },
+  { label: 'Current role', value: 'Data Center Technician at InterServer' },
+  { label: 'Operations', value: 'Build, rack, image, and decommission production servers' },
   { label: 'Platform', value: 'Two-site Proxmox estate, public and private zones' },
   { label: 'Delivery', value: 'Ephemeral CI, atomic releases, rollback retained' },
-  { label: 'Product', value: 'Rust and Next.js deploy tooling for self-hosted apps' },
+  { label: 'Open source', value: 'KanterLabs: platforms, dev tools, and desktop apps' },
 ];
 
 const heroMetrics = [
   { value: '2 sites', label: 'Proxmox platform' },
   { value: '1–3 runners', label: 'Ephemeral CI capacity' },
-  { value: 'Rust + Next.js', label: 'Hostlet control plane' },
+  { value: `${allPublicRepos.length} repos`, label: 'Public on KanterLabs GitHub' },
 ];
 
 const profilePoints = [
@@ -83,7 +88,7 @@ const timelineEntries = [
     org: 'InterServer — Secaucus, NJ',
     title: 'Data Center Technician',
     body:
-      'Live data center work: rack-and-stack, OS installs (Linux, Windows, Proxmox), PXE imaging, hardware diagnostics, and deployment documentation.',
+      'Live data center work: server builds and hardware mods, rack-and-stack, OS installs (Linux, Windows, Proxmox), hardware diagnostics, decommissioning, a ~72-rack data center deployment racked and wired end to end, and PXE imaging.',
     href: `/projects/${dataCenterExperience.id}`,
     linkLabel: 'Read experience notes',
   },
@@ -106,7 +111,7 @@ const timelineEntries = [
   },
 ];
 
-const githubUrl = 'https://github.com/ShaneKanterman04';
+const personalGithubUrl = 'https://github.com/ShaneKanterman04';
 const linkedInUrl = 'https://www.linkedin.com/in/shane-kanterman-4511a2234';
 const emailUrl = 'mailto:shanekanterman04@gmail.com';
 
@@ -118,15 +123,15 @@ const structuredData = [
     '@type': 'WebSite',
     name: 'Shane Kanterman',
     url: siteUrl,
-      description:
-        'Infrastructure and platform portfolio for Shane Kanterman featuring Linux systems, deployment tooling, ephemeral CI, and hands-on data center operations.',
+    description:
+      'Portfolio of Shane Kanterman, a Data Center Technician at InterServer, featuring production server operations, Linux systems, deployment tooling, and infrastructure projects.',
   },
   {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: 'Shane Kanterman',
     url: siteUrl,
-    sameAs: [linkedInUrl, githubUrl],
+    sameAs: [linkedInUrl, KANTERLABS_ORG_URL, personalGithubUrl],
     email: 'mailto:shanekanterman04@gmail.com',
     alumniOf: {
       '@type': 'CollegeOrUniversity',
@@ -148,14 +153,25 @@ const structuredData = [
     ],
     jobTitle: 'Data Center Technician',
   },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'KanterLabs',
+    url: KANTERLABS_ORG_URL,
+    logo: new URL('/apple-touch-icon.png', siteUrl).toString(),
+    description:
+      'Independent product and infrastructure studio building developer tools, self-hosted platforms, and practical software.',
+    founder: { '@type': 'Person', name: 'Shane Kanterman', url: siteUrl },
+    sameAs: [KANTERLABS_ORG_URL, HOSTLET_CLOUD_URL],
+  },
 ];
 ---
 
 <BaseLayout
-  title="Shane Kanterman | Infrastructure and Platform Projects"
-  description="Infrastructure and platform portfolio for Shane Kanterman featuring Linux systems, deployment tooling, ephemeral CI, and hands-on data center operations."
-  image="/og/portfolio-preview-2026.png"
-  imageAlt="Shane Kanterman portfolio preview"
+  title="Shane Kanterman | Data Center Technician and Infrastructure Work"
+  description="Portfolio of Shane Kanterman, a Data Center Technician at InterServer, featuring production server operations, Linux systems, deployment tooling, and infrastructure projects."
+  image="/og/portfolio-preview-kanterlabs.png"
+  imageAlt="Shane Kanterman · KanterLabs portfolio preview"
   structuredData={structuredData}
   chatEnabled={true}
 >
@@ -170,7 +186,7 @@ const structuredData = [
       >
         <div>
           <p class="eyebrow hero-reveal hero-reveal-1">
-            Computer Science Student &middot; Data Center Technician
+            Data Center Technician at InterServer &middot; Computer Science Student
           </p>
           <h1
             class="hero-reveal hero-reveal-2 mb-6 max-w-[24ch] font-extrabold overflow-wrap-break-word text-text-base"
@@ -178,21 +194,24 @@ const structuredData = [
             {/* A comma, not an em dash: a break is permitted after an em dash,
                 so at narrow widths the dash wraps to the head of the next
                 line. A comma can never start a line. */}
-            I build Linux platforms, <span class="gradient-text">from bare metal to CI/CD.</span>
+            I keep production infrastructure moving, <span class="gradient-text">from rack to release.</span>
           </h1>
           <p class="hero-reveal hero-reveal-3 text-text-muted leading-[1.7] text-[1.08rem] max-w-[36rem]">
-            Data Center Technician at InterServer and a CS student at SCSU. I provision
-            production hardware at work, and build the Linux platform, CI, and deployment
-            tooling that runs my own two-site Proxmox estate.
+            I am a Data Center Technician at InterServer, where I provision production hardware,
+            image servers, and troubleshoot physical infrastructure. Outside the data center, I run
+            KanterLabs, my open-source studio, and the two-site Proxmox platform and CI that ship it.
           </p>
 
           <div class="hero-reveal hero-reveal-4 flex flex-wrap gap-4 mt-8 max-[780px]:flex-col max-[780px]:items-stretch">
-            <a class="btn btn-primary" href="#projects">
-              View Selected Work
+            <a class="btn btn-primary" href={`/projects/${dataCenterExperience.id}`}>
+              Explore Data Center Work
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
                 <path d="M7 17L17 7" />
                 <path d="M9 7h8v8" />
               </svg>
+            </a>
+            <a class="btn btn-secondary" href="#projects">
+              View Platform Projects
             </a>
             <a
               class="btn btn-secondary"
@@ -203,12 +222,13 @@ const structuredData = [
               LinkedIn
             </a>
             <a
-              class="btn btn-secondary"
-              href={githubUrl}
+              class="btn btn-secondary kl-btn-github"
+              href={KANTERLABS_ORG_URL}
               target="_blank"
               rel="noopener noreferrer"
             >
-              GitHub
+              <GitHubIcon size={18} />
+              KanterLabs on GitHub
             </a>
           </div>
         </div>
@@ -265,13 +285,26 @@ const structuredData = [
       </AnimatedSection>
 
       <AnimatedSection
+        id="kanterlabs"
+        delay={1}
+      >
+        <SectionIntro
+          eyebrow="Open source · KanterLabs"
+          title="Everything I build ships from KanterLabs."
+          body={`${allPublicRepos.length} public projects across self-hosted platforms, developer tools, and desktop software. The flagships lead, the rest of the catalog follows, and every card links straight to the source.`}
+        />
+
+        <KanterLabsShowcase />
+      </AnimatedSection>
+
+      <AnimatedSection
         id="about"
         delay={1}
       >
         <SectionIntro
-          eyebrow="Experience"
-          title="From production hardware to platform delivery."
-          body="Physical infrastructure work shaped how I approach software: keep systems understandable, deploy them cleanly, and plan for how they fail."
+          eyebrow="Current role"
+          title="Hands-on in a live data center."
+          body="At InterServer, I work directly with the production hardware and deployment workflows that make reliable infrastructure possible."
         />
 
         <GlassCard
@@ -281,9 +314,10 @@ const structuredData = [
         >
           <div>
             <p class="text-text-muted leading-[1.75] text-[1.04rem]">
-              CS student at SCSU and Data Center Technician at InterServer. Experience in
-              rack-and-stack, PXE boot imaging, Linux administration, and hardware troubleshooting
-              in a live production environment.
+              Data Center Technician at InterServer, with hands-on experience in server builds and
+              hardware mods, rack-and-stack, Linux administration, hardware troubleshooting, and
+              PXE boot imaging in a live production environment. I am also pursuing a Computer
+              Science degree at SCSU.
             </p>
             <p class="text-text-muted leading-[1.75] text-[1.04rem] mt-4">
               That background changed how I evaluate software work: not only what gets built, but
@@ -431,11 +465,11 @@ const structuredData = [
             <h2
               class="text-[length:var(--step-title)] leading-[1.08] tracking-[-0.02em] mb-5 font-extrabold text-text-base"
             >
-              Early-career infrastructure and platform roles.
+              Data center and infrastructure roles.
             </h2>
             <p class="text-text-muted leading-[1.75] text-[1.04rem]">
-              Most interested in work where Linux systems, networking, deployment automation,
-              and software delivery share the same operational owner.
+              Most interested in work where production operations, Linux systems, networking,
+              deployment automation, and software delivery share the same operational owner.
             </p>
 
             <dl class="contact-details">
@@ -462,12 +496,22 @@ const structuredData = [
               LinkedIn
             </a>
             <a
-              class="btn btn-secondary max-[780px]:w-full"
-              href={githubUrl}
+              class="btn btn-secondary kl-btn-github max-[780px]:w-full"
+              href={KANTERLABS_ORG_URL}
               target="_blank"
               rel="noopener noreferrer"
             >
-              GitHub
+              <GitHubIcon size={18} />
+              KanterLabs on GitHub
+            </a>
+            <a
+              class="text-link w-fit justify-self-center text-[0.88rem]"
+              href={personalGithubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Personal GitHub
+              <span aria-hidden="true">↗</span>
             </a>
           </div>
         </GlassCard>
@@ -477,7 +521,7 @@ const structuredData = [
   </div>
 
   <script>
-    const sectionIds = ['projects', 'about', 'architecture', 'skills', 'contact'];
+    const sectionIds = ['projects', 'kanterlabs', 'about', 'architecture', 'skills', 'contact'];
     const sectionLinks = Array.from(document.querySelectorAll('[data-nav-link]'));
 
     const setActiveSection = (sectionId) => {

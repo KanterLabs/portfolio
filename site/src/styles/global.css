@@ -1,8 +1,8 @@
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/inter/700.css";
-@import "@fontsource/inter/800.css";
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/inter/latin-600.css";
+@import "@fontsource/inter/latin-700.css";
+@import "@fontsource/inter/latin-800.css";
 @import "tailwindcss";
 
 @theme {
@@ -11,13 +11,13 @@
   --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     monospace;
 
-  --color-bg: #0c0e0d;
-  --color-bg-elevated: #121514;
-  --color-text-base: #e6e8e7;
-  --color-text-muted: #9aa3a0;
-  --color-text-soft: #78837d; /* 4.9:1 on --color-bg; keep AA for small text */
-  --color-accent: #8fb8a3;
-  --color-accent-strong: #aecbbb;
+  --color-bg: #141416;
+  --color-bg-elevated: #1b1b1d;
+  --color-text-base: #f2ede3;
+  --color-text-muted: #aba69b;
+  --color-text-soft: #8f8a7f; /* 5.3:1 on --color-bg; keep AA for small text */
+  --color-accent: #9db07a;
+  --color-accent-strong: #b3c48f;
   --color-line: rgba(255, 255, 255, 0.08);
   --color-line-strong: rgba(255, 255, 255, 0.16);
 }
@@ -25,12 +25,12 @@
 :root {
   color-scheme: dark;
   --panel: rgba(255, 255, 255, 0.02);
-  --panel-strong: #141816;
-  --panel-soft: #0f1210;
+  --panel-strong: #1f1f22;
+  --panel-soft: #18181a;
   --line: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.16);
-  --accent-color: #8fb8a3;
-  --accent-ink: #0c0e0d;
+  --accent-color: #9db07a;
+  --accent-ink: #141416;
   /* The single recessed-data surface for the whole site. Derived from
      --color-text-base/--color-bg, so it resolves correctly in light mode
      and its no-JS mirror with no per-theme override. 1.6% keeps
@@ -53,7 +53,7 @@
   /* Resting and raised elevation for the three card surfaces. Dark stays
      a tight near-black contact shadow plus a soft wide one; light is
      overridden below with the ink color at low alpha, wide enough to
-     separate an opaque white card from #f7f8f6. */
+     separate an opaque white card from #f6f1e7. */
   --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.5), 0 18px 32px -16px rgba(0, 0, 0, 0.45);
   --shadow-card-hover: 0 1px 0 rgba(0, 0, 0, 0.55), 0 26px 44px -18px rgba(0, 0, 0, 0.55);
   /* Sticky header ≈85px, plus the 12px translateY of the .observe-animate
@@ -212,7 +212,7 @@ select {
 }
 
 .btn-secondary:hover {
-  border-color: rgba(143, 184, 163, 0.5);
+  border-color: rgba(157, 176, 122, 0.5);
 }
 
 /* ── Shared page frame ── */
@@ -279,7 +279,7 @@ select {
 
 .text-link:hover {
   color: var(--accent-color);
-  border-color: rgba(143, 184, 163, 0.5);
+  border-color: rgba(157, 176, 122, 0.5);
 }
 
 /* ── Homepage composition ──
@@ -549,13 +549,13 @@ select {
 }
 
 .label-row-copy {
-  color: #9aa3a0;
+  color: #aba69b;
   line-height: 1.65;
   font-size: 0.95rem;
 }
 
 .label-row-copy strong {
-  color: #e6e8e7;
+  color: #f2ede3;
   font-weight: 600;
 }
 
@@ -583,7 +583,7 @@ select {
 }
 
 .system-summary-copy {
-  color: #e6e8e7;
+  color: #f2ede3;
   line-height: 1.6;
   font-size: 0.95rem;
 }
@@ -689,13 +689,13 @@ select {
 
 .system-node strong,
 .architecture-footer strong {
-  color: #e6e8e7;
+  color: #f2ede3;
   font-size: 0.95rem;
   line-height: 1.35;
 }
 
 .system-node-copy {
-  color: #9aa3a0;
+  color: #aba69b;
   font-size: 0.84rem;
   line-height: 1.5;
 }
@@ -708,7 +708,7 @@ select {
   padding: 0.2rem 0.65rem;
   border-radius: 999px;
   border: 1px solid var(--line);
-  color: #9aa3a0;
+  color: #aba69b;
   font-size: 0.76rem;
   font-weight: 600;
 }
@@ -1120,6 +1120,21 @@ select {
   transform-origin: top;
 }
 
+/* The architecture diagram is the page's strongest proof, and the rules
+   above hide it until the IntersectionObserver in BaseLayout stamps
+   .visible on the section. Without JavaScript that class never lands, so
+   the whole right-hand column would stay blank. Mirror the reduced-motion
+   resting state instead. */
+.no-js .architecture-boot-node,
+.no-js .architecture-boot-footer-item {
+  opacity: 1;
+  transform: none;
+}
+
+.no-js .architecture-boot-connector {
+  transform: none;
+}
+
 /* The top-to-bottom order still reads as a boot sequence, but the whole
    cascade now finishes inside the ~500ms budget above. It used to run to
    1240ms, which meant scrolling past the section at a normal speed showed
@@ -1192,7 +1207,7 @@ select {
 }
 
 .project-proof-copy {
-  color: #b8bfbc;
+  color: #c4bfb4;
   line-height: 1.6;
   font-size: 0.92rem;
   margin: 0;
@@ -1217,6 +1232,61 @@ select {
   border-top: 1px solid var(--line);
   margin-top: var(--space-section);
   padding-top: 2.5rem;
+}
+
+/* Same panel language as every other card on the site (--panel on --line,
+   --radius-md) — do not flatten these into bare links. */
+.case-pager {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (width >= 780px) {
+  .case-pager {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.case-pager-link {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+  min-height: 3.3rem;
+  padding: 1.25rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--transition),
+    background-color var(--transition);
+}
+
+.case-pager-link:hover {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--panel) 70%, var(--color-text-base) 3%);
+}
+
+.case-pager-next {
+  text-align: right;
+}
+
+.case-pager-title {
+  color: var(--color-text-base);
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+
+/* Keeps a lone "Next" card in the right-hand column on two-column widths. */
+.case-pager-spacer {
+  display: none;
+}
+
+@media (width >= 780px) {
+  .case-pager-spacer {
+    display: block;
+  }
 }
 
 .case-prose {
@@ -1339,11 +1409,11 @@ select {
 .site-header-mark,
 .project-progress-bar,
 .profile-point-dot {
-  background: #8fb8a3;
+  background: #9db07a;
 }
 
 .site-header-mark {
-  color: #0c0e0d;
+  color: #141416;
 }
 
 .profile-point-dot {
@@ -1351,27 +1421,27 @@ select {
 }
 
 .project-status-shipped {
-  color: #8fb8a3;
+  color: #9db07a;
 }
 
 .project-status-shipped .project-status-dot {
-  background: #8fb8a3;
+  background: #9db07a;
 }
 
 .project-status-progress {
-  color: #9aa3a0;
+  color: #aba69b;
 }
 
 .project-status-in-progress {
-  color: #9aa3a0;
+  color: #aba69b;
 }
 
 .project-status-progress .project-status-dot {
-  background: #9aa3a0;
+  background: #aba69b;
 }
 
 .project-status-in-progress .project-status-dot {
-  background: #9aa3a0;
+  background: #aba69b;
 }
 
 .project-status-archived {
@@ -1404,17 +1474,22 @@ select {
   transform: none;
 }
 
-.js .observe-animate {
-  opacity: 0;
-  transform: translateY(12px);
-  transition:
-    opacity 0.32s ease,
-    transform 0.32s ease;
-}
+/* The scroll-reveal only runs on desktop-width viewports; on phones the
+   IntersectionObserver reveal reads as sections "loading" late, so mobile
+   never enters the hidden state at all (the JS observer skips it too). */
+@media (width >= 780px) {
+  .js .observe-animate {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 0.32s ease,
+      transform 0.32s ease;
+  }
 
-.js .observe-animate.visible {
-  opacity: 1;
-  transform: translateY(0);
+  .js .observe-animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .stagger-1 { transition-delay: 0.04s; }
@@ -1424,12 +1499,12 @@ select {
 .stagger-5 { transition-delay: 0.2s; }
 
 .site-header.is-scrolled .header-inner {
-  background: rgba(12, 14, 13, 0.92);
+  background: rgba(20, 20, 22, 0.92);
   border-color: var(--line-strong);
 }
 
 .nav-link[aria-current='location'] {
-  color: #8fb8a3;
+  color: #9db07a;
 }
 
 .no-js .mobile-toggle {
@@ -1446,16 +1521,26 @@ select {
     margin-block: -0.45rem;
   }
 
-  [data-toc-details] nav a {
-    padding-block: 0.75rem;
+  /* Card titles are the primary navigation on a phone — grow their hit
+     box the same way .text-link does above. */
+  .project-title-link {
+    display: inline-block;
+    padding-block: 0.5rem;
+    margin-block: -0.5rem;
   }
 
+  /* Heading anchors are a hover affordance, but they must stay keyboard
+     reachable (tests/case-studies.spec.ts), so grow their hit box rather
+     than hiding them on touch. */
   .prose h2 .heading-anchor,
   .prose h3 .heading-anchor {
     padding: 0.5rem;
     margin: -0.5rem -0.2rem;
   }
 
+  [data-toc-details] nav a {
+    padding-block: 0.75rem;
+  }
 }
 
 /* The open panel overlays page content, so it needs a solid surface —
@@ -1559,14 +1644,14 @@ select {
 }
 
 .prose {
-  color: #b8bfbc;
+  color: #c4bfb4;
   line-height: 1.82;
   font-size: 1.06rem;
 }
 
 .prose h2 {
   scroll-margin-top: var(--header-offset);
-  color: #e6e8e7;
+  color: #f2ede3;
   font-family: var(--font-family-sans);
   font-size: var(--step-heading);
   font-weight: 700;
@@ -1594,7 +1679,7 @@ select {
 
 .prose h3 {
   scroll-margin-top: 7rem;
-  color: #e6e8e7;
+  color: #f2ede3;
   font-family: var(--font-family-sans);
   font-size: 1.22rem;
   font-weight: 600;
@@ -1640,7 +1725,7 @@ select {
 
 .prose h2 > .heading-anchor:hover,
 .prose h3 > .heading-anchor:hover {
-  color: #8fb8a3;
+  color: #9db07a;
 }
 
 .prose p {
@@ -1653,16 +1738,16 @@ select {
 }
 
 .prose strong {
-  color: #e6e8e7;
+  color: #f2ede3;
   font-weight: 600;
 }
 
 .prose em {
-  color: #ccd2cf;
+  color: #d8d3c8;
 }
 
 .prose a:not(.heading-anchor) {
-  color: #aecbbb;
+  color: #b3c48f;
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-color: color-mix(in srgb, var(--accent-color) 45%, transparent);
@@ -1670,7 +1755,7 @@ select {
 }
 
 .prose a:not(.heading-anchor):hover {
-  color: #8fb8a3;
+  color: #9db07a;
   text-decoration-color: color-mix(in srgb, var(--accent-color) 75%, transparent);
 }
 
@@ -1733,9 +1818,9 @@ select {
 .prose :not(pre) > code {
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   font-size: 0.865em;
-  color: #aecbbb;
-  background: rgba(143, 184, 163, 0.07);
-  border: 1px solid rgba(143, 184, 163, 0.16);
+  color: #b3c48f;
+  background: rgba(157, 176, 122, 0.07);
+  border: 1px solid rgba(157, 176, 122, 0.16);
   border-radius: 5px;
   padding: 0.14em 0.42em;
 }
@@ -1774,14 +1859,14 @@ select {
 
 .prose pre.astro-code,
 .prose pre.shiki {
-  background: rgba(8, 10, 9, 0.95) !important;
+  background: rgba(14, 14, 16, 0.95) !important;
 }
 
 .prose blockquote {
   border-left: 3px solid color-mix(in srgb, var(--accent-color) 45%, transparent);
   padding: 0.1rem 0 0.1rem 1.25rem;
   margin: 2rem 0;
-  color: #9aa3a0;
+  color: #aba69b;
   font-style: italic;
 }
 
@@ -1821,7 +1906,7 @@ select {
 
 .prose th {
   text-align: left;
-  color: #e6e8e7;
+  color: #f2ede3;
   font-weight: 600;
   font-size: 0.82rem;
   letter-spacing: 0.02em;
@@ -1834,7 +1919,7 @@ select {
   padding: 0.7rem 1rem;
   border-bottom: 1px solid var(--line);
   vertical-align: top;
-  color: #b8bfbc;
+  color: #c4bfb4;
 }
 
 .prose tr:last-child td {
@@ -1850,8 +1935,8 @@ select {
 }
 
 .toc-link-active {
-  color: #8fb8a3 !important;
-  background: rgba(143, 184, 163, 0.07);
+  color: #9db07a !important;
+  background: rgba(157, 176, 122, 0.07);
   box-shadow: inset 2px 0 0 var(--accent-color);
 }
 
@@ -1954,29 +2039,29 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
 
 [data-theme="light"] {
   color-scheme: light;
-  --color-bg: #f7f8f6;
-  --color-bg-elevated: #ffffff;
-  --color-text-base: #17201b;
-  --color-text-muted: #55625a;
-  --color-text-soft: #66716b;
-  --color-accent: #47725c;
-  --color-accent-strong: #365b48;
-  --color-line: rgba(23, 32, 27, 0.12);
-  --color-line-strong: rgba(23, 32, 27, 0.2);
-  --panel: #ffffff;
-  --panel-strong: #ffffff;
-  --panel-soft: #eef1ed;
-  --line: rgba(23, 32, 27, 0.12);
-  --line-strong: rgba(23, 32, 27, 0.2);
-  --accent-color: #47725c;
+  --color-bg: #f6f1e7;
+  --color-bg-elevated: #fffdf8;
+  --color-text-base: #1b1b1d;
+  --color-text-muted: #57524a;
+  --color-text-soft: #696358;
+  --color-accent: #56693c;
+  --color-accent-strong: #45542f;
+  --color-line: rgba(27, 27, 29, 0.12);
+  --color-line-strong: rgba(27, 27, 29, 0.2);
+  --panel: #fffdf8;
+  --panel-strong: #fffdf8;
+  --panel-soft: #efe8da;
+  --line: rgba(27, 27, 29, 0.12);
+  --line-strong: rgba(27, 27, 29, 0.2);
+  --accent-color: #56693c;
   --accent-ink: #ffffff;
-  --shadow-card: 0 1px 0 rgba(23, 32, 27, 0.06), 0 18px 32px -16px rgba(23, 32, 27, 0.12);
-  --shadow-card-hover: 0 1px 0 rgba(23, 32, 27, 0.08), 0 26px 44px -18px rgba(23, 32, 27, 0.18);
+  --shadow-card: 0 1px 0 rgba(27, 27, 29, 0.06), 0 18px 32px -16px rgba(27, 27, 29, 0.12);
+  --shadow-card-hover: 0 1px 0 rgba(27, 27, 29, 0.08), 0 26px 44px -18px rgba(27, 27, 29, 0.18);
 }
 
 [data-theme="light"] body {
-  color: #17201b;
-  background: #f7f8f6;
+  color: #1b1b1d;
+  background: #f6f1e7;
 }
 
 /* No-JS fallback: a verbatim mirror of the [data-theme="light"] variable
@@ -1987,24 +2072,24 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
 @media (prefers-color-scheme: light) {
   html:not([data-theme]) {
     color-scheme: light;
-    --color-bg: #f7f8f6;
-    --color-bg-elevated: #ffffff;
-    --color-text-base: #17201b;
-    --color-text-muted: #55625a;
-    --color-text-soft: #66716b;
-    --color-accent: #47725c;
-    --color-accent-strong: #365b48;
-    --color-line: rgba(23, 32, 27, 0.12);
-    --color-line-strong: rgba(23, 32, 27, 0.2);
-    --panel: #ffffff;
-    --panel-strong: #ffffff;
-    --panel-soft: #eef1ed;
-    --line: rgba(23, 32, 27, 0.12);
-    --line-strong: rgba(23, 32, 27, 0.2);
-    --accent-color: #47725c;
+    --color-bg: #f6f1e7;
+    --color-bg-elevated: #fffdf8;
+    --color-text-base: #1b1b1d;
+    --color-text-muted: #57524a;
+    --color-text-soft: #696358;
+    --color-accent: #56693c;
+    --color-accent-strong: #45542f;
+    --color-line: rgba(27, 27, 29, 0.12);
+    --color-line-strong: rgba(27, 27, 29, 0.2);
+    --panel: #fffdf8;
+    --panel-strong: #fffdf8;
+    --panel-soft: #efe8da;
+    --line: rgba(27, 27, 29, 0.12);
+    --line-strong: rgba(27, 27, 29, 0.2);
+    --accent-color: #56693c;
     --accent-ink: #ffffff;
-    --shadow-card: 0 1px 0 rgba(23, 32, 27, 0.06), 0 18px 32px -16px rgba(23, 32, 27, 0.12);
-    --shadow-card-hover: 0 1px 0 rgba(23, 32, 27, 0.08), 0 26px 44px -18px rgba(23, 32, 27, 0.18);
+    --shadow-card: 0 1px 0 rgba(27, 27, 29, 0.06), 0 18px 32px -16px rgba(27, 27, 29, 0.12);
+    --shadow-card-hover: 0 1px 0 rgba(27, 27, 29, 0.08), 0 26px 44px -18px rgba(27, 27, 29, 0.18);
   }
 
   html:not([data-theme]) body {
@@ -2014,30 +2099,30 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
 }
 
 [data-theme="light"] .site-header.is-scrolled .header-inner {
-  background: rgba(247, 248, 246, 0.94);
+  background: rgba(246, 241, 231, 0.94);
 }
 
 [data-theme="light"] ::selection {
-  background: rgba(79, 125, 101, 0.2);
-  color: #17201b;
+  background: rgba(110, 132, 80, 0.2);
+  color: #1b1b1d;
 }
 
 [data-theme="light"] :focus-visible {
-  outline-color: #47725c;
+  outline-color: #56693c;
 }
 
 [data-theme="light"] .skip-link,
 [data-theme="light"] .btn-primary {
-  background: #47725c;
+  background: #56693c;
   color: #ffffff;
 }
 
 [data-theme="light"] .btn-primary:hover {
-  background: #365b48;
+  background: #45542f;
 }
 
 [data-theme="light"] .glass-hover:hover {
-  background: rgba(23, 32, 27, 0.025);
+  background: rgba(27, 27, 29, 0.025);
 }
 
 [data-theme="light"] .text-link,
@@ -2047,12 +2132,12 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
 [data-theme="light"] .prose h3,
 [data-theme="light"] .prose strong,
 [data-theme="light"] .prose th {
-  color: #17201b;
+  color: #1b1b1d;
 }
 
 [data-theme="light"] .prose h2 .heading-anchor,
 [data-theme="light"] .prose h3 .heading-anchor {
-  color: rgba(23, 32, 27, 0.65);
+  color: rgba(27, 27, 29, 0.65);
 }
 
 [data-theme="light"] .text-link:hover,
@@ -2060,11 +2145,11 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
 [data-theme="light"] .prose h2 > .heading-anchor:hover,
 [data-theme="light"] .prose h3 > .heading-anchor:hover,
 [data-theme="light"] .toc-link-active {
-  color: #47725c !important;
+  color: #56693c !important;
 }
 
 [data-theme="light"] .text-link:hover {
-  border-color: rgba(79, 125, 101, 0.5);
+  border-color: rgba(110, 132, 80, 0.5);
 }
 
 [data-theme="light"] .project-proof-copy,
@@ -2074,32 +2159,32 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
 [data-theme="light"] .prose,
 [data-theme="light"] .prose td,
 [data-theme="light"] .prose blockquote {
-  color: #55625a;
+  color: #57524a;
 }
 
 [data-theme="light"] .project-status-progress,
 [data-theme="light"] .project-status-in-progress {
-  color: #66716b;
+  color: #696358;
 }
 
 [data-theme="light"] .project-status-shipped .project-status-dot,
 [data-theme="light"] .site-header-mark,
 [data-theme="light"] .project-progress-bar,
 [data-theme="light"] .profile-point-dot {
-  background: #47725c;
+  background: #56693c;
 }
 
 [data-theme="light"] .project-status-shipped {
-  color: #47725c;
+  color: #56693c;
 }
 
 [data-theme="light"] .project-status-progress .project-status-dot,
 [data-theme="light"] .project-status-in-progress .project-status-dot {
-  background: #66716b;
+  background: #696358;
 }
 
 [data-theme="light"] .project-status-archived .project-status-dot {
-  background: #9aa39d;
+  background: #a39d91;
 }
 
 [data-theme="light"] .system-node {
@@ -2107,26 +2192,26 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
 }
 
 [data-theme="light"] .prose a:not(.heading-anchor) {
-  color: #365b48;
+  color: #45542f;
 }
 
 [data-theme="light"] .prose :not(pre) > code {
-  color: #365b48;
-  background: rgba(79, 125, 101, 0.08);
-  border-color: rgba(79, 125, 101, 0.2);
+  color: #45542f;
+  background: rgba(110, 132, 80, 0.08);
+  border-color: rgba(110, 132, 80, 0.2);
 }
 
 [data-theme="light"] .prose pre.astro-code,
 [data-theme="light"] .prose pre.shiki {
-  background: #17201b !important;
+  background: #1b1b1d !important;
 }
 
 [data-theme="light"] .prose thead {
-  background: rgba(23, 32, 27, 0.04);
+  background: rgba(27, 27, 29, 0.04);
 }
 
 [data-theme="light"] .prose em {
-  color: #46524a;
+  color: #4d483f;
 }
 
 [data-theme="light"] .callout-warning .callout-label {
@@ -2134,23 +2219,23 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
 }
 
 [data-theme="light"] .toc-link-active {
-  background: rgba(79, 125, 101, 0.09);
+  background: rgba(110, 132, 80, 0.09);
 }
 
 [data-theme="light"] .mobile-toggle span {
-  background: #17201b !important;
+  background: #1b1b1d !important;
 }
 
 /* .diagram-zoom-hint and .diagram-dialog-caption keep their dark-theme
    colors in light mode on purpose: both sit on dark overlay surfaces. */
 
 [data-theme="light"] .diagram-trigger {
-  background: #ffffff;
+  background: var(--panel);
   border-color: var(--line);
 }
 
 [data-theme="light"] figure > figcaption {
-  color: #55625a !important;
+  color: #57524a !important;
 }
 
 @media (width >= 960px) {

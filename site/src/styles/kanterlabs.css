@@ -1,0 +1,635 @@
+/* ── KanterLabs: studio banner, flagship media cards, repo catalog ──
+   Brand colors come from KanterLabs/.github assets/brand. Theme colors are
+   runtime tokens (or color-mix of tokens) so light, dark, and the no-JS
+   light mirror need no extra entries here. The only literals are the brand
+   constants below, which are identical in every theme on purpose: a
+   terminal is ink in both themes, the same way prose code blocks are. */
+
+:root {
+  --kl-ink: #1b1b1d;
+  --kl-ink-deep: #141416;
+  --kl-cream: #f6f1e7;
+  --kl-sage: #9db07a;
+  --kl-cream-muted: #a9a398; /* 6.8:1 on --kl-ink */
+}
+
+.lab-showcase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.25rem;
+}
+
+/* Every card in the section shares the project-card surface. */
+.lab-banner,
+.lab-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Studio banner ── */
+
+.lab-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  padding: 2rem;
+  /* A faint sage wash from the mark's corner — the one place on the page
+     that is branded rather than neutral. */
+  background:
+    radial-gradient(
+      60rem 22rem at 0% 0%,
+      color-mix(in srgb, var(--accent-color) 9%, transparent),
+      transparent 70%
+    ),
+    var(--panel);
+  border-left: 2px solid var(--accent-color);
+}
+
+@media (width < 780px) {
+  .lab-banner {
+    padding: 1.5rem;
+  }
+}
+
+@media (width >= 960px) {
+  .lab-banner {
+    grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 1fr);
+    gap: 2.75rem;
+    padding: 2.25rem;
+  }
+}
+
+.lab-lockup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lab-lockup-mark {
+  flex: none;
+  width: clamp(3.25rem, 14vw, 4.5rem);
+  height: auto;
+}
+
+.lab-wordmark {
+  margin: 0;
+  color: var(--color-text-base);
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.7rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.lab-wordmark-accent {
+  color: var(--accent-color);
+}
+
+.lab-banner-tagline {
+  max-width: 34rem;
+  margin: 1.35rem 0 0;
+  color: var(--color-text-base);
+  font-size: 1.14rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.lab-banner-copy {
+  max-width: 38rem;
+  margin: 0.8rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.lab-banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 1.6rem;
+}
+
+@media (width < 780px) {
+  .lab-banner-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* A recess inside the banner, the same card → recess step the featured
+   case study uses for its diagram. */
+.lab-banner-facts {
+  display: grid;
+  align-content: start;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--plate-recess);
+}
+
+.lab-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+/* Number first visually, label first in the DOM so a screen reader hears
+   "Public repos: 15". Numbers stay top-aligned when a label wraps. */
+.lab-stats > div {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.lab-stats dt {
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+}
+
+.lab-stats dd {
+  margin: 0;
+  color: var(--color-text-base);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.lab-pillars {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lab-pillars li {
+  display: grid;
+  gap: 0.2rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+}
+
+.lab-pillars strong {
+  color: var(--color-text-base);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.lab-pillars span {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+/* ── Cards ── */
+
+.lab-card {
+  overflow: hidden;
+  transition:
+    border-color var(--transition),
+    background-color var(--transition),
+    box-shadow var(--transition),
+    transform var(--transition);
+}
+
+.lab-card:hover,
+.lab-card:focus-within {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--color-text-base) 4%, var(--panel));
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.lab-feature-grid,
+.lab-repo-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+@media (width >= 700px) {
+  .lab-feature-grid,
+  .lab-repo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 1100px) {
+  .lab-feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (width >= 960px) {
+  .lab-repo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.lab-feature {
+  display: flex;
+  flex-direction: column;
+}
+
+.lab-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background: var(--plate);
+}
+
+.lab-media img,
+.lab-media video {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.lab-media video {
+  object-fit: cover;
+}
+
+.lab-media-themed-image img {
+  padding: 0.9rem;
+  object-fit: contain;
+}
+
+/* Theme-matched artwork: dark by default, light when the light theme is
+   active — including the no-JS light-preference mirror. */
+.lab-themed-light {
+  display: none !important;
+}
+
+[data-theme='light'] .lab-themed-light {
+  display: block !important;
+}
+
+[data-theme='light'] .lab-themed-dark {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) .lab-themed-light {
+    display: block !important;
+  }
+
+  html:not([data-theme]) .lab-themed-dark {
+    display: none !important;
+  }
+}
+
+.lab-media-terminal {
+  background: var(--kl-ink-deep);
+}
+
+.lab-terminal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: var(--kl-cream);
+  font-family: var(--font-family-mono);
+  font-size: 0.86rem;
+}
+
+.lab-terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--kl-cream) 9%, transparent);
+  background: var(--kl-ink);
+}
+
+.lab-terminal-bar span {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--kl-cream) 22%, transparent);
+}
+
+.lab-terminal-bar em {
+  margin-left: 0.5rem;
+  color: var(--kl-cream-muted);
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.lab-terminal-body {
+  display: grid;
+  align-content: start;
+  gap: 0.5rem;
+  padding: 1.1rem 1.15rem;
+}
+
+.lab-terminal-body p {
+  margin: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.lab-terminal-prompt {
+  color: var(--kl-sage);
+  font-weight: 700;
+}
+
+.lab-terminal-note {
+  color: var(--kl-cream-muted);
+}
+
+.lab-terminal-cursor {
+  display: inline-block;
+  width: 0.55rem;
+  height: 1em;
+  vertical-align: -0.15em;
+  background: var(--kl-sage);
+  animation: lab-cursor-blink 1.1s steps(1) infinite;
+}
+
+@keyframes lab-cursor-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-terminal-cursor {
+    animation: none !important;
+  }
+
+  .lab-card:hover,
+  .lab-card:focus-within {
+    transform: none;
+  }
+}
+
+.lab-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.35rem 1.5rem 1.5rem;
+}
+
+.lab-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.lab-card-meta .field-label {
+  margin: 0;
+}
+
+.lab-status {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: 0.12rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 38%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+  color: var(--accent-color);
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lab-card-title {
+  margin: 0;
+  color: var(--color-text-base);
+  font-size: 1.28rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+.lab-repo .lab-card-title {
+  font-size: 1.06rem;
+}
+
+.lab-card-title a {
+  color: inherit;
+  transition: color var(--transition);
+}
+
+.lab-card-title a:hover {
+  color: var(--accent-color);
+}
+
+.lab-card-summary {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.94rem;
+  line-height: 1.65;
+}
+
+.lab-repo .lab-card-summary {
+  font-size: 0.9rem;
+}
+
+.lab-card-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.25rem;
+  margin-top: auto;
+  padding-top: 0.95rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+
+/* ── The rest of the catalog ── */
+
+.lab-more-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.lab-more-title {
+  margin: 0;
+  color: var(--color-text-base);
+  font-size: var(--step-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lab-more-header .text-link {
+  font-size: 0.9rem;
+}
+
+.lab-repo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem 1.35rem;
+}
+
+.lab-repo-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-top: auto;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+  color: var(--color-text-soft);
+  font-size: 0.82rem;
+}
+
+.lab-language {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* GitHub's own language colors, so a glance matches the repo page. */
+.lab-language-dot {
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 50%;
+  background: var(--color-text-soft);
+}
+
+.lab-language-dot[data-language='Rust'] { background: #dea584; }
+.lab-language-dot[data-language='Go'] { background: #00add8; }
+.lab-language-dot[data-language='TypeScript'] { background: #3178c6; }
+.lab-language-dot[data-language='JavaScript'] { background: #f1e05a; }
+.lab-language-dot[data-language='Python'] { background: #3572a5; }
+
+/* 0.88rem, not the footer's 0.82rem: at that size the shared coarse-pointer
+   .text-link padding lands the hit box just under 44px on phones, and
+   min-height keeps pointer devices at the 24px floor. */
+.lab-repo-link {
+  min-height: 1.5rem;
+  margin-left: auto;
+  font-size: 0.88rem;
+}
+
+/* ── KanterLabs identity outside the section ── */
+
+.kl-header-sub {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.kl-btn-github {
+  gap: 0.55rem;
+}
+
+.site-footer-brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem 1.4rem;
+  width: min(calc(100% - 2.5rem), 1120px);
+  margin: 0 auto 1.4rem;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.site-footer-lockup {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  gap: 0.6rem;
+  color: var(--color-text-base);
+  font-weight: 600;
+}
+
+.site-footer-wordmark span {
+  color: var(--accent-color);
+}
+
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--color-text-muted);
+  transition: color var(--transition);
+}
+
+.site-footer-links a:hover {
+  color: var(--accent-color);
+}
+
+/* End-of-case-study invitation into the rest of the studio's work. */
+.case-lab-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.case-lab-cta-copy {
+  display: grid;
+  flex: 1 1 18rem;
+  gap: 0.2rem;
+  margin: 0;
+}
+
+.case-lab-cta-copy strong {
+  color: var(--color-text-base);
+  font-size: 1rem;
+}
+
+.case-lab-cta-copy span {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* Six section anchors plus the GitHub link don't fit beside the full name
+   in the 704px tablet column, so between the mobile-nav breakpoint and the
+   wide page shell the homepage brand collapses to the rabbit mark (the link
+   keeps its "Shane Kanterman home" label). */
+@media (780px <= width < 960px) {
+  [data-site-header][data-home] .header-brand-text {
+    display: none;
+  }
+
+  [data-site-header][data-home] nav[aria-label='Primary'] {
+    gap: 1rem;
+  }
+}
+
+.header-github {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  transition:
+    color var(--transition),
+    border-color var(--transition);
+}
+
+.header-github:hover {
+  border-color: color-mix(in srgb, var(--accent-color) 55%, transparent);
+  color: var(--color-text-base);
+}

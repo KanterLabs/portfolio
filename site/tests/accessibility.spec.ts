@@ -139,14 +139,14 @@ test.describe('theme without JavaScript', () => {
   test('light-preference users get the light palette', async ({ page }) => {
     await page.goto('/');
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(bg).toBe('rgb(247, 248, 246)');
+    expect(bg).toBe('rgb(246, 241, 231)');
   });
 
   test('routes that lock the theme stay dark', async ({ page }) => {
     await page.goto('/greenlit');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(bg).not.toBe('rgb(247, 248, 246)');
+    expect(bg).not.toBe('rgb(246, 241, 231)');
   });
 });
 
