@@ -2285,8 +2285,10 @@ html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-au
     background: var(--panel);
   }
 
+  /* Four supporting case studies sit two-up, so the grid closes as a
+     square block under the showcase instead of leaving an orphan card. */
   .editorial-shell #projects .project-card-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.75rem;
   }
 
