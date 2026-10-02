@@ -1,0 +1,158 @@
+---
+title: Helm
+summary: A small, self-hosted project board and bug tracker where humans and software agents move work together, with a versioned, auditable API that gives every agent its own scoped identity.
+highlight: Makes coding agents accountable teammates on a board people already understand.
+impact: Gives agents a durable work record (claims, live progress, and an event feed) without sharing a human login or a hosted service.
+constraint: Keep the model small enough to run as one unprivileged container on a single SQLite file, and make every agent mutation safe to retry.
+role: Product designer, full-stack builder, and release operator.
+scope: Go API, Svelte and TypeScript UI, SQLite, OpenAPI contract, agent tokens and scopes, Codex skill, Docker, Proxmox LXC deployment, Cloudflare Access, and GitHub Actions.
+keyOutcome: Shipped Helm v0.1.0 as a public, self-hostable release, and run it in production on the KanterLabs homelab behind a private beta, verified backups, and rollback.
+featured: true
+order: 1
+stack:
+  - Go
+  - Svelte
+  - TypeScript
+  - SQLite
+  - OpenAPI
+  - Docker
+  - Proxmox VE
+  - GitHub Actions
+status: shipped
+date: 2026-09-19
+links:
+  - label: View Helm repo
+    href: https://github.com/KanterLabs/helm
+  - label: View Helm releases
+    href: https://github.com/KanterLabs/helm/releases
+system:
+  caption: People use the Svelte board and agents use scoped bearer tokens, but both go through the same versioned Go API, which runs in one unprivileged container on a single SQLite database.
+  tiers:
+    - nodes:
+        - label: People
+          title: Svelte board
+          detail: Kanban + Roadmap
+        - label: Agents
+          title: Scoped tokens
+          detail: Claim, pulse, finish
+    - nodes:
+        - label: One contract
+          title: Versioned Go API
+          detail: /api/v1, OpenAPI
+          kind: accent
+        - label: Operations
+          title: Health + metrics
+          detail: /healthz, /metrics
+    - nodes:
+        - label: State
+          title: SQLite (WAL)
+          detail: One file under /data
+  footer:
+    - label: Retries
+      title: ETag + idempotency keys
+    - label: Container
+      title: Read-only, no capabilities
+    - label: Ships as
+      title: One Go binary, one container
+---
+
+import Callout from '../../components/Callout.astro';
+
+## Overview
+
+Helm is a self-hosted project board and bug tracker built for teams where people and software agents share the same work. People get a focused Kanban workspace. Agents get a stable, auditable API for discovering, claiming, updating, and finishing tasks, under their own identities instead of a borrowed human login.
+
+It is deliberately small: one board per project, ordered semantic columns (Backlog, Ready, In progress, Blocked, Done), and a single SQLite database. The whole application, including the embedded frontend and database migrations, ships as one Go binary in one container.
+
+Helm is the lead KanterLabs project, and I run it in production on my homelab as the work record for my own coding agents: they pick up tasks, report progress while they work, and close them out when a change lands.
+
+<Callout type="note" title="Current status">
+  Helm v0.1.0 is the first tagged public release. The source, API contract, and self-hosting quick start are open on GitHub. The production instance I run is private, behind Cloudflare Access.
+</Callout>
+
+## Why I Built It
+
+Once coding agents started doing real work across my repositories, the weak point was not the code they wrote. It was the record of what they were doing. Work lived in chat transcripts, and agents had no good way to say "I took this," "I'm still on it," or "this is done, here is what changed."
+
+Hosted project tools did not fit that well:
+
+- agents would have to share a person's login or a broadly scoped API key
+- there was no lease on claimed work, so a crashed agent left a task stuck "in progress" forever
+- retries after a timeout could create duplicate tasks or overwrite someone else's edit
+- the data lived in someone else's service instead of next to the infrastructure I already run
+
+Helm treats agents as first-class teammates with narrow, revocable access, and treats every write as something that might be retried.
+
+## System Shape
+
+| Layer | Responsibility |
+|---|---|
+| Svelte and TypeScript UI | Boards with drag-and-drop and keyboard moves, filters, task drawer, My work, Live Work, Roadmap, and admin views |
+| Versioned REST API | One `/api/v1` contract for people and agents, described in a checked-in OpenAPI document served at `/openapi.json` |
+| Auth layer | Local accounts, Cloudflare Access assertions, or a private Tailnet mode, plus hashed, project-scoped agent tokens |
+| Go server | Business rules, optimistic concurrency, idempotency, the event feed, notifications, audits, and metrics |
+| SQLite in WAL mode | The only state, in one file under the `/data` volume, the container's only writable path |
+
+```text
+Browser (Svelte)        Agents (bearer tokens)
+        \                     /
+         v                   v
+       Helm server: /api/v1 REST
+       /healthz  /readyz  /metrics
+       embedded UI + migrations
+                  |
+                  v
+        SQLite (WAL) in /data
+```
+
+Keeping one contract for both audiences matters. The UI cannot do anything the API does not allow, so the agent-facing behavior is exercised every time a person uses the board.
+
+## Agents as Teammates
+
+An administrator creates an agent, then issues it a token. Tokens are hashed at rest and shown exactly once.
+
+| Scope | Grants |
+|---|---|
+| `projects:read` / `projects:write` | Read or manage projects |
+| `tasks:read` / `tasks:write` | Read or edit tasks, bugs, Focus, and audits |
+| `tasks:claim` | Claim, renew, release, and complete work |
+| `events:read` | Follow the event feed |
+
+An agent's project list is a ceiling: each token can narrow it but never widen it. A claim is a lease, not a flag. The agent renews it while it works and posts progress updates that appear live on the board, and a claimed task that has not been updated in 15 minutes is marked stale, so abandoned work is visible instead of silently blocking the column.
+
+A cursor-based event feed lets agents and integrations follow what changed without polling the whole board. An installable Codex skill makes Helm the durable work record for coding agents, so they discover, claim, report, and finish tasks through the same API.
+
+## Safe to Retry, Safe to Audit
+
+Agents time out, crash, and retry, so the API is designed around that:
+
+- every mutation uses optimistic concurrency with `ETag` and `If-Match`, so a stale write fails instead of overwriting newer work
+- idempotency keys make a retried create or update return the original result instead of doing the work twice
+- board audits are read-only: they produce immutable findings and preview recommendations, and nothing moves until someone explicitly confirms it
+- an admin metrics view separates agent and human actions, API errors, and latency, and request counts persist across restarts
+
+The same discipline covers the data. A versioned export and import format moves projects between installations, and importers reject unknown formats instead of guessing.
+
+## Secure by Default
+
+The default Compose stack binds to `127.0.0.1:8080`. The container runs with a read-only root filesystem and no Linux capabilities, and the `/data` volume is the only writable path. Helm supports local accounts with first-run admin setup, Cloudflare Access identity assertions, or a private Tailnet mode where a trusted edge sends a short-lived, request-bound assertion. A `disabled` mode exists only for development.
+
+Optional task assist uses each signed-in user's own Codex subscription through a device-code flow. Credentials stay in per-user directories, and Helm never shares a host API key between users.
+
+## Shipping It on the Homelab
+
+Helm deploys through the same two-stage path as the rest of KanterLabs, on [the homelab platform](/projects/kanterlabs-homelab):
+
+- a push to `beta` runs Go and frontend checks, a race-instrumented browser suite against a real candidate build, and a container smoke test on ephemeral homelab runners, then deploys to a private beta guest that is never exposed publicly
+- a merge to `main` runs the same gates and deploys to the production guest through a separate GitHub environment with its own secrets
+- beta and production share no database, backups, releases, keys, or tunnel identity
+
+Releases are immutable, SHA-tagged Go binaries in signed bundles. Before an upgrade, the installer takes an online SQLite backup, verifies its checksum and integrity, and runs a schema preflight against a private copy. Migrations are additive, so retained earlier releases can still open an upgraded database and rolling back is a binary switch rather than a restore. Five releases and fourteen backups are kept by default.
+
+## What It Shows
+
+- **Product judgment:** a deliberately small model (one board per project, one database file) instead of a clone of a team suite
+- **API design for automation:** scoped identities, leased claims, optimistic concurrency, idempotency, and a cursor event feed
+- **Security defaults:** least-privilege tokens, an unprivileged read-only container, and loopback-only binding out of the box
+- **Operational discipline:** private beta, verified backups, schema preflight, signed releases, and rollback that works
+- **End-to-end ownership:** Go server, Svelte UI, OpenAPI contract, agent skill, tests, CI, and homelab deployment designed together

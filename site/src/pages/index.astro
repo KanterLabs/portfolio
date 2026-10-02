@@ -56,7 +56,7 @@ const systemSummary = [
   { label: 'Operations', value: 'Build, rack, image, and decommission production servers' },
   { label: 'Platform', value: 'Two-site Proxmox estate, public and private zones' },
   { label: 'Delivery', value: 'Ephemeral CI, atomic releases, rollback retained' },
-  { label: 'Open source', value: 'KanterLabs: platforms, dev tools, and desktop apps' },
+  { label: 'Lead project', value: 'Helm: a self-hosted board for people and agents' },
 ];
 
 const heroMetrics = [
@@ -210,8 +210,8 @@ const structuredData = [
                 <path d="M9 7h8v8" />
               </svg>
             </a>
-            <a class="btn btn-secondary" href="#projects">
-              View Platform Projects
+            <a class="btn btn-secondary" href={`/projects/${featuredProject.id}`}>
+              Explore {featuredProject.data.title}
             </a>
             <a
               class="btn btn-secondary"

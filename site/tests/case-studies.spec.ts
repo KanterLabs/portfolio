@@ -2,6 +2,13 @@ import { test, expect } from '@playwright/test';
 
 const caseStudies = [
   {
+    path: '/projects/helm',
+    title: 'Helm | Shane Kanterman',
+    heading: 'Helm',
+    backLabel: 'Back to selected work',
+    backHref: '/#projects',
+  },
+  {
     path: '/projects/sandbox-factory',
     title: 'Sandbox Factory | Shane Kanterman',
     heading: 'Sandbox Factory',
@@ -55,7 +62,21 @@ test.describe('case studies', () => {
     });
   }
 
-  test('featured case study source link is correct', async ({ page }) => {
+  test('featured case study source links are correct', async ({ page }) => {
+    await page.goto('/projects/helm');
+
+    await expect(page.getByRole('link', { name: 'View Helm repo' })).toHaveAttribute(
+      'href',
+      'https://github.com/KanterLabs/helm',
+    );
+    await expect(page.getByRole('link', { name: 'View Helm releases' })).toHaveAttribute(
+      'href',
+      'https://github.com/KanterLabs/helm/releases',
+    );
+    await expect(page.getByText(/Build \d{2}-\d{2}-\d{4} · [0-9a-f]{7}/)).toBeVisible();
+  });
+
+  test('homelab case study source link is correct', async ({ page }) => {
     await page.goto('/projects/kanterlabs-homelab');
 
     await expect(page.getByRole('link', { name: 'View portfolio source' })).toHaveAttribute(
