@@ -17,7 +17,7 @@ permissions:
 jobs:
   promotion-source:
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    runs-on: homelab
+    runs-on: homelab-tiny
     steps:
       - name: Require promotion from this repository's beta branch
         env:
@@ -78,7 +78,7 @@ jobs:
         run: npm run deploy:dry-run
 
   deployment-helper-test:
-    runs-on: homelab
+    runs-on: homelab-tiny
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
