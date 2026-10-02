@@ -17,6 +17,7 @@ import zeusDesktop from '../assets/kanterlabs/zeusos-desktop.jpg';
 
 export const KANTERLABS_ORG_URL = 'https://github.com/KanterLabs';
 export const HOSTLET_CLOUD_URL = 'https://hostlet.cloud';
+export const HELM_CASE_STUDY_URL = '/projects/helm';
 
 export type LabCategory = 'platforms' | 'devtools' | 'desktop' | 'apps';
 
@@ -62,8 +63,27 @@ export interface LabRepo {
   media?: LabMedia;
 }
 
-/** Flagship projects, shown as media cards. */
+/** Flagship projects, shown as media cards. Helm is the lead project and comes first. */
 export const flagshipRepos: LabRepo[] = [
+  {
+    slug: 'helm',
+    name: 'Helm',
+    summary:
+      'The lead KanterLabs project: a small, self-hosted project board and bug tracker where people and software agents move work together, with a stable, auditable API for scoped agent automation.',
+    category: 'platforms',
+    stack: ['Go', 'Svelte', 'SQLite', 'Docker'],
+    language: 'Go',
+    status: 'v0.1.0',
+    caseStudy: { href: HELM_CASE_STUDY_URL, label: 'Case study' },
+    media: {
+      kind: 'themed-image',
+      light: '/kanterlabs/helm-hero-light.svg',
+      dark: '/kanterlabs/helm-hero-dark.svg',
+      alt: 'Helm banner: a Kanban board with Backlog, Ready, In progress, and Done columns',
+      width: 900,
+      height: 340,
+    },
+  },
   {
     slug: 'hostlet-core',
     name: 'Hostlet Core',
@@ -85,24 +105,6 @@ export const flagshipRepos: LabRepo[] = [
         { command: 'hostlet up --tunnel' },
         { note: 'open the printed URL, connect GitHub, deploy an app' },
       ],
-    },
-  },
-  {
-    slug: 'helm',
-    name: 'Helm',
-    summary:
-      'A small, self-hosted project board and roadmap where humans and software agents move work together, with a stable, auditable API for scoped agent automation.',
-    category: 'platforms',
-    stack: ['Go', 'Svelte', 'SQLite', 'Docker'],
-    language: 'Go',
-    status: 'Active',
-    media: {
-      kind: 'themed-image',
-      light: '/kanterlabs/helm-hero-light.svg',
-      dark: '/kanterlabs/helm-hero-dark.svg',
-      alt: 'Helm banner: a Kanban board with Backlog, Ready, In progress, and Done columns',
-      width: 900,
-      height: 340,
     },
   },
   {
