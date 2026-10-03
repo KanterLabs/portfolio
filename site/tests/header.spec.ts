@@ -73,7 +73,7 @@ test.describe('site header', () => {
     // a little left of center at 1440 but stays anchored to the right edge.
     expect(navBox.x).toBeGreaterThan(headerInnerBox.x + headerInnerBox.width * 0.35);
 
-    await page.goto('/projects/hostlet');
+    await page.goto('/projects/helm');
     const backLink = page.locator('[data-site-header]').getByRole('link', { name: 'Selected work' });
     const backLinkBox = (await backLink.boundingBox())!;
     const caseThemeToggleBox = (await page.locator('[data-theme-toggle]').boundingBox())!;

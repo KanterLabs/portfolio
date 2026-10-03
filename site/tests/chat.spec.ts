@@ -91,7 +91,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('chat renders on the homepage and project pages when enabled', async ({ page }) => {
-  for (const path of ['/', '/projects/hostlet']) {
+  for (const path of ['/', '/projects/helm']) {
     await page.goto(path);
     await expect(page.locator('[data-portfolio-chat]')).toHaveCount(1);
     await expect(page.locator('[data-chat-launcher]')).toBeVisible();
@@ -130,7 +130,7 @@ test('starter prompts send the current page and visitor context', async ({ page 
     stream(event('delta', { delta: 'Starter response.' }), event('done', {})),
   );
 
-  await page.goto('/projects/hostlet');
+  await page.goto('/projects/helm');
   await openChat(page);
 
   const starter = page.locator('[data-chat-starter]').first();
@@ -143,7 +143,7 @@ test('starter prompts send the current page and visitor context', async ({ page 
   const request = await waitForRequest(requests, 1);
 
   expect(request.message).toBe(prompt);
-  expect(request.pagePath).toBe('/projects/hostlet');
+  expect(request.pagePath).toBe('/projects/helm');
   expect(Array.isArray(request.history)).toBe(true);
   expect(request.visitorId).toMatch(
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
@@ -156,7 +156,7 @@ test('assembles streamed deltas and renders only allowlisted source links', asyn
     stream(
       event('sources', {
         sources: [
-          { title: 'Hostlet project', href: '/projects/hostlet' },
+          { title: 'Helm project', href: '/projects/helm' },
           { title: 'Untrusted page', href: 'https://evil.example.invalid/collect' },
         ],
       }),
@@ -170,7 +170,7 @@ test('assembles streamed deltas and renders only allowlisted source links', asyn
   await openChat(page);
 
   const input = page.locator('[data-chat-input]');
-  await input.fill('Tell me about Hostlet.');
+  await input.fill('Tell me about Helm.');
   await page.locator('[data-chat-send]').click();
   await waitForRequest(requests, 1);
 
@@ -180,8 +180,8 @@ test('assembles streamed deltas and renders only allowlisted source links', asyn
   await expect(sources).toBeVisible();
   const links = sources.locator('a');
   await expect(links).toHaveCount(1);
-  await expect(links.first()).toHaveAttribute('href', /\/projects\/hostlet\/?$/);
-  await expect(links.first()).toContainText('Hostlet project');
+  await expect(links.first()).toHaveAttribute('href', /\/projects\/helm\/?$/);
+  await expect(links.first()).toContainText('Helm project');
   await expect(sources).not.toContainText('Untrusted page');
 });
 

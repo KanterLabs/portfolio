@@ -8,7 +8,7 @@ import { expectNoHorizontalOverflow } from './helpers/navigation';
 test('case-study tables pan horizontally instead of clipping', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'tables only overflow at mobile widths');
 
-  await page.goto('/projects/hostlet');
+  await page.goto('/projects/helm');
 
   const tables = page.locator('.prose .table-scroll');
   const count = await tables.count();
@@ -45,10 +45,10 @@ test('case-study tables pan horizontally instead of clipping', async ({ page, is
 
 // A display:block table lets thead and tbody shrink-wrap independently, so
 // each row group resolves its own column widths and every header drifts off
-// the column it labels — 187px off on /projects/hostlet when this regressed.
+// the column it labels when this regressed.
 test('table headers sit over the columns they label', async ({ page }) => {
   const routes = [
-    '/projects/hostlet',
+    '/projects/helm',
     '/projects/multi-node-portfolio',
     '/projects/kanterlabs-homelab',
   ];
@@ -79,7 +79,7 @@ test('table headers sit over the columns they label', async ({ page }) => {
 });
 
 test('code blocks are keyboard-focusable scroll containers', async ({ page }) => {
-  await page.goto('/projects/hostlet');
+  await page.goto('/projects/helm');
 
   const code = page.locator('.prose pre code').first();
   await code.scrollIntoViewIfNeeded();

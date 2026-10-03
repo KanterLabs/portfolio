@@ -27,7 +27,8 @@ const PRIVATE_REPOS = [
   'last-hearth',
 ];
 
-const FLAGSHIPS = ['hostlet-core', 'helm', 'ActionView', 'nfl-scores', 'zeusos', 'greenlit-app'];
+// Helm is the lead project, so it always comes first.
+const FLAGSHIPS = ['helm', 'ActionView', 'nfl-scores', 'zeusos', 'greenlit-app'];
 
 async function kanterLabsHrefs(page: Page): Promise<string[]> {
   return page.$$eval('a[href*="github.com/KanterLabs"]', (links) =>
@@ -56,6 +57,13 @@ test.describe('KanterLabs on the homepage', () => {
     await expect(follow).toHaveAttribute('href', ORG_URL);
     await expect(follow).toHaveAttribute('target', '_blank');
     await expect(follow).toHaveAttribute('rel', /noopener/);
+    await expect(section.getByRole('link', { name: 'Explore Helm, the lead project' })).toHaveAttribute(
+      'href',
+      '/projects/helm',
+    );
+    await expect(
+      section.locator('[data-lab-repo="helm"]').getByRole('link', { name: 'Case study' }),
+    ).toHaveAttribute('href', '/projects/helm');
 
     const flagships = section.locator('.lab-feature');
     await expect(flagships).toHaveCount(FLAGSHIPS.length);
@@ -72,7 +80,7 @@ test.describe('KanterLabs on the homepage', () => {
     }
 
     const catalog = section.locator('.lab-repo');
-    await expect(catalog).toHaveCount(9);
+    await expect(catalog).toHaveCount(7);
 
     // The stated count is derived from the catalog, so it can't drift.
     const total = await section.locator('[data-lab-repo]').count();
@@ -133,9 +141,8 @@ test.describe('KanterLabs on the homepage', () => {
 
     for (const route of [
       '/',
+      '/projects/helm',
       '/projects/kanterlabs-homelab',
-      '/projects/hostlet',
-      '/projects/sandbox-factory',
       '/projects/multi-node-portfolio',
       '/projects/data-center-operations',
       '/404',
@@ -164,7 +171,7 @@ test.describe('KanterLabs on the homepage', () => {
       ).toHaveAttribute('href', ORG_URL);
     }
 
-    for (const route of ['/', '/projects/hostlet']) {
+    for (const route of ['/', '/projects/helm']) {
       await page.goto(route);
       const footer = page.getByLabel('Site footer');
       await expect(footer.getByRole('link', { name: 'GitHub', exact: true })).toHaveAttribute('href', ORG_URL);
