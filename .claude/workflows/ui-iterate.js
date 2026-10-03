@@ -39,7 +39,7 @@ if (!GOAL) {
 
 const ROUTES = input.routes ?? [
   '/',
-  '/projects/hostlet',
+  '/projects/helm',
   '/projects/kanterlabs-homelab',
   '/projects/multi-node-portfolio',
   '/projects/data-center-operations',

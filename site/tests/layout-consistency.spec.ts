@@ -21,7 +21,7 @@ test.describe('shared page frame', () => {
     const boxes: Record<string, { x: number; width: number }> = {};
     for (const route of [
       '/',
-      '/projects/hostlet',
+      '/projects/helm',
       '/projects/data-center-operations',
       '/this-page-does-not-exist',
     ]) {
@@ -41,7 +41,7 @@ test.describe('shared page frame', () => {
   test('case-study title, prose, and header share one left edge', async ({ page, isMobile }) => {
     test.skip(isMobile, 'desktop-only frame check (1440px)');
 
-    for (const route of ['/projects/hostlet', '/projects/data-center-operations']) {
+    for (const route of ['/projects/helm', '/projects/data-center-operations']) {
       await page.goto(route);
 
       const headerBox = await box(page, '[data-site-header] .header-inner');
@@ -61,7 +61,7 @@ test.describe('shared page frame', () => {
   }) => {
     test.skip(isMobile, 'desktop-only frame check (1440px)');
 
-    await page.goto('/projects/hostlet');
+    await page.goto('/projects/helm');
 
     const headerBox = await box(page, '[data-site-header] .header-inner');
     const proseBox = await box(page, '.case-prose');
@@ -80,7 +80,7 @@ test.describe('shared page frame', () => {
   // breakpoint: every width must have exactly one TOC implementation.
   test('no dead zone at the 959/960px TOC boundary', async ({ page, isMobile }) => {
     test.skip(isMobile, 'needs viewport resizing');
-    await page.goto('/projects/hostlet');
+    await page.goto('/projects/helm');
 
     await page.setViewportSize({ width: 959, height: 900 });
     await expect(page.locator('.toc-sidebar')).toBeHidden();
@@ -104,7 +104,7 @@ test.describe('shared page frame', () => {
         .first()
         .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
 
-      await page.goto('/projects/hostlet');
+      await page.goto('/projects/helm');
       const caseH1 = await page.locator('h1').first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
       const caseProseH2 = await page
         .locator('.prose h2')
@@ -151,7 +151,7 @@ test.describe('shared page frame', () => {
         };
       });
 
-    await page.goto('/projects/hostlet');
+    await page.goto('/projects/helm');
     const caseLabel = await page
       .locator('.project-detail-facts .field-label')
       .first()
@@ -192,7 +192,7 @@ test.describe('shared page frame', () => {
   test('Role/Scope/Outcome copy blocks start at the same y', async ({ page, isMobile }) => {
     test.skip(isMobile, 'desktop-only: the fact grid is a single column on mobile');
 
-    await page.goto('/projects/hostlet');
+    await page.goto('/projects/helm');
 
     const copyBlocks = page.locator('.project-detail-facts > div > .project-proof-copy');
     const count = await copyBlocks.count();

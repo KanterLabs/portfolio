@@ -1,5 +1,5 @@
 {
-  "version": "2026-09-30",
+  "version": "2026-10-03",
   "entries": [
     {
       "id": "profile",
@@ -8,7 +8,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/"
       },
-      "lastReviewed": "2026-09-30",
+      "lastReviewed": "2026-10-03",
       "topics": [
         "profile",
         "experience",
@@ -30,9 +30,10 @@
         "decommissioning",
         "data center buildout",
         "racking",
-        "KanterLabs"
+        "KanterLabs",
+        "Helm"
       ],
-      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. He is also an active member of the university football program. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with building servers and hardware modifications, rack-and-stack work, Linux administration, server deployment, decommissioning, hardware troubleshooting, and practical software delivery, including a recent data center deployment buildout of roughly 72 racks, racked and wired end to end. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025). Outside InterServer he founded and operates KanterLabs, an independent product and infrastructure studio whose public projects are on GitHub at github.com/KanterLabs."
+      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. He is also an active member of the university football program. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with building servers and hardware modifications, rack-and-stack work, Linux administration, server deployment, decommissioning, hardware troubleshooting, and practical software delivery, including a recent data center deployment buildout of roughly 72 racks, racked and wired end to end. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025). Outside InterServer he founded and operates KanterLabs, an independent product and infrastructure studio whose public projects are on GitHub at github.com/KanterLabs. His lead project is Helm, a self-hosted project board and bug tracker where people and software agents move work together."
     },
     {
       "id": "contact",
@@ -41,7 +42,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#contact"
       },
-      "lastReviewed": "2026-09-30",
+      "lastReviewed": "2026-10-03",
       "topics": [
         "contact",
         "email",
@@ -65,7 +66,7 @@
         "path": "site/src/lib/kanterlabs.ts",
         "href": "/#kanterlabs"
       },
-      "lastReviewed": "2026-09-30",
+      "lastReviewed": "2026-10-03",
       "topics": [
         "kanterlabs",
         "open source",
@@ -74,10 +75,9 @@
       ],
       "keywords": [
         "KanterLabs",
+        "Helm",
         "open source",
         "GitHub organization",
-        "Hostlet Core",
-        "Helm",
         "ActionView",
         "NFL Scores",
         "Zeus OS",
@@ -91,7 +91,7 @@
         "GNOME Shell extension",
         "self-hosted"
       ],
-      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio lists 15 public projects. Flagships: Hostlet Core (Rust and Next.js; turns GitHub repositories into live apps on your own Linux server with builds, containers, routing, health checks, and rollback; pre-1.0 beta and the engine behind hostlet.cloud), Helm (Go and Svelte self-hosted project board with scoped agent automation), ActionView (GNOME Shell extension showing the KanterLabs self-hosted GitHub Actions runner fleet), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Zeus OS (a Fedora bootc laptop desktop, 0.1 preview), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). Other public projects: Hostlet (portfolio and demo hosting service, in development), Zeus Code (terminal workspace for Codex and OpenCode conversations), Linkshare (Go link inbox for a person and their coding agents), Pulse (GNOME Spotify command center, pre-alpha), an ncspot fork, Hostlet deploy fixtures, RunComp (running-competition app used to test Hostlet), Patchwork Pirates (co-op roguelite in pre-production), and this portfolio's source."
+      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio lists 12 public projects. Helm is the lead project: a Go and Svelte self-hosted project board and bug tracker where people and software agents move work together, with scoped agent tokens and an auditable API (v0.1.0, with a case study). Other flagships: ActionView (GNOME Shell extension showing the KanterLabs self-hosted GitHub Actions runner fleet), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Zeus OS (a Fedora bootc laptop desktop, 0.1 preview), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). Other public projects: Zeus Code (terminal workspace for Codex and OpenCode conversations), Linkshare (Go link inbox for a person and their coding agents), Pulse (GNOME Spotify command center, pre-alpha), an ncspot fork, RunComp (running-competition app with private groups, streaks, weekly challenges, and push alerts), Patchwork Pirates (co-op roguelite in pre-production), and this portfolio's source."
     },
     {
       "id": "skills-and-architecture",
@@ -100,7 +100,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#architecture"
       },
-      "lastReviewed": "2026-09-30",
+      "lastReviewed": "2026-10-03",
       "topics": [
         "skills",
         "architecture",
@@ -131,13 +131,52 @@
       "content": "The portfolio groups Shane's capabilities into systems and networking, platform and delivery, and software and data. Publicly listed tools include Linux, Proxmox, Nginx, Caddy, Cloudflare, Tailscale, PXE Boot, GitHub Actions, k3s, Actions Runner Controller, Docker, GHCR, atomic releases, Rust, TypeScript, Next.js, Python, PostgreSQL, Git, and Astro. His architecture work emphasizes clear ingress boundaries, isolated workloads, ephemeral CI runners, health checks, atomic releases, and retained rollback paths."
     },
     {
+      "id": "helm",
+      "source": {
+        "title": "Helm",
+        "path": "site/src/content/projects/helm.mdx",
+        "href": "/projects/helm"
+      },
+      "lastReviewed": "2026-10-02",
+      "topics": [
+        "project",
+        "helm",
+        "agents",
+        "product",
+        "self-hosted"
+      ],
+      "keywords": [
+        "Helm",
+        "lead project",
+        "project board",
+        "bug tracker",
+        "Kanban",
+        "AI agents",
+        "coding agents",
+        "agent tokens",
+        "scopes",
+        "claims",
+        "leases",
+        "Go",
+        "Svelte",
+        "TypeScript",
+        "SQLite",
+        "OpenAPI",
+        "ETag",
+        "idempotency",
+        "Codex skill",
+        "v0.1.0"
+      ],
+      "content": "Helm is Shane's lead KanterLabs project: a small, self-hosted project board and bug tracker where people and software agents move work together. People use a Svelte and TypeScript Kanban board with Focus, My work, Live Work, and Roadmap views; agents use the same versioned Go REST API (/api/v1, described by an OpenAPI document) with their own hashed, project-scoped bearer tokens. Agents claim tasks as renewable leases, post live progress, and follow a cursor-based event feed; a claimed task with no update for 15 minutes is marked stale. Every mutation uses ETag/If-Match optimistic concurrency and idempotency keys so retries are safe, and board audits are read-only until someone confirms a recommendation. It runs as one unprivileged container with a read-only root filesystem on a single SQLite (WAL) database, supports local accounts, Cloudflare Access, or a private Tailnet mode, and ships an installable Codex skill. Helm v0.1.0 is the first public release; Shane runs it in production on the KanterLabs homelab, deployed through a private beta with signed SHA-tagged releases, verified pre-upgrade backups, schema preflight, and rollback. The production instance is private."
+    },
+    {
       "id": "kanterlabs-homelab",
       "source": {
         "title": "KanterLabs Homelab Platform",
         "path": "site/src/content/projects/kanterlabs-homelab.mdx",
         "href": "/projects/kanterlabs-homelab"
       },
-      "lastReviewed": "2026-09-21",
+      "lastReviewed": "2026-10-02",
       "topics": [
         "project",
         "homelab",
@@ -169,76 +208,13 @@
       "content": "The KanterLabs Homelab Platform turns a small collection of systems into an intentional two-site platform. Its public case study describes hardened edge VMs at both sites, distinct management, ingress, public-origin, and private-origin planes, exact service listeners, split-horizon private DNS, verified edge-to-origin TLS, and default-deny network policy. Public traffic uses dedicated Cloudflare paths, while named Tailscale services provide private entrances without direct workload-network access. Network changes use deterministic configuration, timed rollback, independent management checks, synthetic canaries, and negative exposure tests. GitHub Actions jobs run in disposable pods managed by Actions Runner Controller, with secrets kept outside Git."
     },
     {
-      "id": "hostlet",
-      "source": {
-        "title": "Hostlet Self-Hosted Deployment Panel",
-        "path": "site/src/content/projects/hostlet.mdx",
-        "href": "/projects/hostlet"
-      },
-      "lastReviewed": "2026-09-30",
-      "topics": [
-        "project",
-        "deployment",
-        "rust",
-        "docker",
-        "product"
-      ],
-      "keywords": [
-        "Hostlet",
-        "Rust",
-        "Axum",
-        "Next.js",
-        "Docker",
-        "PostgreSQL",
-        "Caddy",
-        "GitHub OAuth",
-        "rollback",
-        "health checks",
-        "deployment logs",
-        "v0.1.0"
-      ],
-      "content": "Hostlet is a self-hosted deployment control panel for shipping GitHub projects to Docker on a machine Shane owns. It combines a Rust API and local deployment agent with a Next.js dashboard, PostgreSQL, Docker, Caddy, Cloudflare, and GitHub OAuth. The v0.1.0 local-machine beta includes deployment logs, health checks, rollback, encrypted app settings, public URL controls, and release packaging. The scope is deliberately local-only so reliability, cleanup, and security boundaries could be handled before remote agents."
-    },
-    {
-      "id": "sandbox-factory",
-      "source": {
-        "title": "Sandbox Factory",
-        "path": "site/src/content/projects/sandbox-factory.mdx",
-        "href": "/projects/sandbox-factory"
-      },
-      "lastReviewed": "2026-09-21",
-      "topics": [
-        "project",
-        "sandbox",
-        "virtualization",
-        "control plane",
-        "security"
-      ],
-      "keywords": [
-        "Sandbox Factory",
-        "development sandbox",
-        "disposable workstation",
-        "Go broker",
-        "PostgreSQL",
-        "Proxmox",
-        "n8n",
-        "Cloudflare Access",
-        "idempotency",
-        "lease expiry",
-        "verified cleanup",
-        "report-only",
-        "forwarding-only SSH jump"
-      ],
-      "content": "Sandbox Factory is Shane's private-preview platform for requesting short-lived development workstations without exposing hypervisor credentials to the browser. An Access-protected static dashboard calls fixed same-origin workflows; a Go broker verifies identity, enforces quotas and idempotency, stores durable lifecycle state in PostgreSQL, and owns the scoped Proxmox path. New requests use one of four fixed Debian resource presets. The design includes adaptive sanitized telemetry, an isolated guest network with a forwarding-only SSH jump path, lease expiry, serialized lifecycle work, and deletion that remains visible until the broker verifies the guest and managed storage are absent. The checked-in default is report-only, so live mutation remains gated behind explicit infrastructure acceptance checks."
-    },
-    {
       "id": "portfolio-infrastructure",
       "source": {
         "title": "Dual-Origin Portfolio Deployment",
         "path": "site/src/content/projects/multi-node-portfolio.mdx",
         "href": "/projects/multi-node-portfolio"
       },
-      "lastReviewed": "2026-09-21",
+      "lastReviewed": "2026-10-02",
       "topics": [
         "project",
         "portfolio",
@@ -272,7 +248,7 @@
         "path": "site/src/content/projects/data-center-operations.mdx",
         "href": "/projects/data-center-operations"
       },
-      "lastReviewed": "2026-09-21",
+      "lastReviewed": "2026-10-02",
       "topics": [
         "experience",
         "data center",

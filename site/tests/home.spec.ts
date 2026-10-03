@@ -16,9 +16,11 @@ test.describe('homepage', () => {
       }),
     ).toBeVisible();
     await expect(
-      page.getByRole('heading', { level: 3, name: 'KanterLabs Homelab Platform' }),
+      page.locator('.project-showcase').getByRole('heading', { level: 3, name: 'Helm' }),
     ).toBeVisible();
     await expect(page.getByText('Featured case study')).toBeVisible();
+    await expect(page.locator('#top')).toContainText('Lead project');
+    await expect(page.locator('#top')).toContainText('Helm: a self-hosted board for people and agents');
 
     await expectHashLinkToReachSection(page, () => primaryNav.getByRole('link', { name: 'Experience' }).click(), 'about');
     await page.goto('/');
@@ -49,9 +51,9 @@ test.describe('homepage', () => {
       'href',
       '/projects/data-center-operations',
     );
-    await expect(page.getByRole('link', { name: 'View Platform Projects' })).toHaveAttribute(
+    await expect(page.locator('#top').getByRole('link', { name: 'Explore Helm' })).toHaveAttribute(
       'href',
-      '#projects',
+      '/projects/helm',
     );
 
     await expect(page.getByRole('link', { name: 'Resume' })).toHaveCount(0);
@@ -105,9 +107,9 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     const entries = page.locator('#projects .project-entry');
-    await expect(entries).toHaveCount(4);
+    await expect(entries).toHaveCount(3);
 
-    for (let i = 0; i < 4; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
       const chrome = await entries.nth(i).evaluate((el) => {
         const style = getComputedStyle(el);
         const alphaOf = (color: string) => {
@@ -573,7 +575,7 @@ test.describe('homepage', () => {
       expect(color!.alpha, `stack list ${i} border visibility`).toBeGreaterThan(0);
     }
 
-    await page.goto('/projects/hostlet');
+    await page.goto('/projects/helm');
     const caseStudyStackList = page.locator('.stack-list').first();
     const borderTopWidth = await caseStudyStackList.evaluate((el) => getComputedStyle(el).borderTopWidth);
     expect(borderTopWidth, 'case-study stack list must stay unscoped by the #skills rule').toBe('0px');
@@ -583,16 +585,14 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     const titleLinks = page.locator('.project-title a');
-    await expect(titleLinks).toHaveCount(4);
+    await expect(titleLinks).toHaveCount(3);
     for (const href of await titleLinks.evaluateAll((links) => links.map((l) => l.getAttribute('href')))) {
       expect(href).toMatch(/^\/projects\/.+/);
     }
 
     await titleLinks.first().click();
-    await expect(page).toHaveURL(/\/projects\/kanterlabs-homelab\/?$/);
-    await expect(
-      page.getByRole('heading', { level: 1, name: 'KanterLabs Homelab Platform' }),
-    ).toBeVisible();
+    await expect(page).toHaveURL(/\/projects\/helm\/?$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Helm' })).toBeVisible();
   });
 
   test('selected work precedes experience and uses the intended project order', async ({ page }) => {
@@ -607,9 +607,8 @@ test.describe('homepage', () => {
       .locator('#projects .project-title')
       .allTextContents();
     expect(titles.map((title) => title.trim())).toEqual([
+      'Helm',
       'KanterLabs Homelab Platform',
-      'Sandbox Factory',
-      'Hostlet Self-Hosted Deployment Panel',
       'Dual-Origin Portfolio Deployment',
     ]);
 
@@ -653,7 +652,7 @@ test.describe('homepage', () => {
     const caption = showcase.locator('.project-system-caption');
 
     await expect(caption).toBeVisible();
-    await expect(caption).toContainText('Public and private traffic enter through distinct Cloudflare and Tailscale paths');
+    await expect(caption).toContainText('People use the Svelte board and agents use scoped bearer tokens');
 
     if (isMobile) {
       // Below 960px the diagram panel is hidden (same precedent as the
@@ -841,8 +840,8 @@ test.describe('homepage', () => {
     };
 
     const cards = page.locator('#projects .project-card');
-    await expect(cards).toHaveCount(3);
-    for (let i = 0; i < 3; i += 1) {
+    await expect(cards).toHaveCount(2);
+    for (let i = 0; i < 2; i += 1) {
       await expectStripIntegrity(cards.nth(i).locator('ol.system-diagram-strip'), `card ${i}`);
     }
 
@@ -856,26 +855,32 @@ test.describe('homepage', () => {
     }
   });
 
-  test('supporting cards form a matched row', async ({ page, isMobile }) => {
+  test('supporting cards form matched two-up rows', async ({ page, isMobile }) => {
     test.skip(isMobile, 'The multi-column layout only exists at >=960px');
     // Rest-layout geometry — see the note on the showcase test above. The
-    // three cards' reveals are staggered, so a mid-animation read shows them
-    // at three different translateY offsets.
+    // cards' reveals are staggered, so a mid-animation read shows them at
+    // different translateY offsets.
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
     const cards = page.locator('#projects .project-card');
-    await expect(cards).toHaveCount(3);
+    await expect(cards).toHaveCount(2);
 
     const ctas = await Promise.all(
-      Array.from({ length: 3 }, (_, index) => cards.nth(index).locator('.text-link').boundingBox()),
+      Array.from({ length: 2 }, (_, index) => cards.nth(index).locator('.text-link').boundingBox()),
     );
     const boxes = await Promise.all(
-      Array.from({ length: 3 }, (_, index) => cards.nth(index).boundingBox()),
+      Array.from({ length: 2 }, (_, index) => cards.nth(index).boundingBox()),
     );
     for (const item of [...ctas, ...boxes]) expect(item).not.toBeNull();
-    expect(Math.max(...ctas.map((item) => item!.y)) - Math.min(...ctas.map((item) => item!.y))).toBeLessThanOrEqual(2);
-    expect(Math.max(...boxes.map((item) => item!.height)) - Math.min(...boxes.map((item) => item!.height))).toBeLessThanOrEqual(2);
+
+    // One row of two: both cards and CTAs align.
+    expect(new Set(boxes.map((item) => Math.round(item!.y))).size).toBe(1);
+    for (const [a, b] of [[0, 1]]) {
+      expect(Math.abs(boxes[a]!.y - boxes[b]!.y)).toBeLessThanOrEqual(2);
+      expect(Math.abs(boxes[a]!.height - boxes[b]!.height)).toBeLessThanOrEqual(2);
+      expect(Math.abs(ctas[a]!.y - ctas[b]!.y)).toBeLessThanOrEqual(2);
+    }
   });
 
   test('the featured showcase is grouped apart from the supporting row', async ({ page, isMobile }) => {

@@ -117,3 +117,22 @@ After changing this path:
    recorded accepted digest, and report that the previous digest was restored.
 6. Recheck beta health, revision, and configured digest after rollback. A
    rollback is not accepted solely because the API mutation returned success.
+
+## Temporary build dependency advisory exception
+
+Until October 10, 2026 (UTC), `scripts/npm_audit.py` permits only
+[GHSA-ch52-4w7c-c8xp](https://github.com/advisories/GHSA-ch52-4w7c-c8xp)
+for the locked `http-cache-semantics` 4.2.0 dependency and its propagated Astro
+and MDX audit findings. The advisory has no patched release. It concerns
+cross-user disclosure from a shared HTTP cache when processing client
+`max-stale` directives. Astro uses this package in its remote-asset build
+helper; this site's deployed image contains Nginx and static output, with no
+Node runtime or HTTP cache using this package. The build has no visitor request
+headers or authenticated cross-user HTTP cache.
+
+The exception applies only in the `site` workspace and requires the reviewed
+Dockerfile's exact digest and the affected package's exact locked version.
+Every other advisory, a changed deployment contract, an audit error, or an
+expired exception remains blocking. The `chat-worker` workspace receives no
+exception. Remove the exception when an upstream fix is available; it must be
+reviewed again rather than silently extended if the deadline is reached.

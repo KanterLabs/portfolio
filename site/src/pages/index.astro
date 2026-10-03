@@ -12,7 +12,7 @@ import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
 import SystemConstellation from '../components/SystemConstellation.astro';
 import { getCollection } from 'astro:content';
-import { HOSTLET_CLOUD_URL, KANTERLABS_ORG_URL, allPublicRepos } from '../lib/kanterlabs';
+import { KANTERLABS_ORG_URL, allPublicRepos } from '../lib/kanterlabs';
 
 const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
@@ -56,7 +56,7 @@ const systemSummary = [
   { label: 'Operations', value: 'Build, rack, image, and decommission production servers' },
   { label: 'Platform', value: 'Two-site Proxmox estate, public and private zones' },
   { label: 'Delivery', value: 'Ephemeral CI, atomic releases, rollback retained' },
-  { label: 'Open source', value: 'KanterLabs: platforms, dev tools, and desktop apps' },
+  { label: 'Lead project', value: 'Helm: a self-hosted board for people and agents' },
 ];
 
 const heroMetrics = [
@@ -162,7 +162,7 @@ const structuredData = [
     description:
       'Independent product and infrastructure studio building developer tools, self-hosted platforms, and practical software.',
     founder: { '@type': 'Person', name: 'Shane Kanterman', url: siteUrl },
-    sameAs: [KANTERLABS_ORG_URL, HOSTLET_CLOUD_URL],
+    sameAs: [KANTERLABS_ORG_URL],
   },
 ];
 ---
@@ -210,8 +210,8 @@ const structuredData = [
                 <path d="M9 7h8v8" />
               </svg>
             </a>
-            <a class="btn btn-secondary" href="#projects">
-              View Platform Projects
+            <a class="btn btn-secondary" href={`/projects/${featuredProject.id}`}>
+              Explore {featuredProject.data.title}
             </a>
             <a
               class="btn btn-secondary"

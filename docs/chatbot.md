@@ -38,7 +38,7 @@ checked-in `.env` file.
 
 After setting the secret, open `/api/chat/health` on the production hostname
 and confirm that `configured` is `true`. Then open the **Ask about Shane**
-widget and ask a question such as "Tell me about Hostlet."
+widget and ask a question such as "Tell me about Helm."
 
 ## D1 chat history
 
