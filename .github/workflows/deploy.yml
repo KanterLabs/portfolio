@@ -48,7 +48,7 @@ jobs:
           cache: npm
           cache-dependency-path: ${{ matrix.workspace }}/package-lock.json
       - name: Audit locked dependencies
-        run: npm audit --package-lock-only --audit-level=low
+        run: python3 ../scripts/npm_audit.py
 
   chat-worker-validate:
     runs-on: homelab

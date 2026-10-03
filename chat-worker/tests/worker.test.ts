@@ -57,7 +57,7 @@ describe('portfolio chat Worker endpoints', () => {
 
   it('returns a sanitized not_configured SSE response before the secret exists', async () => {
     const response = await worker.fetch(
-      post({ message: 'What is Hostlet?', history: [], pagePath: '/projects/hostlet', visitorId }),
+      post({ message: 'What is Helm?', history: [], pagePath: '/projects/helm', visitorId }),
       env,
       {} as ExecutionContext,
     );
@@ -102,7 +102,7 @@ describe('portfolio chat Worker endpoints', () => {
 
   it('sends the exact Responses API controls and transforms its stream', async () => {
     const upstream = new Response(
-      'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"Hostlet is a deployment panel."}\n\n' +
+      'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"Helm is a project board."}\n\n' +
         'event: response.completed\ndata: {"type":"response.completed"}\n\n',
       { status: 200, headers: { 'Content-Type': 'text/event-stream' } },
     );
@@ -124,7 +124,7 @@ describe('portfolio chat Worker endpoints', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const response = await worker.fetch(
-      post({ message: 'What is Hostlet?', history: [], pagePath: '/projects/hostlet', visitorId }),
+      post({ message: 'What is Helm?', history: [], pagePath: '/projects/helm', visitorId }),
       { ...env, OPENAI_API_KEY: 'test-key' },
       {} as ExecutionContext,
     );
@@ -170,7 +170,7 @@ describe('portfolio chat Worker endpoints', () => {
       post({
         message: 'Store this question',
         history: [{ role: 'assistant', content: 'Earlier answer' }],
-        pagePath: '/projects/hostlet',
+        pagePath: '/projects/helm',
         visitorId,
       }),
       { ...env, OPENAI_API_KEY: 'test-key', CHAT_HISTORY: database },
@@ -185,7 +185,7 @@ describe('portfolio chat Worker endpoints', () => {
     expect(calls[0]?.values).toEqual(expect.arrayContaining([
       visitorId,
       'beta',
-      '/projects/hostlet',
+      '/projects/helm',
       'Store this question',
       '[{"role":"assistant","content":"Earlier answer"}]',
     ]));

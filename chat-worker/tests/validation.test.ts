@@ -26,9 +26,9 @@ describe('chat request validation', () => {
   it('accepts a bounded request and normalises visitor id', async () => {
     const result = await parseChatRequest(
       request({
-        message: '  What is Hostlet?  ',
+        message: '  What is Helm?  ',
         history: [{ role: 'user', content: 'Tell me about projects.' }],
-        pagePath: '/projects/hostlet',
+        pagePath: '/projects/helm',
         visitorId: visitorId.toUpperCase(),
       }),
     );
@@ -36,9 +36,9 @@ describe('chat request validation', () => {
     expect(result).toEqual({
       ok: true,
       value: {
-        message: 'What is Hostlet?',
+        message: 'What is Helm?',
         history: [{ role: 'user', content: 'Tell me about projects.' }],
-        pagePath: '/projects/hostlet',
+        pagePath: '/projects/helm',
         visitorId,
       },
     });
