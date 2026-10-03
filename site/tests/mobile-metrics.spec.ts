@@ -25,8 +25,8 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
   console.log('Mobile metrics:', JSON.stringify(metrics, null, 2));
 
   expect(metrics.hasHorizontalOverflow).toBe(false);
-  // The KanterLabs catalog (#kanterlabs: studio banner, six flagship media
-  // cards, nine repo cards) adds roughly 6000px of single-column content on
+  // The KanterLabs catalog (#kanterlabs: studio banner, five flagship media
+  // cards, seven repo cards) adds roughly 6000px of single-column content on
   // a phone. The budget still catches runaway growth past that.
   expect(metrics.scrollHeight).toBeLessThan(18500);
   expect(metrics.h1).toContain('I keep production infrastructure moving');
@@ -59,7 +59,7 @@ test('mobile nav panel is compact', async ({ page }) => {
 
 test('mobile case study pages layout', async ({ page }) => {
   const pages = [
-    ['/projects/sandbox-factory', 'Sandbox Factory'],
+    ['/projects/helm', 'Helm'],
     ['/projects/multi-node-portfolio', 'Dual-Origin Portfolio Deployment'],
     ['/projects/kanterlabs-homelab', 'KanterLabs Homelab Platform'],
     ['/projects/data-center-operations', 'InterServer Data Center Operations'],

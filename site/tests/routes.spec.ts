@@ -36,6 +36,22 @@ test.describe("utility routes", () => {
     ).toBeVisible();
   });
 
+  test('removed project routes return 404 and the homepage has no removed links or copy', async ({ page }) => {
+    for (const route of ['/projects/hostlet', '/projects/sandbox-factory']) {
+      const response = await page.goto(route);
+      expect(response?.status(), route).toBe(404);
+      await expect(page).toHaveTitle('Page Not Found | Shane Kanterman');
+      await expect(page.locator('main')).not.toContainText(/hostlet|sandbox factory/i);
+    }
+
+    await page.goto('/');
+    await expect(page.locator('body')).not.toContainText(/hostlet|sandbox factory/i);
+    const hrefs = await page.locator('a').evaluateAll((links) =>
+      links.map((link) => (link as HTMLAnchorElement).getAttribute('href') ?? ''),
+    );
+    expect(hrefs.filter((href) => /projects\/(?:hostlet|sandbox-factory)/i.test(href))).toEqual([]);
+  });
+
   test("robots.txt responds with sitemap", async ({ page }) => {
     const response = await page.goto("/robots.txt");
 
