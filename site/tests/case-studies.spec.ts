@@ -9,13 +9,6 @@ const caseStudies = [
     backHref: '/#projects',
   },
   {
-    path: '/projects/sandbox-factory',
-    title: 'Sandbox Factory | Shane Kanterman',
-    heading: 'Sandbox Factory',
-    backLabel: 'Back to selected work',
-    backHref: '/#projects',
-  },
-  {
     path: '/projects/multi-node-portfolio',
     title: 'Dual-Origin Portfolio Deployment | Shane Kanterman',
     heading: 'Dual-Origin Portfolio Deployment',
@@ -26,13 +19,6 @@ const caseStudies = [
     path: '/projects/kanterlabs-homelab',
     title: 'KanterLabs Homelab Platform | Shane Kanterman',
     heading: 'KanterLabs Homelab Platform',
-    backLabel: 'Back to selected work',
-    backHref: '/#projects',
-  },
-  {
-    path: '/projects/hostlet',
-    title: 'Hostlet Self-Hosted Deployment Panel | Shane Kanterman',
-    heading: 'Hostlet Self-Hosted Deployment Panel',
     backLabel: 'Back to selected work',
     backHref: '/#projects',
   },
@@ -97,26 +83,11 @@ test.describe('case studies', () => {
   });
 
   test('project source links use canonical repositories', async ({ page }) => {
-    await page.goto('/projects/hostlet');
-    await expect(page.getByRole('link', { name: 'View Hostlet repo' })).toHaveAttribute(
-      'href',
-      'https://github.com/KanterLabs/hostlet-core',
-    );
-
     await page.goto('/projects/multi-node-portfolio');
     await expect(page.getByRole('link', { name: 'View portfolio repo' })).toHaveAttribute(
       'href',
       'https://github.com/KanterLabs/portfolio',
     );
-  });
-
-  test('Sandbox Factory is presented as a bounded private preview', async ({ page }) => {
-    await page.goto('/projects/sandbox-factory');
-
-    await expect(page.getByText('In Progress').first()).toBeVisible();
-    await expect(page.getByText(/report-only/i).first()).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Lifecycle, Telemetry, and Cleanup' })).toBeVisible();
-    await expect(page.locator('main')).not.toContainText(/\b10\.(?:\d{1,3}\.){2}\d{1,3}\b/);
   });
 
   test('data center experience reflects current employment', async ({ page }) => {
@@ -178,7 +149,7 @@ test.describe('case studies', () => {
   });
 
   test('metadata row has no decorative empty spans and CSS-generated separators', async ({ page }) => {
-    await page.goto('/projects/hostlet');
+    await page.goto('/projects/helm');
 
     const items = page.locator('.case-meta > *');
     await expect(items).toHaveCount(4);
@@ -193,7 +164,7 @@ test.describe('case studies', () => {
   });
 
   test('the stack row renders middot separators between entries', async ({ page }) => {
-    await page.goto('/projects/hostlet');
+    await page.goto('/projects/helm');
 
     const stackItems = page.locator('.stack-list > *');
     const count = await stackItems.count();
@@ -211,7 +182,7 @@ test.describe('case studies', () => {
       { width: 390, expectedPadding: 28 },
     ]) {
       await page.setViewportSize({ width, height: 1000 });
-      await page.goto('/projects/hostlet');
+      await page.goto('/projects/helm');
 
       const caseBody = page.locator('.case-body');
       const { paddingTop, marginTop } = await caseBody.evaluate((el) => {

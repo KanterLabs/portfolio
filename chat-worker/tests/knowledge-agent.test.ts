@@ -17,16 +17,16 @@ import { auditKnowledge } from '../scripts/knowledge-drift.ts';
 import type { KnowledgeEntry } from '../src/types.ts';
 
 const ENTRY: KnowledgeEntry = {
-  id: 'hostlet',
+  id: 'helm',
   source: {
-    title: 'Hostlet',
-    path: 'site/src/content/projects/hostlet.mdx',
-    href: '/projects/hostlet',
+    title: 'Helm',
+    path: 'site/src/content/projects/helm.mdx',
+    href: '/projects/helm',
   },
   lastReviewed: '2026-08-16',
   topics: ['project'],
-  keywords: ['hostlet'],
-  content: 'Hostlet is a self-hosted deployment control plane written in Rust.',
+  keywords: ['helm', 'project board'],
+  content: 'Helm is a self-hosted project board and bug tracker for people and software agents.',
 };
 
 /** A client that returns canned text, so no network or key is involved. */
@@ -35,11 +35,11 @@ function stubClient(reply: string): LunaClient {
 }
 
 const VALID_PROPOSAL = {
-  id: 'sandbox-factory',
-  title: 'Sandbox Factory',
+  id: 'helm',
   topics: ['project', 'platform'],
-  keywords: ['sandbox', 'proxmox', 'browser', 'workstation'],
-  content: 'A private-first platform for short-lived development workstations.',
+  title: 'Helm',
+  keywords: ['project board', 'bug tracker', 'Go', 'Svelte'],
+  content: 'A self-hosted project board and bug tracker where people and software agents share work.',
 };
 
 describe('extractOutputText', () => {
@@ -79,27 +79,27 @@ describe('parseJsonObject', () => {
 
 describe('validateReview', () => {
   it('normalises a well-formed review', () => {
-    const result = validateReview('hostlet', {
+    const result = validateReview('helm', {
       verdict: 'contradicted',
       issues: ['says Rust, source says Go', ''],
       missing: null,
-      suggestedContent: '  Hostlet is written in Go.  ',
+      suggestedContent: '  Helm is written in Go.  ',
     });
 
     expect(result).toEqual({
-      entryId: 'hostlet',
+      entryId: 'helm',
       verdict: 'contradicted',
       issues: ['says Rust, source says Go'],
       missing: [],
       sourceIssues: [],
-      suggestedContent: 'Hostlet is written in Go.',
+      suggestedContent: 'Helm is written in Go.',
     });
   });
 
   it('keeps source-page defects separate from entry problems', () => {
     // sourceIssues describes the page, not the entry, so it must not be folded
     // into `issues` — the two lead to different fixes, in different files.
-    const result = validateReview('hostlet', {
+    const result = validateReview('helm', {
       verdict: 'incomplete',
       issues: [],
       missing: ['backup and restore commands'],
@@ -113,22 +113,22 @@ describe('validateReview', () => {
   });
 
   it('treats an empty suggestion as no suggestion', () => {
-    const result = validateReview('hostlet', { verdict: 'supported', suggestedContent: '   ' });
+    const result = validateReview('helm', { verdict: 'supported', suggestedContent: '   ' });
     expect(result.suggestedContent).toBeNull();
   });
 
   it('rejects an unrecognised verdict instead of guessing', () => {
-    expect(() => validateReview('hostlet', { verdict: 'probably fine' })).toThrow(/invalid verdict/);
+    expect(() => validateReview('helm', { verdict: 'probably fine' })).toThrow(/invalid verdict/);
   });
 });
 
 describe('validateProposedEntry', () => {
   it('accepts and trims a valid proposal', () => {
-    expect(validateProposedEntry({ ...VALID_PROPOSAL, id: '  sandbox-factory  ' })).toEqual(VALID_PROPOSAL);
+    expect(validateProposedEntry({ ...VALID_PROPOSAL, id: '  helm  ' })).toEqual(VALID_PROPOSAL);
   });
 
   it('rejects a non-kebab-case id', () => {
-    expect(() => validateProposedEntry({ ...VALID_PROPOSAL, id: 'Sandbox Factory' })).toThrow(/kebab-case/);
+    expect(() => validateProposedEntry({ ...VALID_PROPOSAL, id: 'Helm Board' })).toThrow(/kebab-case/);
   });
 
   it('rejects a proposal missing required fields', () => {
@@ -157,12 +157,12 @@ describe('validateProposedEntry', () => {
 
 describe('assembleEntry', () => {
   it('derives path and href from the real filename, not from the model', () => {
-    const entry = assembleEntry(VALID_PROPOSAL, 'site/src/content/projects/sandbox-factory.mdx', '2026-08-21');
+    const entry = assembleEntry(VALID_PROPOSAL, 'site/src/content/projects/helm.mdx', '2026-08-21');
 
     expect(entry.source).toEqual({
-      title: 'Sandbox Factory',
-      path: 'site/src/content/projects/sandbox-factory.mdx',
-      href: '/projects/sandbox-factory',
+      title: 'Helm',
+      path: 'site/src/content/projects/helm.mdx',
+      href: '/projects/helm',
     });
     expect(entry.lastReviewed).toBe('2026-08-21');
   });
@@ -173,7 +173,7 @@ describe('assembleEntry', () => {
     // hand-written entry.
     const entry = assembleEntry(
       { ...VALID_PROPOSAL, topics: ['infrastructure', 'security'] },
-      'site/src/content/projects/sandbox-factory.mdx',
+      'site/src/content/projects/helm.mdx',
       '2026-08-21',
     );
 
@@ -182,21 +182,21 @@ describe('assembleEntry', () => {
 
   it("does not duplicate 'project' when the model does include it", () => {
     const entry = assembleEntry(
-      { ...VALID_PROPOSAL, topics: ['security', 'project', 'sandbox'] },
-      'site/src/content/projects/sandbox-factory.mdx',
+      { ...VALID_PROPOSAL, topics: ['security', 'project', 'board'] },
+      'site/src/content/projects/helm.mdx',
       '2026-08-21',
     );
 
-    expect(entry.topics).toEqual(['project', 'security', 'sandbox']);
+    expect(entry.topics).toEqual(['project', 'security', 'board']);
   });
 
   it('ignores an href the model tried to smuggle in', () => {
     const entry = assembleEntry(
       { ...VALID_PROPOSAL, href: 'https://evil.test' } as never,
-      'site/src/content/projects/sandbox-factory.mdx',
+      'site/src/content/projects/helm.mdx',
       '2026-08-21',
     );
-    expect(entry.source.href).toBe('/projects/sandbox-factory');
+    expect(entry.source.href).toBe('/projects/helm');
   });
 
   it('refuses a filename that would produce a non-allowlisted href', () => {
@@ -214,9 +214,9 @@ describe('reviewEntry', () => {
     const [, input] = complete.mock.calls[0];
     expect(input).toContain(ENTRY.content);
     expect(input).toContain('The current page text.');
-    expect(input).toContain('site/src/content/projects/hostlet.mdx');
+    expect(input).toContain('site/src/content/projects/helm.mdx');
     expect(result.verdict).toBe('supported');
-    expect(result.entryId).toBe('hostlet');
+    expect(result.entryId).toBe('helm');
   });
 
   it('propagates a validation failure instead of returning a default verdict', async () => {
@@ -230,7 +230,7 @@ describe('buildReviewInput', () => {
   it('labels the entry and the source so they cannot be confused', () => {
     const input = buildReviewInput(ENTRY, 'page text');
     expect(input).toContain('Entry content (the claims to audit):');
-    expect(input).toContain('Current source text of site/src/content/projects/hostlet.mdx:');
+    expect(input).toContain('Current source text of site/src/content/projects/helm.mdx:');
   });
 });
 
@@ -238,13 +238,13 @@ describe('generateEntry', () => {
   it('produces a complete entry from a valid proposal', async () => {
     const entry = await generateEntry(
       stubClient(JSON.stringify(VALID_PROPOSAL)),
-      'site/src/content/projects/sandbox-factory.mdx',
-      '# Sandbox Factory',
+      'site/src/content/projects/helm.mdx',
+      '# Helm',
       '2026-08-21',
     );
 
-    expect(entry.id).toBe('sandbox-factory');
-    expect(entry.source.href).toBe('/projects/sandbox-factory');
+    expect(entry.id).toBe('helm');
+    expect(entry.source.href).toBe('/projects/helm');
     expect(entry.content).toBe(VALID_PROPOSAL.content);
   });
 
@@ -257,11 +257,11 @@ describe('generateEntry', () => {
   it('produces an entry the Tier 0 audit accepts', async () => {
     // The two tools have to agree, or `generate` would emit entries that fail
     // the gate the moment they are committed.
-    const path = 'site/src/content/projects/sandbox-factory.mdx';
+    const path = 'site/src/content/projects/helm.mdx';
     const entry = await generateEntry(
       stubClient(JSON.stringify(VALID_PROPOSAL)),
       path,
-      '# Sandbox Factory',
+      '# Helm',
       '2026-08-21',
     );
 

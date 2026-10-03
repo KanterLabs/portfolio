@@ -6,7 +6,7 @@ import { composite, effectiveBackground, getContrastRatio, parseColor } from './
 // literal (rgba(255,255,255,.05) etc.) was written against the dark
 // palette and silently disappears in light mode.
 
-async function setTheme(page: Page, theme: 'light' | 'dark', path = '/projects/hostlet') {
+async function setTheme(page: Page, theme: 'light' | 'dark', path = '/projects/helm') {
   await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
   await page.addInitScript(() => localStorage.clear());
   await page.goto(path);
@@ -215,7 +215,7 @@ for (const theme of ['light', 'dark'] as const) {
   });
 
   test(`.field-label on the plate clears 4.5:1 in ${theme}`, async ({ page }) => {
-    await setTheme(page, theme, '/projects/hostlet');
+    await setTheme(page, theme, '/projects/helm');
 
     const label = page.locator('.project-detail-facts .field-label').first();
     await expect(label).toBeVisible();
@@ -239,7 +239,7 @@ for (const theme of ['light', 'dark'] as const) {
   // plates, would leave every other assertion in this file green — none
   // of them read backgroundColor directly. These two do.
   test(`.project-detail-facts fact plate has a non-transparent background in ${theme}`, async ({ page }) => {
-    await setTheme(page, theme, '/projects/hostlet');
+    await setTheme(page, theme, '/projects/helm');
 
     const plate = page.locator('.project-detail-facts > div').first();
     await expect(plate).toBeVisible();

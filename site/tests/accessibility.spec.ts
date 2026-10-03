@@ -6,10 +6,8 @@ import { expectMinTargetSizes } from './helpers/touchTargets';
 const themedRoutes = [
   '/',
   '/projects/helm',
-  '/projects/sandbox-factory',
   '/projects/multi-node-portfolio',
   '/projects/kanterlabs-homelab',
-  '/projects/hostlet',
   '/projects/data-center-operations',
   '/this-page-does-not-exist',
 ] as const;
@@ -127,7 +125,7 @@ for (const theme of ['light', 'dark'] as const) {
   test(`pseudo-element text meets AA contrast in ${theme} mode`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
     await page.addInitScript(() => localStorage.clear());
-    await page.goto('/projects/hostlet');
+    await page.goto('/projects/kanterlabs-homelab');
 
     await expectPseudoElementContrast(page, '.prose ol li', '::before', 4.5);
     await expectPseudoElementContrast(page, '.prose pre[data-language]', '::before', 4.5);
@@ -180,7 +178,7 @@ for (const route of ['/', '/projects/kanterlabs-homelab', '/this-page-does-not-e
 
 // The larger --step-title makes long title words (Infrastructure, Deployment)
 // the tightest fit on the narrowest supported viewport.
-for (const route of ['/', '/projects/hostlet', '/this-page-does-not-exist'] as const) {
+for (const route of ['/', '/projects/helm', '/this-page-does-not-exist'] as const) {
   test(`${route} reflows at 320px without horizontal overflow`, async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto(route);

@@ -12,7 +12,7 @@ import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
 import SystemConstellation from '../components/SystemConstellation.astro';
 import { getCollection } from 'astro:content';
-import { HOSTLET_CLOUD_URL, KANTERLABS_ORG_URL, allPublicRepos } from '../lib/kanterlabs';
+import { KANTERLABS_ORG_URL, allPublicRepos } from '../lib/kanterlabs';
 
 const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
@@ -162,7 +162,7 @@ const structuredData = [
     description:
       'Independent product and infrastructure studio building developer tools, self-hosted platforms, and practical software.',
     founder: { '@type': 'Person', name: 'Shane Kanterman', url: siteUrl },
-    sameAs: [KANTERLABS_ORG_URL, HOSTLET_CLOUD_URL],
+    sameAs: [KANTERLABS_ORG_URL],
   },
 ];
 ---
