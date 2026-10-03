@@ -107,9 +107,9 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     const entries = page.locator('#projects .project-entry');
-    await expect(entries).toHaveCount(5);
+    await expect(entries).toHaveCount(3);
 
-    for (let i = 0; i < 5; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
       const chrome = await entries.nth(i).evaluate((el) => {
         const style = getComputedStyle(el);
         const alphaOf = (color: string) => {
@@ -575,7 +575,7 @@ test.describe('homepage', () => {
       expect(color!.alpha, `stack list ${i} border visibility`).toBeGreaterThan(0);
     }
 
-    await page.goto('/projects/hostlet');
+    await page.goto('/projects/helm');
     const caseStudyStackList = page.locator('.stack-list').first();
     const borderTopWidth = await caseStudyStackList.evaluate((el) => getComputedStyle(el).borderTopWidth);
     expect(borderTopWidth, 'case-study stack list must stay unscoped by the #skills rule').toBe('0px');
@@ -585,7 +585,7 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     const titleLinks = page.locator('.project-title a');
-    await expect(titleLinks).toHaveCount(5);
+    await expect(titleLinks).toHaveCount(3);
     for (const href of await titleLinks.evaluateAll((links) => links.map((l) => l.getAttribute('href')))) {
       expect(href).toMatch(/^\/projects\/.+/);
     }
@@ -609,8 +609,6 @@ test.describe('homepage', () => {
     expect(titles.map((title) => title.trim())).toEqual([
       'Helm',
       'KanterLabs Homelab Platform',
-      'Sandbox Factory',
-      'Hostlet Self-Hosted Deployment Panel',
       'Dual-Origin Portfolio Deployment',
     ]);
 
@@ -842,8 +840,8 @@ test.describe('homepage', () => {
     };
 
     const cards = page.locator('#projects .project-card');
-    await expect(cards).toHaveCount(4);
-    for (let i = 0; i < 4; i += 1) {
+    await expect(cards).toHaveCount(2);
+    for (let i = 0; i < 2; i += 1) {
       await expectStripIntegrity(cards.nth(i).locator('ol.system-diagram-strip'), `card ${i}`);
     }
 
@@ -866,19 +864,19 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     const cards = page.locator('#projects .project-card');
-    await expect(cards).toHaveCount(4);
+    await expect(cards).toHaveCount(2);
 
     const ctas = await Promise.all(
-      Array.from({ length: 4 }, (_, index) => cards.nth(index).locator('.text-link').boundingBox()),
+      Array.from({ length: 2 }, (_, index) => cards.nth(index).locator('.text-link').boundingBox()),
     );
     const boxes = await Promise.all(
-      Array.from({ length: 4 }, (_, index) => cards.nth(index).boundingBox()),
+      Array.from({ length: 2 }, (_, index) => cards.nth(index).boundingBox()),
     );
     for (const item of [...ctas, ...boxes]) expect(item).not.toBeNull();
 
-    // Two rows of two: no orphan card, and each row's cards and CTAs align.
-    expect(new Set(boxes.map((item) => Math.round(item!.y))).size).toBe(2);
-    for (const [a, b] of [[0, 1], [2, 3]]) {
+    // One row of two: both cards and CTAs align.
+    expect(new Set(boxes.map((item) => Math.round(item!.y))).size).toBe(1);
+    for (const [a, b] of [[0, 1]]) {
       expect(Math.abs(boxes[a]!.y - boxes[b]!.y)).toBeLessThanOrEqual(2);
       expect(Math.abs(boxes[a]!.height - boxes[b]!.height)).toBeLessThanOrEqual(2);
       expect(Math.abs(ctas[a]!.y - ctas[b]!.y)).toBeLessThanOrEqual(2);

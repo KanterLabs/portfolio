@@ -8,7 +8,7 @@
  *
  * Usage:
  *   node scripts/ui-screenshots.mjs --out .ui-iterate/round-1
- *   node scripts/ui-screenshots.mjs --out /tmp/shots --routes /,/projects/hostlet \
+ *   node scripts/ui-screenshots.mjs --out /tmp/shots --routes /,/projects/helm \
  *     --viewports desktop,mobile --themes dark,light --skip-build
  *
  * Flags:
@@ -33,7 +33,7 @@ const SITE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 
 const DEFAULT_ROUTES = [
   '/',
-  '/projects/hostlet',
+  '/projects/helm',
   '/projects/kanterlabs-homelab',
   '/projects/multi-node-portfolio',
   '/projects/data-center-operations',

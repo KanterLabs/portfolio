@@ -10,7 +10,7 @@ import interLatin700 from '@fontsource/inter/files/inter-latin-700-normal.woff2?
 import { getSiteBuildVersion } from '../lib/siteVersion';
 import PortfolioChat from '../components/PortfolioChat.astro';
 import KanterLabsMark from '../components/KanterLabsMark.astro';
-import { HOSTLET_CLOUD_URL, KANTERLABS_ORG_URL } from '../lib/kanterlabs';
+import { KANTERLABS_ORG_URL } from '../lib/kanterlabs';
 
 interface StructuredDataEntry {
   [key: string]: unknown;
@@ -113,7 +113,6 @@ const jsonLdItems = structuredData
         <ul class="site-footer-links">
           <li><a href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">GitHub</a></li>
           <li><a href={`${KANTERLABS_ORG_URL}/portfolio`} target="_blank" rel="noopener noreferrer">Site source</a></li>
-          <li><a href={HOSTLET_CLOUD_URL} target="_blank" rel="noopener noreferrer">hostlet.cloud</a></li>
         </ul>
       </div>
       <p>© {new Date().getFullYear()} Shane Kanterman · A KanterLabs project, built with Astro and deployed on Kantercloud.</p>

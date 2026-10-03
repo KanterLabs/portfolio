@@ -16,7 +16,6 @@ import zeusDesktop from '../assets/kanterlabs/zeusos-desktop.jpg';
  */
 
 export const KANTERLABS_ORG_URL = 'https://github.com/KanterLabs';
-export const HOSTLET_CLOUD_URL = 'https://hostlet.cloud';
 export const HELM_CASE_STUDY_URL = '/projects/helm';
 
 export type LabCategory = 'platforms' | 'devtools' | 'desktop' | 'apps';
@@ -82,29 +81,6 @@ export const flagshipRepos: LabRepo[] = [
       alt: 'Helm banner: a Kanban board with Backlog, Ready, In progress, and Done columns',
       width: 900,
       height: 340,
-    },
-  },
-  {
-    slug: 'hostlet-core',
-    name: 'Hostlet Core',
-    summary:
-      'Turn GitHub repositories into live apps on your own Linux server: builds, containers, routing, health checks, and rollback. The open-source engine behind hostlet.cloud.',
-    category: 'platforms',
-    stack: ['Rust', 'Next.js', 'PostgreSQL', 'Caddy'],
-    language: 'Rust',
-    status: 'Pre-1.0 beta',
-    license: 'MIT',
-    caseStudy: { href: '/projects/hostlet', label: 'Case study' },
-    site: { href: HOSTLET_CLOUD_URL, label: 'hostlet.cloud' },
-    media: {
-      kind: 'terminal',
-      title: 'hostlet',
-      lines: [
-        { command: 'hostlet preflight' },
-        { command: 'hostlet init' },
-        { command: 'hostlet up --tunnel' },
-        { note: 'open the printed URL, connect GitHub, deploy an app' },
-      ],
     },
   },
   {
@@ -185,16 +161,6 @@ export const flagshipRepos: LabRepo[] = [
 /** Everything else public, shown as compact cards. */
 export const moreRepos: LabRepo[] = [
   {
-    slug: 'hostlet-app',
-    name: 'Hostlet',
-    summary:
-      'Professional portfolios and always-running project demos for developers: connect GitHub, deploy supported projects, and publish a portfolio around working demos.',
-    category: 'platforms',
-    stack: ['JavaScript'],
-    language: 'JavaScript',
-    status: 'In development',
-  },
-  {
     slug: 'zeus-code',
     name: 'Zeus Code',
     summary:
@@ -236,20 +202,10 @@ export const moreRepos: LabRepo[] = [
     license: 'BSD-2-Clause',
   },
   {
-    slug: 'hostlet-deploy-fixtures',
-    name: 'Hostlet deploy fixtures',
-    summary:
-      'A deterministic application matrix for Hostlet deployment certification: runtimes, managed services, persistence, HTTPS, WebSockets, redeploys, and rollbacks.',
-    category: 'devtools',
-    stack: ['JavaScript'],
-    language: 'JavaScript',
-    status: 'Active',
-  },
-  {
     slug: 'RunComp',
     name: 'RunComp',
     summary:
-      'A running-competition app built to test Hostlet on the homelab: private groups, streaks, weekly challenges, and push alerts.',
+      'A running-competition app with private groups, streaks, weekly challenges, and push alerts.',
     category: 'apps',
     stack: ['TypeScript', 'Next.js'],
     language: 'TypeScript',
