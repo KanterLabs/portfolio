@@ -118,21 +118,24 @@ After changing this path:
 6. Recheck beta health, revision, and configured digest after rollback. A
    rollback is not accepted solely because the API mutation returned success.
 
-## Temporary build dependency advisory exception
+## Build dependency advisory GHSA-ch52-4w7c-c8xp
 
-Until October 10, 2026 (UTC), `scripts/npm_audit.py` permits only
+`scripts/npm_audit.py` blocks every non-info finding in both the `site` and
+`chat-worker` workspaces; it has no exceptions. A temporary exception for
 [GHSA-ch52-4w7c-c8xp](https://github.com/advisories/GHSA-ch52-4w7c-c8xp)
-for the locked `http-cache-semantics` 4.2.0 dependency and its propagated Astro
-and MDX audit findings. The advisory has no patched release. It concerns
-cross-user disclosure from a shared HTTP cache when processing client
-`max-stale` directives. Astro uses this package in its remote-asset build
-helper; this site's deployed image contains Nginx and static output, with no
-Node runtime or HTTP cache using this package. The build has no visitor request
-headers or authenticated cross-user HTTP cache.
+(`http-cache-semantics` through 4.2.0, reached through Astro) was removed in
+October 2026 by locking `http-cache-semantics` 4.3.0, which is outside the
+advisory's affected range.
 
-The exception applies only in the `site` workspace and requires the reviewed
-Dockerfile's exact digest and the affected package's exact locked version.
-Every other advisory, a changed deployment contract, an audit error, or an
-expired exception remains blocking. The `chat-worker` workspace receives no
-exception. Remove the exception when an upstream fix is available; it must be
-reviewed again rather than silently extended if the deadline is reached.
+4.3.0 does not change the `max-stale` code the advisory cites. The upstream
+maintainer disputes the report as RFC 9111 section 7.3 behavior
+([kornelski/http-cache-semantics#56](https://github.com/kornelski/http-cache-semantics/issues/56)),
+and the dispute is open at
+[github/advisory-database#10139](https://github.com/github/advisory-database/issues/10139).
+Exposure is nil either way: Astro uses the package only in its build-time
+remote-asset helper, and the deployed image serves static output from Nginx
+with no Node runtime or shared HTTP cache.
+
+If the advisory's range is widened to include 4.3.0, the audit blocks again by
+design. Upgrade if a real fix exists; otherwise reintroduce a narrowly scoped,
+expiring exception with its own review rather than weakening the gate.
