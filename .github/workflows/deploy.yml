@@ -86,7 +86,7 @@ jobs:
         run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
 
   browser-test:
-    runs-on: homelab-heavy
+    runs-on: homelab
     env:
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
       PUBLIC_CHAT_ENABLED: "true"
@@ -121,7 +121,7 @@ jobs:
 
   container:
     needs: [dependency-audit, chat-worker-validate, deployment-helper-test, browser-test]
-    runs-on: homelab-heavy
+    runs-on: homelab
     outputs:
       image_digest: ${{ steps.publish.outputs.image_digest }}
     permissions:
