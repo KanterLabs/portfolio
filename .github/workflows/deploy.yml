@@ -158,27 +158,47 @@ jobs:
       - name: Smoke-test image
         run: |
           set -euo pipefail
-          container_id=$(docker run --detach --rm \
+          container_id=''
+          html_file=$(mktemp)
+          # shellcheck disable=SC2317
+          cleanup() {
+            local status=$?
+            if [ -n "$container_id" ]; then
+              if [ "$status" -ne 0 ]; then
+                docker inspect --format 'status={{.State.Status}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}} error={{json .State.Error}} ports={{json .NetworkSettings.Ports}}' "$container_id" || true
+                docker logs --tail 40 "$container_id" || true
+              fi
+              docker rm --force "$container_id" >/dev/null 2>&1 || true
+            fi
+            rm -f "$html_file"
+          }
+          trap cleanup EXIT
+          container_id=$(docker run --detach \
             -e PORTFOLIO_X_ROBOTS_TAG='noindex, nofollow, noarchive' \
             -p 127.0.0.1::8080 \
             "$IMAGE:sha-$GITHUB_SHA")
-          # shellcheck disable=SC2317
-          cleanup() { docker stop "$container_id" >/dev/null 2>&1 || true; }
-          trap cleanup EXIT
-          container_port=$(docker port "$container_id" 8080/tcp | sed 's/.*://')
-          for delay in 0 1 1 1 1; do
-            sleep "$delay"
+          startup_deadline=$((SECONDS + 10))
+          smoke_get() {
+            local remaining=$((startup_deadline - SECONDS))
+            [ "$remaining" -gt 0 ] && curl --fail --silent --max-time "$remaining" "$@"
+          }
+          while [ "$SECONDS" -lt "$startup_deadline" ]; do
+            port_binding=$(timeout 1 docker port "$container_id" 8080/tcp 2>/dev/null || true)
             # The footer build stamp is injected at image-build time, so a
             # broken injection can only be caught against the built image --
             # never against a dev build, which can still fall back to git.
-            if curl --fail --silent "http://127.0.0.1:${container_port}/healthz" | grep -qx ok &&
-               curl --fail --silent "http://127.0.0.1:${container_port}/_meta/revision" | grep -qx "$GITHUB_SHA" &&
-               curl --fail --silent "http://127.0.0.1:${container_port}/" |
-                 grep -q "site-footer-build\">Build .*${GITHUB_SHA:0:7}"; then
-              exit 0
+            if [[ "$port_binding" =~ ^127\.0\.0\.1:([0-9]{1,5})$ ]]; then
+              container_port=${BASH_REMATCH[1]}
+              if ((10#$container_port > 0 && 10#$container_port <= 65535)) &&
+                 smoke_get "http://127.0.0.1:${container_port}/healthz" | grep -qx ok &&
+                 smoke_get "http://127.0.0.1:${container_port}/_meta/revision" | grep -qx "$GITHUB_SHA" &&
+                 smoke_get "http://127.0.0.1:${container_port}/" --output "$html_file" &&
+                 grep -q "site-footer-build\">Build .*${GITHUB_SHA:0:7}" "$html_file"; then
+                exit 0
+              fi
             fi
+            sleep 1
           done
-          docker logs "$container_id"
           exit 1
       - name: Authenticate to GHCR
         if: github.event_name != 'pull_request'
