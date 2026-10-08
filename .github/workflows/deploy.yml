@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 
 concurrency:
+  # Keep migrated runs separate from attempts queued on retired runner labels.
   group: portfolio-auto-${{ github.ref }}
   cancel-in-progress: false
 
