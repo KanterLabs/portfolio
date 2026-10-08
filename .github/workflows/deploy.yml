@@ -19,6 +19,7 @@ jobs:
   promotion-source:
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
     runs-on: homelab
+    timeout-minutes: 5
     steps:
       - name: Require promotion from this repository's beta branch
         env:
@@ -32,6 +33,7 @@ jobs:
 
   dependency-audit:
     runs-on: homelab
+    timeout-minutes: 5
     strategy:
       fail-fast: false
       matrix:
@@ -53,6 +55,7 @@ jobs:
 
   chat-worker-validate:
     runs-on: homelab
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: chat-worker
@@ -80,6 +83,7 @@ jobs:
 
   deployment-helper-test:
     runs-on: homelab
+    timeout-minutes: 5
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -88,6 +92,7 @@ jobs:
 
   browser-test:
     runs-on: homelab
+    timeout-minutes: 15
     env:
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
       PUBLIC_CHAT_ENABLED: "true"
@@ -123,6 +128,7 @@ jobs:
   container:
     needs: [dependency-audit, chat-worker-validate, deployment-helper-test, browser-test]
     runs-on: homelab
+    timeout-minutes: 20
     outputs:
       image_digest: ${{ steps.publish.outputs.image_digest }}
     permissions:
