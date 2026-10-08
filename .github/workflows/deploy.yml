@@ -85,6 +85,8 @@ jobs:
     runs-on: homelab
     timeout-minutes: 5
     steps:
+      - name: Record executed workflow source
+        run: printf 'workflow-source=%s\n' "$GITHUB_WORKFLOW_SHA"
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Test transactional Coolify deployment helper
