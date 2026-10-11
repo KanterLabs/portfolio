@@ -8,16 +8,50 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: portfolio-${{ github.ref }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      browser: ${{ steps.paths.outputs.browser }}
+      container: ${{ steps.paths.outputs.container }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Identify browser and container inputs
+        id: paths
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python3 - <<'PYCODE'
+          import fnmatch, os, subprocess
+          base, head = os.environ['BASE_SHA'], os.environ['HEAD_SHA']
+          if not base or set(base) == {'0'}:
+              paths = ['site/', 'Dockerfile']
+          else:
+              paths = subprocess.check_output(['git', 'diff', '--name-only', base + ('...' if os.environ['EVENT_NAME'] == 'pull_request' else '..') + head], text=True).splitlines()
+          browser = any(fnmatch.fnmatch(p, pattern) for p in paths for pattern in
+                        ['site/*', 'chat-worker/*', 'chat-content/*', 'divstack/*', '.gitmodules', 'scripts/*', '.github/workflows/*', 'package*'])
+          container = os.environ['EVENT_NAME'] != 'pull_request' or browser or any(
+              fnmatch.fnmatch(p, pattern) for p in paths for pattern in ['Dockerfile', '.dockerignore', 'container/*'])
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'browser={str(browser).lower()}\ncontainer={str(container).lower()}\n')
+          PYCODE
+
   promotion-source:
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    runs-on: homelab
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - name: Require promotion from this repository's beta branch
         env:
@@ -30,7 +64,8 @@ jobs:
           [ "$HEAD_REPOSITORY" = "$TARGET_REPOSITORY" ]
 
   dependency-audit:
-    runs-on: homelab
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -51,7 +86,8 @@ jobs:
         run: python3 ../scripts/npm_audit.py
 
   chat-worker-validate:
-    runs-on: homelab
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: chat-worker
@@ -78,7 +114,8 @@ jobs:
         run: npm run deploy:dry-run
 
   deployment-helper-test:
-    runs-on: homelab
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -86,7 +123,10 @@ jobs:
         run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
 
   browser-test:
-    runs-on: homelab
+    if: always()
+    needs: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     env:
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
       PUBLIC_CHAT_ENABLED: "true"
@@ -95,21 +135,32 @@ jobs:
         working-directory: site
     steps:
       - name: Check out repository
+        if: needs.changes.outputs.browser == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Set up Node.js
+        if: needs.changes.outputs.browser == 'true'
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: "22.22.1"
           cache: npm
           cache-dependency-path: site/package-lock.json
       - name: Install dependencies
+        if: needs.changes.outputs.browser == 'true'
         run: npm ci
+      - name: Cache matching Playwright Chromium downloads
+        if: needs.changes.outputs.browser == 'true'
+        uses: actions/cache@v6
+        with:
+          path: ${{ github.workspace }}/.playwright-browsers
+          key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ hashFiles('site/package-lock.json') }}
       - name: Install browser
-        run: npx playwright install chromium
+        if: needs.changes.outputs.browser == 'true'
+        run: npx playwright install --with-deps chromium
       - name: Run browser tests
+        if: needs.changes.outputs.browser == 'true'
         run: npm run test:e2e
       - name: Upload Playwright report
-        if: failure()
+        if: needs.changes.outputs.browser == 'true' && (failure())
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: playwright-report
@@ -119,9 +170,25 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+      - name: Report required browser validation result
+        working-directory: ${{ github.workspace }}
+        if: always()
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          BROWSER_REQUIRED: ${{ needs.changes.outputs.browser }}
+          VALIDATION_STATUS: ${{ job.status }}
+        run: |
+          test "$CHANGES_RESULT" = success
+          test "$BROWSER_REQUIRED" = true || test "$BROWSER_REQUIRED" = false
+          test "$VALIDATION_STATUS" = success
+
   container:
-    needs: [dependency-audit, chat-worker-validate, deployment-helper-test, browser-test]
-    runs-on: homelab
+    needs: [changes, dependency-audit, chat-worker-validate, deployment-helper-test, browser-test]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    concurrency:
+      group: portfolio-container-${{ github.ref }}
+      cancel-in-progress: false
     outputs:
       image_digest: ${{ steps.publish.outputs.image_digest }}
     permissions:
@@ -129,8 +196,10 @@ jobs:
       packages: write
     steps:
       - name: Check out repository
+        if: needs.changes.outputs.container == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Build immutable image
+        if: needs.changes.outputs.container == 'true'
         env:
           REPOSITORY_OWNER: ${{ github.repository_owner }}
         run: |
@@ -145,6 +214,7 @@ jobs:
             .
           printf 'IMAGE=%s\n' "$image" >> "$GITHUB_ENV"
       - name: Smoke-test image
+        if: needs.changes.outputs.container == 'true'
         run: |
           set -euo pipefail
           container_id=$(docker run --detach --rm \
@@ -170,13 +240,13 @@ jobs:
           docker logs "$container_id"
           exit 1
       - name: Authenticate to GHCR
-        if: github.event_name != 'pull_request'
+        if: needs.changes.outputs.container == 'true' && (github.event_name != 'pull_request')
         env:
           GHCR_TOKEN: ${{ github.token }}
         run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
       - name: Publish immutable and branch tags
         id: publish
-        if: github.event_name != 'pull_request'
+        if: needs.changes.outputs.container == 'true' && (github.event_name != 'pull_request')
         run: |
           set -euo pipefail
           immutable="$IMAGE:sha-$GITHUB_SHA"
@@ -190,13 +260,16 @@ jobs:
           printf 'image_digest=%s\n' "$digest" >> "$GITHUB_OUTPUT"
           printf 'Published %s@%s\n' "$IMAGE" "$digest" >> "$GITHUB_STEP_SUMMARY"
       - name: Remove GHCR credentials
-        if: always() && github.event_name != 'pull_request'
+        if: always() && needs.changes.outputs.container == 'true' && github.event_name != 'pull_request'
         run: docker logout ghcr.io
 
   deploy-beta:
     if: github.event_name == 'push' && github.ref_name == 'beta'
     needs: container
-    runs-on: homelab
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: portfolio-deploy-beta-${{ github.ref }}
+      cancel-in-progress: false
     timeout-minutes: 15
     environment:
       name: beta
@@ -215,6 +288,13 @@ jobs:
       PORTFOLIO_GIT_SHA: ${{ github.sha }}
       PORTFOLIO_SITE_URL: https://beta.home.shanekanterman.dev
     steps:
+      - name: Connect protected deployment to the private tailnet
+        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:gha-portfolio-deploy
+          args: --accept-routes
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Confirm this commit is still the branch tip
@@ -236,9 +316,12 @@ jobs:
         run: python3 scripts/coolify_deploy.py
 
   deploy-production:
-    if: github.event_name == 'push' && github.ref_name == 'main'
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[ci-hosted-cutover]') && github.ref_name == 'main'
     needs: container
-    runs-on: homelab
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: portfolio-deploy-production-${{ github.ref }}
+      cancel-in-progress: false
     timeout-minutes: 15
     environment:
       name: production
@@ -257,6 +340,13 @@ jobs:
       PORTFOLIO_GIT_SHA: ${{ github.sha }}
       PORTFOLIO_SITE_URL: https://shanekanterman.dev
     steps:
+      - name: Connect protected deployment to the private tailnet
+        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:gha-portfolio-deploy
+          args: --accept-routes
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Confirm this commit is still the branch tip

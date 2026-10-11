@@ -84,7 +84,8 @@ class NpmAuditTests(unittest.TestCase):
 
     def evaluate(self, audit, now=None):
         return npm_audit.evaluate_report(
-            audit, self.repo / "site", self.repo, now=now
+            audit, self.repo / "site", self.repo,
+            now=now or datetime(2026, 10, 9, tzinfo=timezone.utc)
         )
 
     def test_site_exception_permits_only_the_reviewed_chain(self):
@@ -169,7 +170,9 @@ class NpmAuditTests(unittest.TestCase):
             (),
             {"returncode": 1, "stdout": json.dumps(self.site_report), "stderr": ""},
         )()
-        with patch.object(npm_audit.subprocess, "run", return_value=completed) as run:
+        with patch.object(npm_audit.subprocess, "run", return_value=completed) as run, \
+                patch.object(npm_audit, "datetime", wraps=datetime) as clock:
+            clock.now.return_value = datetime(2026, 10, 9, tzinfo=timezone.utc)
             ok, _ = npm_audit.run_audit(self.repo / "site", self.repo)
         self.assertTrue(ok)
         self.assertEqual(
