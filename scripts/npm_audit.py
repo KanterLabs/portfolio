@@ -1,37 +1,15 @@
 #!/usr/bin/env python3
-import hashlib
 import json
 import subprocess
-from datetime import datetime, timezone
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCKERFILE_SHA256 = "f556f2faf93aedfffd39421c8cf0f24d0867af96f9f0bf8c4b2e646a80df72cb"
-ADVISORY = "https://github.com/advisories/GHSA-ch52-4w7c-c8xp"
-EXPIRES = datetime(2026, 10, 10, tzinfo=timezone.utc)
-PACKAGE = "http-cache-semantics"
-VERSION = "4.2.0"
-CHAIN = (PACKAGE, "astro", "@astrojs/mdx")
 SEVERITIES = {"info", "low", "moderate", "high", "critical"}
 
 
 def _blocked(reason):
     return False, f"npm audit: blocked ({reason})"
-
-
-def _guard(repo_root):
-    try:
-        digest = hashlib.sha256((repo_root / "Dockerfile").read_bytes()).hexdigest()
-        lock = json.loads((repo_root / "site/package-lock.json").read_text())
-        version = lock["packages"][f"node_modules/{PACKAGE}"]["version"]
-    except (OSError, ValueError, KeyError, TypeError):
-        return "review guard unavailable"
-    if digest != DOCKERFILE_SHA256:
-        return "reviewed Dockerfile changed"
-    if version != VERSION:
-        return "reviewed package version changed"
-    return None
 
 
 def _validate_report(report):
@@ -59,7 +37,7 @@ def _validate_report(report):
     return vulnerabilities
 
 
-def evaluate_report(report, workspace, repo_root=ROOT, now=None):
+def evaluate_report(report, workspace, repo_root=ROOT):
     workspace, repo_root = Path(workspace).resolve(), Path(repo_root).resolve()
     if workspace.parent != repo_root or workspace.name not in {"site", "chat-worker"}:
         return _blocked("unsupported workspace")
@@ -73,39 +51,7 @@ def evaluate_report(report, workspace, repo_root=ROOT, now=None):
     }
     if not findings:
         return True, "npm audit: clean"
-    if workspace.name != "site":
-        return _blocked("findings in chat-worker")
-    if any(name not in CHAIN for name in findings):
-        return _blocked("unreviewed finding")
-    now = now or datetime.now(timezone.utc)
-    if now.tzinfo is None:
-        now = now.replace(tzinfo=timezone.utc)
-    if now.astimezone(timezone.utc) >= EXPIRES:
-        return _blocked("temporary exception expired")
-    guard_error = _guard(repo_root)
-    if guard_error:
-        return _blocked(guard_error)
-    exempted = set()
-    for name in CHAIN:
-        if name not in findings:
-            continue
-        item = findings[name]
-        via = item["via"]
-        if name == PACKAGE:
-            if (
-                len(via) != 1
-                or not isinstance(via[0], dict)
-                or via[0].get("url") != ADVISORY
-                or via[0].get("name") != PACKAGE
-                or item.get("nodes") != [f"node_modules/{PACKAGE}"]
-            ):
-                return _blocked("unreviewed finding")
-        else:
-            parent = CHAIN[CHAIN.index(name) - 1]
-            if via != [parent] or parent not in exempted:
-                return _blocked("unreviewed finding")
-        exempted.add(name)
-    return True, "npm audit: allowed GHSA-ch52-4w7c-c8xp exception"
+    return _blocked(f"findings in {workspace.name}")
 
 
 def run_audit(workspace, repo_root=ROOT):
