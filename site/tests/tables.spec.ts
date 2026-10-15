@@ -49,7 +49,6 @@ test('case-study tables pan horizontally instead of clipping', async ({ page, is
 test('table headers sit over the columns they label', async ({ page }) => {
   const routes = [
     '/projects/helm',
-    '/projects/multi-node-portfolio',
     '/projects/kanterlabs-homelab',
   ];
 

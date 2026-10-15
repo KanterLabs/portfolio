@@ -35,7 +35,7 @@ const capabilityGroups = [
   {
     name: 'Platform and Delivery',
     description: 'Build repeatable delivery paths with isolated CI, container workflows, health checks, and rollback.',
-    items: ['GitHub Actions', 'k3s', 'ARC', 'Docker', 'GHCR', 'Atomic Releases'],
+    items: ['GitHub Actions', 'k3s', 'ARC', 'Docker', 'GHCR', 'Coolify', 'Atomic Releases'],
   },
   {
     name: 'Software and Data',
@@ -199,28 +199,28 @@ const structuredData = [
               </a>
               <a class="dwg-btn kl-btn-github" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
                 <GitHubIcon size={17} />
-                KanterLabs on GitHub
+                <span><span class="max-[780px]:sr-only">KanterLabs on </span>GitHub</span>
               </a>
             </div>
-            <table class="dwg-table hero-facts">
-              <caption class="dwg-label">A few things about me</caption>
-              <tbody>
-                <tr>
-                  <th scope="row">Hands-on work</th>
-                  <td>I’m helping rack and wire an ongoing buildout of roughly 72 racks at InterServer.</td>
-                </tr>
-                <tr>
-                  <th scope="row">Built for my own work</th>
-                  <td>I built Helm and use it to track the work my coding agents do.</td>
-                </tr>
-                <tr>
-                  <th scope="row">Beyond the rack</th>
-                  <td>I study computer science at Southern Connecticut State, with graduation expected in May 2027.</td>
-                </tr>
-              </tbody>
-            </table>
           </div>
           <RackElevation id="kanterlabs" contactLinks={contactLinks} />
+          <table class="dwg-table hero-facts">
+            <caption class="dwg-label">A few things about me</caption>
+            <tbody>
+              <tr>
+                <th scope="row">Hands-on work</th>
+                <td>I’m helping rack and wire an ongoing buildout of roughly 72 racks at InterServer.</td>
+              </tr>
+              <tr>
+                <th scope="row">Built for my own work</th>
+                <td>I built Helm and use it to track the work my coding agents do.</td>
+              </tr>
+              <tr>
+                <th scope="row">Beyond the rack</th>
+                <td>I study computer science at Southern Connecticut State, with graduation expected in May 2027.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </Sheet>
 
@@ -370,7 +370,7 @@ const structuredData = [
               <a class="dwg-btn" href={linkedInUrl} target="_blank" rel="noopener noreferrer">LinkedIn</a>
               <a class="dwg-btn kl-btn-github" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
                 <GitHubIcon size={17} />
-                KanterLabs on GitHub
+                <span><span class="max-[780px]:sr-only">KanterLabs on </span>GitHub</span>
               </a>
             </div>
           </div>

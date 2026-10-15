@@ -139,6 +139,7 @@
       let isBusy = false;
       let lastFailedMessage = '';
       let panelCloseTimer: number | undefined;
+      let panelFocusFrame: number | undefined;
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
       const setStatus = (message: string) => {
@@ -364,6 +365,10 @@
       };
 
       const setPanelOpen = (open: boolean) => {
+        if (panelFocusFrame !== undefined) {
+          window.cancelAnimationFrame(panelFocusFrame);
+          panelFocusFrame = undefined;
+        }
         if (panelCloseTimer !== undefined) {
           window.clearTimeout(panelCloseTimer);
           panelCloseTimer = undefined;
@@ -375,7 +380,10 @@
           panel.setAttribute('aria-hidden', 'false');
           launcher.setAttribute('aria-expanded', 'true');
           root.classList.add('portfolio-chat-open');
-          window.requestAnimationFrame(() => input.focus());
+          panelFocusFrame = window.requestAnimationFrame(() => {
+            panelFocusFrame = undefined;
+            input.focus();
+          });
           return;
         }
 

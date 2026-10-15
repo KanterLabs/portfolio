@@ -1,51 +1,37 @@
-# Dual-Origin Portfolio Operations Checklist
+# Coolify Portfolio Operations Checklist
+
+Use [the deployment runbook](coolify-deploy.md) for exact lane settings and
+rollback procedure.
 
 ## Build and release
 
-- [ ] `npm ci`, the Worker validation suite, and the Playwright suite pass
-- [ ] pull requests into `beta` pass validation without publishing a public beta service
-- [ ] pull requests into `main` originate from this repository's `beta` branch
-- [ ] `BETA_DEPLOY_ENABLED` can stop private candidate deployment independently
-- [ ] the `beta` and `production` environments contain only their scoped deploy keys
-- [ ] the pinned host key matches the portfolio LXC SSH host key
-- [ ] deployment uploads and forced commands reach OVH at `10.40.0.32:22` and homelab at `10.0.30.13:22` through the reviewed jump host
-- [ ] the deploy helper accepts only immutable deploy, exact promotion, retained rollback, and digest verification commands
-- [ ] both `/srv/portfolio-beta/current` links name the intended private candidate SHA
-- [ ] a successful `beta` merge to `main` automatically stages and verifies the tested main artifact in both candidate lanes before production activation
-- [ ] production promotion uses the exact candidate SHA and artifact SHA-256 verified on both origins
-- [ ] both `/srv/portfolio/current` links name the intended production SHA
+- [ ] Site and Worker validation, knowledge audit, dependency audits, browser tests, and container smoke tests pass.
+- [ ] Production pull requests originate from this repository's beta branch.
+- [ ] CI publishes the commit-tagged image to GHCR and records its immutable digest.
+- [ ] Coolify deploys that exact digest without rebuilding the repository.
+- [ ] Beta and production use their own protected environment, application identifiers, and credentials.
+- [ ] A stale workflow cannot overwrite a newer branch tip.
 
-## Origin and edge
+## Private beta
 
-- [ ] both origins start Nginx, SSH, and nftables without a public beta service
-- [ ] neither origin runs Tailscale, Docker, or a Cloudflare Tunnel
-- [ ] OVH Nginx binds HTTPS only on `10.40.30.32:443`; homelab Nginx binds HTTPS only on `10.0.30.13:443`
-- [ ] each nftables policy allows only its reviewed management and ingress peers
-- [ ] OVH validates `portfolio-origin.kantercloud.internal` and homelab validates `portfolio-origin.homelab.internal` with the private CA
-- [ ] the Proxmox-hosted `portfolio-origin-cert.timer` is enabled and its live certificate check passes
-- [ ] Caddy and Nginx validation succeeds before every reload
+- [ ] The beta application is healthy and serves the expected revision.
+- [ ] Its private hostname has no public DNS record.
+- [ ] Deployment and verification use the tailnet without exposing the Coolify API publicly.
+- [ ] Candidate responses prohibit indexing.
 
-## Public validation
+## Production validation
 
-- [ ] apex HTTP redirects to HTTPS
-- [ ] `www` redirects to the canonical apex hostname
-- [ ] homepage, case studies, 404, sitemap, robots, resume, and hashed assets load
-- [ ] `/healthz` returns `ok`
-- [ ] `/api/chat/health` reports the production Worker
-- [ ] unknown hosts, unknown paths, and direct-origin access fail closed
+- [ ] Cloudflare Tunnel reaches the production application's loopback port.
+- [ ] The app host's inbound web ports remain closed.
+- [ ] The homepage, case studies, 404, sitemap, robots, and hashed assets load.
+- [ ] `/healthz` returns `ok` and `/_meta/revision` matches the deployed commit.
+- [ ] The production application's digest matches the image published by CI.
+- [ ] The static-origin load balancer remains disabled unless explicitly invoked for recovery.
 
-## Private candidate validation
+## Chatbot and recovery
 
-- [ ] neither preview origin is a public or load-balanced backend
-- [ ] the candidate index digest matches the uploaded artifact manifest
-- [ ] `X-Robots-Tag` is present and `robots.txt` disallows crawling
-- [ ] `beta.home.shanekanterman.dev` has no public DNS, Access application, Tunnel, or Worker
-
-## Recovery
-
-- [ ] a retained candidate SHA can be activated and reversed without changing production
-- [ ] a retained production SHA can be activated and reversed without changing the candidate lane
-- [ ] both origin backups and their latest archives verify
-- [ ] the private origin CA has an encrypted recovery copy and an isolated restore drill passes
-- [ ] each origin recovers after restart with Nginx, nftables, SSH, and private HTTPS healthy
-- [ ] the edge route lifecycle retains a verified last-known-good transaction
+- [ ] Check pending D1 migrations before a Worker release; preserve existing history.
+- [ ] Deploy the production Worker separately when code or reviewed knowledge changes.
+- [ ] `/api/chat/health` reports the intended knowledge version and configured history.
+- [ ] Live failure after an image change restores and redeploys the previous digest.
+- [ ] Worker code rollback preserves D1 data; database restoration requires separate explicit authorization.

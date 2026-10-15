@@ -281,7 +281,7 @@ test.describe('homepage', () => {
     const entries = page.locator('#projects [data-project-entry]');
     await expect(entries).toHaveCount(3);
     const titles = entries.locator('.detail-title a');
-    await expect(titles).toHaveText(['Helm', 'KanterLabs Homelab Platform', 'Dual-Origin Portfolio Deployment']);
+    await expect(titles).toHaveText(['Helm', 'KanterLabs Homelab Platform', 'Coolify Portfolio Deployment']);
     expect(await titles.evaluateAll((links) => links.map((link) => link.getAttribute('href')))).toEqual([
       '/projects/helm',
       '/projects/kanterlabs-homelab',
