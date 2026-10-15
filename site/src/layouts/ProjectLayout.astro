@@ -1,8 +1,9 @@
 ---
 import GithubSlugger from 'github-slugger';
 import BaseLayout from './BaseLayout.astro';
+import DetailDrawing from '../components/DetailDrawing.astro';
 import GitHubIcon from '../components/GitHubIcon.astro';
-import KanterLabsMark from '../components/KanterLabsMark.astro';
+import BrandRabbit from '../components/BrandRabbit.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
 import { getCollection } from 'astro:content';
@@ -14,7 +15,7 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, summary, stack, status, date, links, heroImage, socialImage, role, scope, keyOutcome, kind } = project.data;
+const { title, summary, stack, status, date, links, heroImage, socialImage, role, scope, keyOutcome, kind, system } = project.data;
 const isExperience = kind === 'experience';
 const contentLabel = isExperience ? 'Experience Notes' : 'Case Study';
 const returnHref = isExperience ? '/#about' : '/#projects';
@@ -109,35 +110,60 @@ const structuredData = {
   <div class="page-shell relative z-10 pb-24">
     <SiteHeader backHref={returnHref} backLabel={isExperience ? 'Experience' : 'Selected work'} />
 
-    <main class="pt-10 max-[780px]:pt-6" id="main-content">
-      <div>
-        <div class="case-meta mb-7 max-[780px]:mb-4">
+    <main class="pt-6 max-[780px]:pt-3" id="main-content">
+      <section class="sheet case-sheet" aria-labelledby="case-title">
+        <div class="sheet-zones sheet-zones-top" aria-hidden="true">
+          {['1', '2', '3', '4', '5', '6', '7', '8'].map((zone) => <span>{zone}</span>)}
+        </div>
+        <div class="sheet-zones sheet-zones-left" aria-hidden="true">
+          {['A', 'B', 'C', 'D'].map((zone) => <span>{zone}</span>)}
+        </div>
+        <div class="case-meta">
           <span class="eyebrow">
             {contentLabel}
           </span>
-          <span class="text-text-soft text-[0.82rem]">{formatted}</span>
-          <span class:list={['inline-flex items-center gap-1.5 text-[0.8rem] font-medium', statusClass[status]]}>
+          <span>{formatted}</span>
+          <span class:list={['inline-flex items-center gap-1.5', statusClass[status]]}>
             <span class="project-status-dot w-1.5 h-1.5 rounded-full flex-shrink-0"></span>
             {statusLabel[status]}
           </span>
-          <span class="text-text-soft text-[0.82rem]">~{readingTime} min read</span>
+          <span>~{readingTime} min read</span>
         </div>
-
-        <h1 class="text-[length:var(--step-title)] leading-[1.05] tracking-[-0.02em] font-extrabold mb-5 max-w-[22ch] text-text-base [overflow-wrap:break-word]">
-          {title}
-        </h1>
-
-        <p class="text-text-muted text-[1.1rem] leading-[1.75] mb-8 max-w-[62ch] max-[780px]:text-[1rem] max-[780px]:mb-5">
-          {summary}
-        </p>
-
-        <div class="stack-list mb-8">
-          {stack.map((item) => (
-            <StackBadge label={item} />
-          ))}
+        <div class:list={['case-head', system && 'case-head-split']}>
+          <div class="min-w-0">
+            <h1 class="case-title" id="case-title">
+              {title}
+            </h1>
+            <p class="case-summary">
+              {summary}
+            </p>
+            <div class="stack-list case-stack">
+              {stack.map((item) => (
+                <StackBadge label={item} />
+              ))}
+            </div>
+            {links && links.length > 0 && (
+              <div class="detail-actions">
+                {links.map((link) => (
+                  <a href={link.href} target="_blank" rel="noopener noreferrer" class="dwg-btn">
+                    {link.label}
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+          {system && (
+            <div class="case-drawing dwg-box">
+              <DetailDrawing system={system} label={`Detail drawing · ${title}`} id="case-detail" />
+            </div>
+          )}
         </div>
-
-        <div class="project-detail-facts mb-8 max-[780px]:mb-5">
+        <div class="project-detail-facts">
           <div>
             <p class="field-label">Role</p>
             <p class="project-proof-copy">{role}</p>
@@ -151,23 +177,7 @@ const structuredData = {
             <p class="project-proof-copy">{keyOutcome}</p>
           </div>
         </div>
-
-        {links && links.length > 0 && (
-          <div class="flex flex-wrap gap-3">
-            {links.map((link) => (
-              <a href={link.href} target="_blank" rel="noopener noreferrer" class="btn btn-secondary text-sm">
-                {link.label}
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg>
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
-
+      </section>
       <div class="case-body">
         <div class="case-prose">
           {tocItems.length > 0 && (
@@ -252,7 +262,7 @@ const structuredData = {
         )}
 
         <div class="glass case-lab-cta mb-8">
-          <KanterLabsMark size={44} />
+          <BrandRabbit height={52} />
           <p class="case-lab-cta-copy">
             <strong>More from KanterLabs</strong>
             <span>

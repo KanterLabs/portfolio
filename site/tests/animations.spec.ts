@@ -1,15 +1,30 @@
 import { test, expect } from '@playwright/test';
 
-test('homepage exposes deliberate motion hooks', async ({ page }) => {
+test('homepage motion is brief and never gates the hero', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Phones reveal everything immediately (BaseLayout skips the observer below 780px)');
   await page.goto('/');
 
-  await expect(page.locator('.hero-reveal')).toHaveCount(5);
-  await expect(page.locator('.project-entry')).toHaveCount(3);
-  await expect(page.locator('.system-diagram-strip')).toHaveCount(3);
-  await expect(page.locator('.project-card .system-diagram-strip')).toHaveCount(2);
-  await expect(page.locator('.project-showcase .system-diagram-strip')).toHaveCount(1);
-  await expect(page.locator('.architecture-boot-node')).toHaveCount(3);
-  await expect(page.locator('.architecture-boot-connector')).toHaveCount(2);
+  // The hero sheet is legible on arrival: no reveal class on it.
+  await expect(page.locator('#top')).not.toHaveClass(/observe-animate/);
+  await expect(page.locator('main > .sheet.observe-animate')).toHaveCount(5);
+
+  // Leader lines draw in, and the whole cascade lands well inside 500ms.
+  const leaders = page.locator('#kanterlabs .rack-leader');
+  const count = await leaders.count();
+  expect(count).toBeGreaterThan(10);
+  const timings = await leaders.evaluateAll((els) =>
+    els.map((el) => {
+      const style = getComputedStyle(el);
+      return {
+        name: style.animationName,
+        end: parseFloat(style.animationDuration) * 1000 + parseFloat(style.animationDelay) * 1000,
+      };
+    }),
+  );
+  for (const timing of timings) {
+    expect(timing.name).toBe('rack-leader-draw');
+    expect(timing.end, 'leader animation end (ms)').toBeLessThanOrEqual(500);
+  }
 });
 
 test('motion is disabled when reduced motion is requested', async ({ page }) => {
@@ -17,18 +32,19 @@ test('motion is disabled when reduced motion is requested', async ({ page }) => 
   await page.goto('/');
 
   const motion = await page.evaluate(() => {
-    const hero = document.querySelector('.hero-reveal');
-    const node = document.querySelector('.architecture-boot-node');
+    const leader = document.querySelector('#kanterlabs .rack-leader');
+    const sheet = document.querySelector('#projects');
     return {
-      heroAnimation: hero ? getComputedStyle(hero).animationName : null,
-      nodeOpacity: node ? getComputedStyle(node).opacity : null,
-      nodeTransform: node ? getComputedStyle(node).transform : null,
+      leaderAnimation: leader ? getComputedStyle(leader).animationName : null,
+      sheetOpacity: sheet ? getComputedStyle(sheet).opacity : null,
+      sheetTransform: sheet ? getComputedStyle(sheet).transform : null,
     };
   });
 
-  expect(motion.heroAnimation).toBe('none');
-  expect(motion.nodeOpacity).toBe('1');
-  expect(motion.nodeTransform).toBe('none');
+  expect(motion.leaderAnimation).toBe('none');
+  expect(motion.sheetOpacity).toBe('1');
+  // Settled: no transform, or the identity matrix .visible leaves behind.
+  expect(['none', 'matrix(1, 0, 0, 1, 0, 0)']).toContain(motion.sheetTransform);
 });
 
 test('theme icons transition to match the selected mode', async ({ page }) => {
@@ -52,4 +68,32 @@ test('theme icons transition to match the selected mode', async ({ page }) => {
   await page.waitForTimeout(220);
   await expect(page.locator('.theme-icon-sun')).toHaveCSS('opacity', '0');
   await expect(page.locator('.theme-icon-moon')).toHaveCSS('opacity', '1');
+});
+
+test('the brand rabbit waves on hover and holds still under reduced motion', async ({ page, browser, isMobile }) => {
+  test.skip(isMobile, 'Hover is a pointer interaction');
+  const frame = () =>
+    page.locator('.site-header-rabbit').evaluate((el) => {
+      const style = getComputedStyle(el);
+      return `${style.getPropertyValue('--row') || '0'}/${style.getPropertyValue('--col') || '0'}`;
+    });
+
+  await page.goto('/');
+  const rabbit = page.locator('.site-header-rabbit');
+  await expect(rabbit).toHaveAttribute('aria-hidden', 'true');
+  // Let the greeting finish, then hover the brand link: the wave row (1) plays.
+  await expect.poll(frame, { timeout: 3000 }).toBe('0/0');
+  await page.getByRole('link', { name: 'Shane Kanterman home' }).hover();
+  await expect.poll(frame).toMatch(/^1\//);
+
+  const reduced = await browser.newPage({ reducedMotion: 'reduce' });
+  await reduced.goto('/');
+  await reduced.getByRole('link', { name: 'Shane Kanterman home' }).hover();
+  await reduced.waitForTimeout(1500);
+  const still = await reduced.locator('.site-header-rabbit').evaluate((el) => {
+    const style = getComputedStyle(el);
+    return `${style.getPropertyValue('--row') || '0'}/${style.getPropertyValue('--col') || '0'}`;
+  });
+  expect(still).toBe('0/0');
+  await reduced.close();
 });
