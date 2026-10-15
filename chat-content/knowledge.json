@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-03",
+  "version": "2026-10-15",
   "entries": [
     {
       "id": "profile",
@@ -8,7 +8,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/"
       },
-      "lastReviewed": "2026-10-03",
+      "lastReviewed": "2026-10-15",
       "topics": [
         "profile",
         "experience",
@@ -42,7 +42,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#contact"
       },
-      "lastReviewed": "2026-10-03",
+      "lastReviewed": "2026-10-15",
       "topics": [
         "contact",
         "email",
@@ -66,7 +66,7 @@
         "path": "site/src/lib/kanterlabs.ts",
         "href": "/#kanterlabs"
       },
-      "lastReviewed": "2026-10-03",
+      "lastReviewed": "2026-10-15",
       "topics": [
         "kanterlabs",
         "open source",
@@ -82,25 +82,22 @@
         "NFL Scores",
         "Zeus OS",
         "Greenlit",
-        "Zeus Code",
         "Linkshare",
-        "Pulse",
         "ncspot",
         "RunComp",
-        "Patchwork Pirates",
         "GNOME Shell extension",
         "self-hosted"
       ],
-      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio lists 12 public projects. Helm is the lead project: a Go and Svelte self-hosted project board and bug tracker where people and software agents move work together, with scoped agent tokens and an auditable API (v0.1.0, with a case study). Other flagships: ActionView (GNOME Shell extension showing the KanterLabs self-hosted GitHub Actions runner fleet), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Zeus OS (a Fedora bootc laptop desktop, 0.1 preview), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). Other public projects: Zeus Code (terminal workspace for Codex and OpenCode conversations), Linkshare (Go link inbox for a person and their coding agents), Pulse (GNOME Spotify command center, pre-alpha), an ncspot fork, RunComp (running-competition app with private groups, streaks, weekly challenges, and push alerts), Patchwork Pirates (co-op roguelite in pre-production), and this portfolio's source."
+      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio lists 9 active public projects, drawn on the homepage as units in a rack elevation, with Helm as the hatched 4U lead unit. Helm is the lead project: a Go and Svelte self-hosted project board and bug tracker where people and software agents move work together, with scoped agent tokens and an auditable API (v0.1.0, with a case study). Other flagships: ActionView (GNOME Shell extension showing the KanterLabs self-hosted GitHub Actions runner fleet), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Zeus OS (a Fedora bootc laptop desktop, 0.1 preview), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). Other active public projects: Linkshare (Go link inbox for a person and their coding agents), an ncspot fork, RunComp (running-competition app with private groups, streaks, weekly challenges, and push alerts), and this portfolio's source."
     },
     {
       "id": "skills-and-architecture",
       "source": {
-        "title": "Portfolio architecture and skills",
+        "title": "Portfolio skills and case-study architecture",
         "path": "site/src/pages/index.astro",
-        "href": "/#architecture"
+        "href": "/#skills"
       },
-      "lastReviewed": "2026-10-03",
+      "lastReviewed": "2026-10-15",
       "topics": [
         "skills",
         "architecture",
@@ -128,7 +125,7 @@
         "PostgreSQL",
         "Astro"
       ],
-      "content": "The portfolio groups Shane's capabilities into systems and networking, platform and delivery, and software and data. Publicly listed tools include Linux, Proxmox, Nginx, Caddy, Cloudflare, Tailscale, PXE Boot, GitHub Actions, k3s, Actions Runner Controller, Docker, GHCR, atomic releases, Rust, TypeScript, Next.js, Python, PostgreSQL, Git, and Astro. His architecture work emphasizes clear ingress boundaries, isolated workloads, ephemeral CI runners, health checks, atomic releases, and retained rollback paths."
+      "content": "The portfolio lists Shane's skills as a bill of materials in three assemblies: systems and networking, platform and delivery, and software and data. Publicly listed tools include Linux, Proxmox, Nginx, Caddy, Cloudflare, Tailscale, PXE Boot, GitHub Actions, k3s, Actions Runner Controller, Docker, GHCR, atomic releases, Rust, TypeScript, Next.js, Python, PostgreSQL, Git, and Astro. The architecture work shown in his case studies emphasizes clear ingress boundaries, isolated workloads, ephemeral CI runners, health checks, atomic releases, and retained rollback paths."
     },
     {
       "id": "helm",

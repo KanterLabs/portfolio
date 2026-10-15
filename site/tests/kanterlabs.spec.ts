@@ -44,93 +44,83 @@ async function setTheme(page: Page, theme: 'light' | 'dark') {
 }
 
 test.describe('KanterLabs on the homepage', () => {
-  test('studio banner, flagships, and full public catalog render', async ({ page }) => {
+  test('the rack mounts the flagships first, then the full public catalog', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
-    const section = page.locator('#kanterlabs');
-    await expect(
-      section.getByRole('heading', { level: 2, name: 'Everything I build ships from KanterLabs.' }),
-    ).toBeVisible();
+    const rack = page.locator('#kanterlabs');
+    await expect(rack.locator('figcaption')).toContainText('rack SK-01');
 
-    const follow = section.getByRole('link', { name: 'Follow KanterLabs on GitHub' });
-    await expect(follow).toHaveAttribute('href', ORG_URL);
-    await expect(follow).toHaveAttribute('target', '_blank');
-    await expect(follow).toHaveAttribute('rel', /noopener/);
-    await expect(section.getByRole('link', { name: 'Explore Helm, the lead project' })).toHaveAttribute(
-      'href',
-      '/projects/helm',
-    );
-    await expect(
-      section.locator('[data-lab-repo="helm"]').getByRole('link', { name: 'Case study' }),
-    ).toHaveAttribute('href', '/projects/helm');
+    const units = rack.locator('.rack-row[data-lab-repo]');
+    const slugs = await units.evaluateAll((els) => els.map((el) => el.getAttribute('data-lab-repo')!));
+    expect(slugs.slice(0, FLAGSHIPS.length)).toEqual(FLAGSHIPS);
+    expect(slugs).toHaveLength(FLAGSHIPS.length + 4);
+    expect(new Set(slugs).size, 'no repository is mounted twice').toBe(slugs.length);
 
-    const flagships = section.locator('.lab-feature');
-    await expect(flagships).toHaveCount(FLAGSHIPS.length);
-    expect(await flagships.evaluateAll((els) => els.map((el) => el.getAttribute('data-lab-repo')))).toEqual(
-      FLAGSHIPS,
-    );
-    // Every flagship leads with real media (screenshot, artwork, video, or a
-    // terminal), never an empty frame.
-    for (let i = 0; i < FLAGSHIPS.length; i += 1) {
-      const media = flagships.nth(i).locator('.lab-media');
-      await expect(media).toHaveCount(1);
-      const box = await media.boundingBox();
-      expect(box!.height, `${FLAGSHIPS[i]} media height`).toBeGreaterThan(120);
+    // Flagships are taller units than the rest of the catalog.
+    for (const slug of slugs) {
+      const units = await rack
+        .locator(`.rack-row[data-lab-repo="${slug}"]`)
+        .evaluate((el) => Number(getComputedStyle(el).getPropertyValue('--units')));
+      expect(units, `${slug} height`).toBe(slug === 'helm' ? 4 : FLAGSHIPS.includes(slug) ? 2 : 1);
     }
 
-    const catalog = section.locator('.lab-repo');
-    await expect(catalog).toHaveCount(7);
+    // Each unit's link resolves to that repository on the org (Helm opens its
+    // case study, which links the repo in turn).
+    for (const slug of slugs) {
+      const href = await rack.locator(`.rack-row[data-lab-repo="${slug}"] a.rack-link`).getAttribute('href');
+      expect(href).toBe(slug === 'helm' ? '/projects/helm' : `${ORG_URL}/${slug}`);
+    }
 
     // The stated count is derived from the catalog, so it can't drift.
-    const total = await section.locator('[data-lab-repo]').count();
-    await expect(section.locator('.lab-stats')).toContainText(String(total));
-    await expect(page.locator('#top')).toContainText(`${total} repos`);
-
-    // Each card's repo link resolves to that repository on the org.
-    const slugs = await section
-      .locator('[data-lab-repo]')
-      .evaluateAll((els) => els.map((el) => el.getAttribute('data-lab-repo')!));
-    for (const slug of slugs) {
-      const card = section.locator(`[data-lab-repo="${slug}"]`);
-      await expect(card.getByRole('heading').getByRole('link')).toHaveAttribute('href', `${ORG_URL}/${slug}`);
-    }
+    await expect(page.locator('.hero-facts tr', { hasText: 'Active projects' }).locator('td')).toHaveText(
+      String(slugs.length),
+    );
 
     await expectNoHorizontalOverflow(page);
   });
 
-  test('cards use the site panel language, not flat text', async ({ page }) => {
+  test('every flagship gets a plate with real media', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
-    for (const selector of ['.lab-banner', '.lab-feature', '.lab-repo']) {
-      const chrome = await page.locator(selector).first().evaluate((el) => {
+    const plates = page.locator('#plates .plate');
+    expect(await plates.evaluateAll((els) => els.map((el) => el.getAttribute('data-lab-repo')))).toEqual(FLAGSHIPS);
+    for (let i = 0; i < FLAGSHIPS.length; i += 1) {
+      const plate = plates.nth(i);
+      const media = plate.locator('.lab-media');
+      await expect(media).toHaveCount(1);
+      expect((await media.boundingBox())!.height, `${FLAGSHIPS[i]} media height`).toBeGreaterThan(120);
+      await expect(plate.getByRole('heading').getByRole('link')).toHaveAttribute('href', `${ORG_URL}/${FLAGSHIPS[i]}`);
+
+      const chrome = await plate.evaluate((el) => {
         const style = getComputedStyle(el);
-        return {
-          border: parseFloat(style.borderTopWidth),
-          radius: parseFloat(style.borderTopLeftRadius),
-          background: style.backgroundColor,
-        };
+        return { border: parseFloat(style.borderTopWidth), background: style.backgroundColor };
       });
-      expect(chrome.border, `${selector} border`).toBeGreaterThanOrEqual(1);
-      expect(chrome.radius, `${selector} radius`).toBeGreaterThanOrEqual(12);
-      expect(chrome.background, `${selector} background`).not.toBe('rgba(0, 0, 0, 0)');
+      expect(chrome.border, `${FLAGSHIPS[i]} plate border`).toBeGreaterThanOrEqual(1);
+      expect(chrome.background, `${FLAGSHIPS[i]} plate background`).not.toBe('rgba(0, 0, 0, 0)');
     }
+    await expect(page.locator('#plates [data-lab-repo="helm"]').getByRole('link', { name: 'Case study' })).toHaveAttribute(
+      'href',
+      '/projects/helm',
+    );
   });
 
-  test('flagship cards line up in a grid on desktop', async ({ page, isMobile }) => {
+  test('the lead plate spans the sheet and the rest pair up on desktop', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Single column on phones');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
-    const boxes = await page.locator('.lab-feature').evaluateAll((els) =>
+    const boxes = await page.locator('#plates .plate').evaluateAll((els) =>
       els.map((el) => {
         const rect = el.getBoundingClientRect();
         return { top: Math.round(rect.top), width: Math.round(rect.width) };
       }),
     );
-    // 1440px desktop: three per row, equal widths, two rows.
-    expect(new Set(boxes.map((box) => box.top)).size).toBe(2);
-    expect(new Set(boxes.map((box) => box.width)).size).toBe(1);
+    const [lead, ...rest] = boxes;
+    expect(lead.width).toBeGreaterThan(rest[0].width * 1.8);
+    expect(new Set(rest.map((box) => box.width)).size).toBe(1);
+    expect(new Set(rest.map((box) => box.top)).size).toBe(Math.ceil(rest.length / 2));
   });
 
   test('the site never links a private KanterLabs repository', async ({ page }) => {
@@ -141,6 +131,7 @@ test.describe('KanterLabs on the homepage', () => {
 
     for (const route of [
       '/',
+      '/projects',
       '/projects/helm',
       '/projects/kanterlabs-homelab',
       '/projects/multi-node-portfolio',
@@ -219,21 +210,28 @@ for (const theme of ['light', 'dark'] as const) {
   test.describe(`KanterLabs section in the ${theme} theme`, () => {
     test('theme-matched artwork shows exactly one variant', async ({ page }) => {
       await setTheme(page, theme);
-      const card = page.locator('[data-lab-repo="helm"]');
+      const card = page.locator('#plates [data-lab-repo="helm"]');
       await expect(card.locator(`.lab-themed-${theme}`)).toBeVisible();
       await expect(card.locator(`.lab-themed-${theme === 'light' ? 'dark' : 'light'}`)).toBeHidden();
     });
 
-    test('status chips, summaries, and stat labels meet AA contrast', async ({ page }) => {
+    test('rack annotations, plate copy, and drawing labels meet AA contrast', async ({ page }) => {
       await setTheme(page, theme);
 
       for (const selector of [
-        '.lab-feature .lab-status',
-        '.lab-repo .lab-status',
-        '.lab-card-summary',
-        '.lab-repo-footer',
-        '.lab-stats dt',
-        '.lab-wordmark-accent',
+        '.rack-rail span',
+        '.rack-name',
+        '.rack-code',
+        '.rack-note',
+        '.rack-lcd',
+        '.rack-legend',
+        '.hero-facts th',
+        '.dd-node-label',
+        '.dd-node-detail',
+        '.dd-caption',
+        '.plate-meta',
+        '.detail-summary',
+        '.title-block dt',
         '.kl-header-sub',
       ]) {
         const color = await page.locator(selector).first().evaluate((el) => getComputedStyle(el).color);

@@ -1,15 +1,17 @@
 ---
 import '../styles/global.css';
 import '../styles/kanterlabs.css';
+import '../styles/drawing.css';
 // The @fontsource imports live inside global.css, so the two above-the-fold
 // weights are only discovered after the stylesheet parses. `?url` hands back
 // the hashed path Vite actually emits, which is what makes preloading them
 // safe across builds.
-import interLatin400 from '@fontsource/inter/files/inter-latin-400-normal.woff2?url';
-import interLatin700 from '@fontsource/inter/files/inter-latin-700-normal.woff2?url';
+import groteskLatin400 from '@fontsource/space-grotesk/files/space-grotesk-latin-400-normal.woff2?url';
+import groteskLatin600 from '@fontsource/space-grotesk/files/space-grotesk-latin-600-normal.woff2?url';
+import plexMonoLatin500 from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2?url';
 import { getSiteBuildVersion } from '../lib/siteVersion';
 import PortfolioChat from '../components/PortfolioChat.astro';
-import KanterLabsMark from '../components/KanterLabsMark.astro';
+import BrandRabbit from '../components/BrandRabbit.astro';
 import { KANTERLABS_ORG_URL } from '../lib/kanterlabs';
 
 interface StructuredDataEntry {
@@ -73,8 +75,9 @@ const jsonLdItems = structuredData
     <meta name="twitter:description" content={description} />
     {socialImageUrl && <meta name="twitter:image" content={socialImageUrl} />}
     {socialImageUrl && <meta name="twitter:image:alt" content={imageAlt} />}
-    <link rel="preload" as="font" type="font/woff2" href={interLatin400} crossorigin />
-    <link rel="preload" as="font" type="font/woff2" href={interLatin700} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={groteskLatin400} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={groteskLatin600} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={plexMonoLatin500} crossorigin />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -107,7 +110,7 @@ const jsonLdItems = structuredData
     <footer class="site-footer" aria-label="Site footer">
       <div class="site-footer-brand">
         <a class="site-footer-lockup" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
-          <KanterLabsMark size={28} />
+          <BrandRabbit height={32} />
           <span class="site-footer-wordmark">Kanter<span>Labs</span></span>
         </a>
         <ul class="site-footer-links">

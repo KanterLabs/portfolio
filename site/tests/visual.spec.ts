@@ -9,10 +9,7 @@ test.describe('visual coverage', () => {
     await testInfo.attach('home', { path: screenshot, contentType: 'image/png' });
 
     await expect(
-      page.getByRole('heading', {
-        level: 1,
-        name: 'I keep production infrastructure moving, from rack to release.',
-      }),
+      page.getByRole('heading', { level: 1, name: 'Everything I run, in one rack.' }),
     ).toBeVisible();
   });
 

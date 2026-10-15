@@ -10,6 +10,10 @@ import zeusDesktop from '../assets/kanterlabs/zeusos-desktop.jpg';
  * can never fail a release, and every line of copy here is reviewed. Each
  * summary is drawn from that repository's own README.
  *
+ * Curated to active projects: a public repository that is dormant or still
+ * only a design doc stays off the site (Zeus Code, Pulse, and Patchwork
+ * Pirates were removed on 2026-10-15 for that reason).
+ *
  * Only PUBLIC repositories belong in this file. tests/kanterlabs.spec.ts
  * fails the build if the page links any KanterLabs repository that is not
  * listed here, so a private repo can't leak in through a stray link.
@@ -19,28 +23,6 @@ export const KANTERLABS_ORG_URL = 'https://github.com/KanterLabs';
 export const HELM_CASE_STUDY_URL = '/projects/helm';
 
 export type LabCategory = 'platforms' | 'devtools' | 'desktop' | 'apps';
-
-export const categoryLabels: Record<LabCategory, string> = {
-  platforms: 'Self-hosted platform',
-  devtools: 'Developer tool',
-  desktop: 'Desktop & OS',
-  apps: 'App & experiment',
-};
-
-export const studioPillars = [
-  {
-    title: 'Developer tools',
-    body: 'Software that makes delivery faster and easier to inspect.',
-  },
-  {
-    title: 'Self-hosted platforms',
-    body: 'Deployment and operations you own and can understand end to end.',
-  },
-  {
-    title: 'Practical apps',
-    body: 'Desktop and web software that runs on the platform under real constraints.',
-  },
-];
 
 export type LabMedia =
   | { kind: 'image'; src: ImageMetadata; alt: string; fit: 'cover' | 'contain'; position?: string }
@@ -52,6 +34,8 @@ export interface LabRepo {
   slug: string;
   name: string;
   summary: string;
+  /** One short line for the rack-elevation callout. Keep it under ~34 characters. */
+  tagline: string;
   category: LabCategory;
   stack: string[];
   language: 'Rust' | 'Go' | 'TypeScript' | 'JavaScript' | 'Python';
@@ -67,6 +51,7 @@ export const flagshipRepos: LabRepo[] = [
   {
     slug: 'helm',
     name: 'Helm',
+    tagline: 'Board for people and coding agents',
     summary:
       'The lead KanterLabs project: a small, self-hosted project board and bug tracker where people and software agents move work together, with a stable, auditable API for scoped agent automation.',
     category: 'platforms',
@@ -86,6 +71,7 @@ export const flagshipRepos: LabRepo[] = [
   {
     slug: 'ActionView',
     name: 'ActionView',
+    tagline: 'Runner fleet in the GNOME top bar',
     summary:
       'The KanterLabs runner fleet, live in the GNOME top bar: running and queued jobs, runner capacity, and a notification when a run fails or a job is stuck.',
     category: 'devtools',
@@ -103,6 +89,7 @@ export const flagshipRepos: LabRepo[] = [
   {
     slug: 'nfl-scores',
     name: 'NFL Scores',
+    tagline: 'Live gamecast in GNOME Shell',
     summary:
       'Live NFL scores and a drawn-on-the-field gamecast built into GNOME Shell. Press Super+F from anywhere; no account, no API key, no tracking.',
     category: 'desktop',
@@ -123,6 +110,7 @@ export const flagshipRepos: LabRepo[] = [
   {
     slug: 'zeusos',
     name: 'Zeus OS',
+    tagline: 'Fedora bootc laptop desktop',
     summary:
       'A focused Fedora bootc laptop desktop with a macOS-inspired layout, original Zeus artwork, signed updates, and native GNOME security and accessibility.',
     category: 'desktop',
@@ -139,6 +127,7 @@ export const flagshipRepos: LabRepo[] = [
   {
     slug: 'greenlit-app',
     name: 'Greenlit',
+    tagline: 'GitHub Actions, run locally',
     summary:
       'Run GitHub Actions workflows locally, fast, with results you can trust. Built around one claim: if it passes here, it passes on GitHub.',
     category: 'devtools',
@@ -161,18 +150,9 @@ export const flagshipRepos: LabRepo[] = [
 /** Everything else public, shown as compact cards. */
 export const moreRepos: LabRepo[] = [
   {
-    slug: 'zeus-code',
-    name: 'Zeus Code',
-    summary:
-      'A terminal workspace for Codex and OpenCode conversations across local and SSH machines. Agents run in a daemon, so closing the client never cancels them.',
-    category: 'devtools',
-    stack: ['Python', 'TUI'],
-    language: 'Python',
-    status: 'Active',
-  },
-  {
     slug: 'linkshare',
     name: 'Linkshare',
+    tagline: 'Link inbox for people and agents',
     summary:
       'A two-way link inbox for a person and their coding agents: web UI, JSON API, live updates, shipped as one Go binary in an unprivileged Proxmox LXC.',
     category: 'platforms',
@@ -181,19 +161,9 @@ export const moreRepos: LabRepo[] = [
     status: 'Active',
   },
   {
-    slug: 'pulse',
-    name: 'Pulse',
-    summary:
-      'A fast GNOME command center for Spotify on Fedora, with a Rust daemon and optional headless playback.',
-    category: 'desktop',
-    stack: ['GJS', 'Rust', 'D-Bus'],
-    language: 'JavaScript',
-    status: 'Pre-alpha',
-    license: 'MIT',
-  },
-  {
     slug: 'ncspot',
     name: 'ncspot',
+    tagline: 'Expressive terminal Spotify fork',
     summary: 'A visually expressive fork of the ncspot terminal Spotify client.',
     category: 'desktop',
     stack: ['Rust', 'TUI'],
@@ -204,6 +174,7 @@ export const moreRepos: LabRepo[] = [
   {
     slug: 'RunComp',
     name: 'RunComp',
+    tagline: 'Running competitions and streaks',
     summary:
       'A running-competition app with private groups, streaks, weekly challenges, and push alerts.',
     category: 'apps',
@@ -212,18 +183,9 @@ export const moreRepos: LabRepo[] = [
     status: 'Active',
   },
   {
-    slug: 'patchwork-pirates',
-    name: 'Patchwork Pirates',
-    summary:
-      'A co-op auto-combat survival roguelite on a breakable raft. A full design doc, netcode plan, and phased roadmap.',
-    category: 'apps',
-    stack: ['TypeScript'],
-    language: 'TypeScript',
-    status: 'Pre-production',
-  },
-  {
     slug: 'portfolio',
     name: 'Portfolio',
+    tagline: 'Source for this site',
     summary:
       'This site: the Astro source, case studies, and the dual-origin deployment behind shanekanterman.dev.',
     category: 'apps',

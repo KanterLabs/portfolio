@@ -1,0 +1,1587 @@
+/* ── Drawing system ──
+   The site is presented as a set of engineering drawing sheets: drawing
+   paper with a fine grid, ink linework, mono annotations, and a title
+   block. Every colour below is a theme token or a color-mix() of one, so
+   the light theme, the dark ("ink") theme, and the no-JS light mirror in
+   global.css all resolve without per-theme entries here. */
+
+:root {
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --ink: var(--color-text-base);
+  --paper: var(--color-bg);
+  --grid-minor: color-mix(in srgb, var(--color-text-base) 5%, transparent);
+  --grid-major: color-mix(in srgb, var(--color-text-base) 9%, transparent);
+  /* Sage fill for callout bubbles and the lead unit. Theme-independent on
+     purpose: ink on sage is ~8:1 in both themes. */
+  --fill-accent: #9db07a;
+  --fill-accent-ink: #1b1b1d;
+  --hatch: repeating-linear-gradient(
+    45deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--color-accent) 70%, transparent) 5px 6.5px
+  );
+  /* One rack unit. 1U rows must stay >= 24px tall: the whole row is the
+     link target (WCAG 2.5.8). */
+  --u: 1.75rem;
+  --rail: 1.75rem;
+  --unit-w: 15rem;
+}
+
+body {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+}
+
+/* ── Annotations ── */
+
+.dwg-label {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.dwg-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: var(--color-accent);
+}
+
+/* ── Sheets ── */
+
+.sheet {
+  position: relative;
+  margin-top: var(--space-section);
+  padding: 2.4rem 2.5rem 2.25rem;
+  border: 1.5px solid var(--ink);
+  scroll-margin-top: var(--header-offset);
+}
+
+.sheet:first-child {
+  margin-top: 0;
+}
+
+.sheet-zones {
+  position: absolute;
+  display: flex;
+  justify-content: space-around;
+  color: var(--color-text-soft);
+  font-family: var(--font-family-mono);
+  font-size: 0.6rem;
+  pointer-events: none;
+}
+
+.sheet-zones-top {
+  top: 0.45rem;
+  left: 0;
+  right: 0;
+}
+
+.sheet-zones-left {
+  top: 0;
+  bottom: 0;
+  left: 0.5rem;
+  flex-direction: column;
+}
+
+.sheet-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.4rem 1.5rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--ink);
+}
+
+.sheet-head .dwg-label {
+  color: var(--ink);
+}
+
+.sheet-title {
+  margin: 0 0 0.75rem;
+  color: var(--ink);
+  font-size: var(--step-section);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.sheet-intro {
+  max-width: 44rem;
+  margin: 0 0 2rem;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+@media (width < 780px) {
+  .sheet {
+    padding: 0.9rem 1.1rem 1.4rem;
+  }
+
+  .sheet-zones {
+    display: none;
+  }
+
+  /* The drawing number is decoration; on a phone it would wrap the strip
+     onto a second line and push the headline down. */
+  .sheet-head {
+    margin-bottom: 1.1rem;
+  }
+
+  .sheet-head .dwg-label + .dwg-label {
+    display: none;
+  }
+}
+
+/* ── Buttons: drawn rectangles with an offset ink shadow ── */
+
+.dwg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 2.9rem;
+  padding: 0.7rem 1.15rem;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 4px 4px 0 var(--ink);
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition);
+}
+
+.dwg-btn:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.dwg-btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 4px 4px 0 var(--fill-accent);
+}
+
+.dwg-btn-primary:hover {
+  box-shadow: 2px 2px 0 var(--fill-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dwg-btn,
+  .dwg-btn:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Surfaces: anything that must read as a block on the grid ── */
+
+.dwg-box {
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  padding: 1.1rem 1.25rem;
+}
+
+.dwg-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--paper);
+  font-family: var(--font-family-mono);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.dwg-table caption {
+  padding-bottom: 0.5rem;
+  text-align: left;
+}
+
+.dwg-table th,
+.dwg-table td {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.dwg-table thead th {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dwg-table td {
+  color: var(--color-text-muted);
+}
+
+.dwg-table .dwg-nowrap {
+  white-space: nowrap;
+}
+
+/* ── Title block ── */
+
+.title-block {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  font-family: var(--font-family-mono);
+  font-size: 0.78rem;
+}
+
+.title-block > * {
+  display: grid;
+  align-content: start;
+  gap: 0.2rem;
+  margin: 0;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.title-block dt,
+.title-block .tb-key {
+  color: var(--color-text-soft);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.title-block dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.title-block .tb-wide {
+  grid-column: 1 / -1;
+}
+
+.title-block .tb-name {
+  font-family: var(--font-family-sans);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.title-block a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.title-block a:hover {
+  color: var(--color-accent);
+}
+
+/* ── Rack elevation ── */
+
+.rack-figure {
+  margin: 0;
+  min-width: 0;
+  scroll-margin-top: var(--header-offset);
+}
+
+.rack-caption {
+  margin-bottom: 0.7rem;
+  color: var(--ink);
+}
+
+.rack {
+  position: relative;
+  margin: 0;
+  padding: 0.5rem 0;
+  list-style: none;
+}
+
+/* The cabinet: drawn behind the rails and unit column only, so the
+   callouts sit outside it like a real elevation drawing. */
+.rack::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--rail) * 2 + var(--unit-w));
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.rack-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--rail) var(--unit-w) var(--rail) minmax(0, 1fr);
+  height: calc(var(--u) * var(--units));
+}
+
+.rack-rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  border-right: 1px solid var(--ink);
+  color: var(--color-text-soft);
+  font-family: var(--font-family-mono);
+  font-size: 0.56rem;
+  line-height: 1;
+}
+
+.rack-rail-right {
+  border-right: 0;
+  border-left: 1px solid var(--ink);
+}
+
+.rack-range {
+  display: none;
+}
+
+.rack-face {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 2px 3px;
+  padding: 0 0.6rem;
+  min-width: 0;
+  border: 1.4px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-family-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition:
+    transform var(--transition),
+    border-color var(--transition);
+}
+
+.rack-led {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+}
+
+.rack-name {
+  white-space: nowrap;
+}
+
+.rack-vent {
+  flex: 1;
+  align-self: stretch;
+  margin-block: 5px;
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ink) 40%, transparent) 0 1px,
+    transparent 1px 5px
+  );
+}
+
+.rack-code {
+  flex: none;
+  font-weight: 400;
+  font-size: 0.6rem;
+}
+
+.rack-row[data-kind='blank'] .rack-face {
+  border: 1px dashed color-mix(in srgb, var(--ink) 55%, transparent);
+  background: transparent;
+}
+
+.rack-row[data-kind='power'] .rack-face {
+  justify-content: space-between;
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.rack-lcd {
+  padding: 0.2rem 0.45rem;
+  background: var(--fill-accent);
+  color: var(--fill-accent-ink);
+  font-size: 0.56rem;
+}
+
+.rack-row[data-kind='patch'] .rack-face {
+  gap: 0.35rem;
+}
+
+.rack-port {
+  width: 12px;
+  height: 9px;
+  border: 1px solid var(--ink);
+}
+
+.rack-port[data-live] {
+  background: var(--fill-accent);
+}
+
+.rack-port:first-of-type {
+  margin-left: auto;
+}
+
+.rack-row[data-kind='lead'] .rack-face {
+  padding: 7px;
+  border-width: 2.4px;
+  background: var(--hatch), var(--paper);
+}
+
+.rack-lead-plate {
+  display: grid;
+  align-content: center;
+  gap: 0.25rem;
+  align-self: stretch;
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+}
+
+.rack-lead-plate strong {
+  font-family: var(--font-family-sans);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.rack-lead-plate span {
+  font-size: 0.56rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.rack-bays {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.rack-bays i {
+  flex: 1;
+  height: 0.85rem;
+  border: 1px solid var(--ink);
+}
+
+/* Callout: leader line, numbered bubble, note. */
+.rack-callout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.rack-leader {
+  flex: none;
+  width: 1.9rem;
+  height: 1px;
+  background: var(--ink);
+  transform-origin: left center;
+  transition: background-color var(--transition);
+}
+
+.rack-num {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-family-mono);
+  font-size: 0.6rem;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition);
+}
+
+.rack-row[data-kind='lead'] .rack-num {
+  background: var(--fill-accent);
+  color: var(--fill-accent-ink);
+}
+
+.rack-note {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rack-note a,
+.rack-note .rack-note-title {
+  color: var(--ink);
+}
+
+.rack-row[data-kind='power'] .rack-note {
+  white-space: normal;
+}
+
+.rack-version {
+  text-transform: none;
+}
+
+.rack-row[data-kind='lead'] .rack-note {
+  display: grid;
+  gap: 0.15rem;
+  white-space: normal;
+}
+
+.rack-note-title {
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rack-note-more {
+  color: var(--color-accent);
+  font-family: var(--font-family-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-transform: uppercase;
+}
+
+.rack-note-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.7rem;
+}
+
+.rack-note-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* The whole row is one link: the anchor sits in the note, and its
+   ::after stretches over the row so the faceplate is clickable too. */
+.rack-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.rack-link:focus-visible {
+  outline: none;
+}
+
+.rack-link:focus-visible::after {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 1px;
+}
+
+.rack-row:is(:hover, :focus-within) .rack-face {
+  border-color: var(--color-accent);
+  transform: translateX(-5px);
+}
+
+.rack-row:is(:hover, :focus-within) .rack-leader {
+  background: var(--color-accent);
+}
+
+.rack-row:is(:hover, :focus-within) .rack-num {
+  border-color: var(--color-accent);
+}
+
+.rack-row[data-kind='patch']:is(:hover, :focus-within) .rack-face,
+.rack-row[data-kind='blank'] .rack-face {
+  transform: none;
+}
+
+.rack-legend {
+  margin-top: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rack-face,
+  .rack-row:is(:hover, :focus-within) .rack-face {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Leader lines draw in once, quickly: the whole rack is legible before
+   any of it moves, and the sequence is over in well under 500ms. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .rack-leader {
+    animation: rack-leader-draw 260ms ease-out both;
+    animation-delay: calc(var(--row, 0) * 12ms);
+  }
+}
+
+@keyframes rack-leader-draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Phones: the elevation becomes a full-width list of units. Nothing is
+   scaled down; the drawing keeps its structure (U range, callout number,
+   faceplate) and the note moves under the faceplate. */
+@media (width < 780px) {
+  .rack {
+    padding: 0;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+  }
+
+  .rack::before {
+    display: none;
+  }
+
+  .rack-row {
+    grid-template-columns: 3.1rem minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    height: auto;
+    min-height: 2.75rem;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .rack-row:last-child {
+    border-bottom: 0;
+  }
+
+  .rack-row[data-kind='blank'] {
+    display: none;
+  }
+
+  .rack-rail {
+    grid-row: 1 / -1;
+    justify-content: center;
+    font-size: 0.6rem;
+  }
+
+  .rack-rail > span:not(.rack-range),
+  .rack-rail-right {
+    display: none;
+  }
+
+  .rack-range {
+    display: block;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .rack-face {
+    grid-column: 2;
+    min-height: 2.4rem;
+    margin: 0.35rem 0.5rem 0;
+  }
+
+  .rack-vent {
+    display: none;
+  }
+
+  .rack-code {
+    margin-left: auto;
+  }
+
+  .rack-row[data-kind='lead'] .rack-face {
+    min-height: 5.5rem;
+  }
+
+  .rack-callout {
+    grid-column: 2;
+    align-items: flex-start;
+    padding: 0.4rem 0.5rem 0.55rem;
+  }
+
+  .rack-leader {
+    display: none;
+  }
+
+  .rack-num {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.05rem;
+  }
+
+  .rack-note {
+    white-space: normal;
+  }
+
+  .rack-row:is(:hover, :focus-within) .rack-face {
+    transform: none;
+  }
+}
+
+/* ── Detail drawings (a case study's `system` frontmatter) ── */
+
+.detail-drawing {
+  margin: 0;
+  min-width: 0;
+}
+
+.dd-head {
+  margin-bottom: 0.9rem;
+  color: var(--ink);
+}
+
+.dd-body {
+  display: grid;
+  justify-items: stretch;
+}
+
+.dd-tier {
+  display: grid;
+  gap: 1rem;
+}
+
+.dd-tier[data-split] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dd-node-wrap {
+  position: relative;
+  display: grid;
+  min-width: 0;
+}
+
+.dd-node-wrap[data-accent] {
+  padding: 7px;
+  border: 2px solid var(--ink);
+  background: var(--hatch), var(--paper);
+}
+
+.dd-node {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.7rem 0.85rem 0.75rem;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+}
+
+.dd-node-wrap[data-accent] .dd-node {
+  border-width: 1px;
+}
+
+.dd-node-label {
+  color: var(--color-text-soft);
+  font-family: var(--font-family-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dd-node strong {
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.dd-node-detail {
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 0.68rem;
+}
+
+.dd-callout {
+  position: absolute;
+  top: -0.6rem;
+  right: -0.6rem;
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-family-mono);
+  font-size: 0.6rem;
+}
+
+.dd-node-wrap[data-accent] .dd-callout {
+  background: var(--fill-accent);
+  color: var(--fill-accent-ink);
+}
+
+/* Connectors: straight arrows between single nodes, a bracket where two
+   nodes merge into one (or one fans out to two). */
+.dd-connector {
+  position: relative;
+  height: 2.1rem;
+}
+
+.dd-connector span,
+.dd-connector::before,
+.dd-connector::after {
+  position: absolute;
+}
+
+.dd-connector span {
+  left: calc(50% - 0.75px);
+  top: 0;
+  bottom: 6px;
+  width: 1.5px;
+  background: var(--ink);
+}
+
+.dd-connector span::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: -4.25px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--ink);
+}
+
+.dd-connector[data-from='2']::before {
+  content: '';
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 0.85rem;
+  border: 1.5px solid var(--ink);
+  border-top: 0;
+}
+
+.dd-connector[data-from='2'] span {
+  top: 0.85rem;
+}
+
+.dd-connector[data-to='2'][data-from='1']::before {
+  content: '';
+  bottom: 0;
+  left: 25%;
+  right: 25%;
+  height: 0.9rem;
+  border: 1.5px solid var(--ink);
+  border-bottom: 0;
+}
+
+.dd-connector[data-to='2'][data-from='1'] span {
+  bottom: 0.9rem;
+}
+
+.dd-connector[data-to='2'][data-from='1'] span::after {
+  display: none;
+}
+
+.dd-connector[data-to='2'][data-from='2']::before,
+.dd-connector[data-to='2'][data-from='2']::after {
+  content: '';
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: var(--ink);
+}
+
+.dd-connector[data-to='2'][data-from='2']::before {
+  left: 25%;
+  height: auto;
+  border: 0;
+}
+
+.dd-connector[data-to='2'][data-from='2']::after {
+  right: 25%;
+}
+
+.dd-connector[data-to='2'][data-from='2'] span {
+  display: none;
+}
+
+.dd-notes {
+  display: grid;
+  gap: 0.35rem;
+  margin: 1.1rem 0 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--ink);
+  list-style: none;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.dd-notes .dwg-label {
+  display: inline;
+  margin-right: 0.4rem;
+}
+
+.dd-caption {
+  margin-top: 0.85rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+/* ── Homepage sheets ── */
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 37rem);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.hero-tag {
+  color: var(--color-accent);
+}
+
+.hero-title {
+  margin: 0.6rem 0 1.1rem;
+  color: var(--ink);
+  font-size: var(--step-display);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+}
+
+.hero-title-line {
+  white-space: nowrap;
+}
+
+.hero-title .dwg-serif {
+  font-size: 1.08em;
+  line-height: 0.9;
+}
+
+.hero-copy {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.hero-actions,
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 0.8rem;
+  margin-top: 1.6rem;
+}
+
+.hero-facts {
+  margin-top: 1.9rem;
+}
+
+.hero-facts th {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hero-facts td {
+  width: 1%;
+  color: var(--ink);
+  font-family: var(--font-family-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (width < 960px) {
+  .hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+}
+
+@media (width < 780px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Case studies */
+.detail-feature {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr);
+  gap: 2.25rem;
+  padding: 1.6rem 1.75rem;
+}
+
+.detail-title {
+  margin: 0.35rem 0 0.6rem;
+  color: var(--ink);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.detail-title a:hover {
+  color: var(--color-accent);
+}
+
+.detail-feature .detail-title {
+  font-size: 1.9rem;
+}
+
+.detail-summary {
+  margin: 0 0 0.8rem;
+  color: var(--color-text-muted);
+  font-size: 0.97rem;
+  line-height: 1.65;
+}
+
+.general-notes {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.general-notes .dwg-label {
+  display: block;
+  margin-bottom: 0.1rem;
+  color: var(--ink);
+}
+
+.general-notes-bullets li {
+  position: relative;
+  padding-left: 1.1rem;
+}
+
+.general-notes-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 0.45rem;
+  height: 0.45rem;
+  border: 1px solid var(--ink);
+  background: var(--fill-accent);
+}
+
+.detail-stack {
+  margin-top: 0.4rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.detail-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.4rem 1.5rem;
+}
+
+.detail-card .detail-drawing {
+  margin: 0.6rem 0 1.1rem;
+}
+
+.detail-more {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+@media (width < 960px) {
+  .detail-feature,
+  .detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (width < 780px) {
+  .detail-feature,
+  .detail-card {
+    padding: 1.1rem 1rem;
+  }
+}
+
+/* Experience */
+.experience-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.revision-title {
+  display: block;
+  color: var(--ink);
+  font-family: var(--font-family-sans);
+  font-size: 0.92rem;
+}
+
+.revision-org {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--color-text-soft);
+}
+
+@media (width < 960px) {
+  .experience-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Bill of materials */
+.bom-scroll {
+  overflow-x: auto;
+}
+
+.bom-table th[scope='row'] {
+  color: var(--ink);
+  font-family: var(--font-family-sans);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.bom-table td:first-child {
+  width: 3rem;
+}
+
+.bom-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bom-parts li {
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+}
+
+@media (width < 780px) {
+  .bom-table,
+  .bom-table tbody,
+  .bom-table tr,
+  .bom-table td,
+  .bom-table th {
+    display: block;
+  }
+
+  .bom-table thead {
+    display: none;
+  }
+
+  .bom-table tr {
+    border: 1px solid var(--ink);
+  }
+
+  .bom-table tr + tr {
+    border-top: 0;
+  }
+
+  .bom-table td,
+  .bom-table th {
+    border: 0;
+  }
+
+  .bom-table td:first-child {
+    display: none;
+  }
+}
+
+/* Contact */
+.contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (width < 960px) {
+  .contact-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Header: drawn controls ── */
+
+.nav-link {
+  font-family: var(--font-family-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.theme-toggle,
+.header-github,
+.mobile-toggle {
+  /* Whole pixels: a 1.5px border puts the icon on a half pixel. */
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  color: var(--ink);
+}
+
+.theme-toggle:hover,
+.header-github:hover {
+  border-color: var(--color-accent);
+  background: var(--paper);
+}
+
+.theme-toggle-label {
+  font-family: var(--font-family-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Case-study sheets ── */
+
+.case-meta {
+  margin-bottom: 1.6rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.case-meta .eyebrow {
+  margin: 0;
+  color: var(--ink);
+  font-size: inherit;
+  font-weight: 500;
+}
+
+.case-head {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+}
+
+.case-head-split {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+}
+
+.case-title {
+  margin: 0 0 1rem;
+  color: var(--ink);
+  font-size: var(--step-title);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  overflow-wrap: break-word;
+}
+
+.case-summary {
+  max-width: 62ch;
+  margin: 0 0 1.4rem;
+  color: var(--color-text-muted);
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.case-stack {
+  font-family: var(--font-family-mono);
+  font-size: 0.74rem;
+}
+
+.case-drawing {
+  padding: 1.25rem 1.35rem 1.1rem;
+}
+
+/* Role / Scope / Outcome read as a title block. */
+.project-detail-facts {
+  gap: 0;
+  margin-top: 2rem;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.project-detail-facts > div {
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+}
+
+.project-proof-copy {
+  color: var(--color-text-muted);
+}
+
+@media (width < 960px) {
+  .case-head-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (width < 780px) {
+  .project-detail-facts {
+    gap: 0;
+  }
+
+  .case-summary {
+    font-size: 1rem;
+  }
+}
+
+/* ── Legacy surfaces, redrawn ──
+   Panels that predate the drawing system (TOC, callouts, pager, the
+   KanterLabs CTA, prose diagrams) keep their markup but take the drawn
+   look: square corners, ink rules, paper fill. */
+
+.glass,
+.callout,
+.case-pager-link {
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+}
+
+.btn {
+  border-radius: 0;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 4px 4px 0 var(--fill-accent);
+}
+
+.btn-primary:hover {
+  background: var(--ink);
+}
+
+.btn-secondary {
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.header-back {
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.diagram-trigger {
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+}
+
+.toc-link-active {
+  border-radius: 0;
+}
+
+/* Plates */
+.plate-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.plate {
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem 1.2rem 1.3rem;
+}
+
+/* The lead plate spans the sheet (it is the 4U unit), with its media
+   beside the copy instead of above it. The banner is ~2.6:1, so it gets
+   its own aspect ratio rather than the 16:10 frame. */
+.plate:first-child {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  column-gap: 1.5rem;
+}
+
+.plate:first-child .plate-head {
+  grid-column: 1 / -1;
+}
+
+@media (width >= 960px) {
+  .plate:first-child .plate-media {
+    aspect-ratio: 900 / 340;
+  }
+}
+
+.plate:first-child .plate-body {
+  margin-top: 0;
+}
+
+.plate-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--ink);
+}
+
+.plate-callout {
+  display: grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+}
+
+.plate:first-child .plate-callout {
+  background: var(--fill-accent);
+  color: var(--fill-accent-ink);
+}
+
+.plate-media {
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+}
+
+.plate-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin-top: 1rem;
+}
+
+.plate-meta {
+  margin: 0 0 0.9rem;
+}
+
+.plate-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.25rem;
+  margin-top: auto;
+}
+
+@media (width < 960px) {
+  .plate-grid,
+  .plate:first-child {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .plate:first-child .plate-body {
+    margin-top: 1rem;
+  }
+}
+
+/* Title-block values are standalone targets, not links inside prose:
+   they need the full WCAG 2.5.8 size (44px on touch layouts). */
+.title-block a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+@media (width < 780px) {
+  .title-block a {
+    min-height: 44px;
+  }
+
+  /* The revision table stacks: rev + date on one line, the entry under it. */
+  .revision-table thead {
+    display: none;
+  }
+
+  .revision-table,
+  .revision-table tbody {
+    display: block;
+  }
+
+  .revision-table tr {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    border: 1px solid var(--ink);
+  }
+
+  .revision-table tr + tr {
+    border-top: 0;
+  }
+
+  .revision-table td {
+    border: 0;
+  }
+
+  .revision-table td:nth-child(3) {
+    grid-column: 1 / -1;
+    padding-top: 0;
+  }
+}
+
+@media (width < 370px) {
+  .hero-title-line {
+    white-space: normal;
+  }
+}
+
+/* ── Brand rabbit placements ── */
+
+.site-header-rabbit {
+  margin-block: -0.25rem;
+}
+
+/* 404: the lop hops across the sheet along a dimension-line floor. */
+.hop-track {
+  position: relative;
+  height: 4.5rem;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  border-bottom: 1px dashed color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.hop-rabbit {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .hop-rabbit {
+    animation: rabbit-cross 7s linear infinite;
+  }
+}
+
+/* `left` rather than a transform so the run is measured against the
+   track's own width at every viewport. */
+@keyframes rabbit-cross {
+  from {
+    left: -5rem;
+  }
+
+  to {
+    left: calc(100% + 1rem);
+  }
+}
