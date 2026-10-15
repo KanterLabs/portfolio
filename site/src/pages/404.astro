@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import BrandRabbit from '../components/BrandRabbit.astro';
+import Sheet from '../components/Sheet.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 
 const siteUrl = Astro.site?.toString() ?? 'https://shanekanterman.dev';
@@ -22,23 +24,26 @@ const structuredData = {
   <div class="page-shell relative z-10 pb-24">
     <SiteHeader backHref="/" backLabel="Home" />
 
-    <main id="main-content" class="pt-10 max-[780px]:pt-6 min-h-[60vh]">
-      <div class="max-w-[42rem]">
-        <p class="eyebrow">404</p>
-        <h1 class="text-[length:var(--step-title)] leading-[1.05] tracking-[-0.02em] mb-5 font-extrabold text-text-base">
-          Page not found.
-        </h1>
-        <p class="text-text-muted leading-[1.75] text-[1.04rem] mb-8 max-w-[34rem]">
-          The page you requested is not here. You can return to the portfolio homepage, review project case studies, or connect on LinkedIn.
-        </p>
-        <div class="flex flex-wrap gap-4 max-[640px]:flex-col max-[640px]:items-stretch">
-          <a class="btn btn-primary" href="/">Go home</a>
-          <a class="btn btn-secondary" href="/projects">View projects</a>
-          <a class="btn btn-secondary" href="https://www.linkedin.com/in/shane-kanterman-4511a2234" target="_blank" rel="noopener noreferrer">
-            LinkedIn
-          </a>
+    <main id="main-content" class="pt-6 max-[780px]:pt-1 min-h-[60vh]">
+      <Sheet sheet={0} of={0} label="Sheet missing · 404" drawing="DWG SK-404" animate={false} labelledBy="not-found-title">
+        <div class="hop-track" aria-hidden="true">
+          <BrandRabbit height={64} mode="hop" class="hop-rabbit" />
         </div>
-      </div>
+        <div class="max-w-[42rem]">
+          <h1 class="case-title" id="not-found-title">Page not found.</h1>
+          <p class="case-summary max-w-[34rem]">
+            This sheet isn't in the set. You can return to the portfolio homepage, review project
+            case studies, or connect on LinkedIn.
+          </p>
+          <div class="detail-actions max-[640px]:flex-col max-[640px]:items-stretch">
+            <a class="dwg-btn dwg-btn-primary" href="/">Go home</a>
+            <a class="dwg-btn" href="/projects">View projects</a>
+            <a class="dwg-btn" href="https://www.linkedin.com/in/shane-kanterman-4511a2234" target="_blank" rel="noopener noreferrer">
+              LinkedIn
+            </a>
+          </div>
+        </div>
+      </Sheet>
     </main>
   </div>
 </BaseLayout>

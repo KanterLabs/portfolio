@@ -12,9 +12,9 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
     clientWidth: document.documentElement.clientWidth,
     hasHorizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
     h1: document.querySelector('h1')?.textContent?.replace(/\s+/g, ' ').trim(),
-    heroParagraph: document.querySelector('main section > div p:last-of-type')?.textContent?.replace(/\s+/g, ' ').trim(),
+    heroParagraph: document.querySelector('.hero-copy')?.textContent?.replace(/\s+/g, ' ').trim(),
     contactText: document.getElementById('contact')?.textContent ?? '',
-    sectionTops: ['projects', 'about', 'architecture', 'skills', 'contact'].map((id) => ({
+    sectionTops: ['kanterlabs', 'projects', 'plates', 'about', 'skills', 'contact'].map((id) => ({
       id,
       top: Math.round(
         (document.getElementById(id)?.getBoundingClientRect().top ?? 0) + window.scrollY,
@@ -25,17 +25,20 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
   console.log('Mobile metrics:', JSON.stringify(metrics, null, 2));
 
   expect(metrics.hasHorizontalOverflow).toBe(false);
-  // The KanterLabs catalog (#kanterlabs: studio banner, five flagship media
-  // cards, seven repo cards) adds roughly 6000px of single-column content on
-  // a phone. The budget still catches runaway growth past that.
-  expect(metrics.scrollHeight).toBeLessThan(18500);
-  expect(metrics.h1).toContain('I keep production infrastructure moving');
-  expect(metrics.heroParagraph).toContain('Data Center Technician at InterServer');
+  // Six sheets, the rack as a unit list, and five media plates in a
+  // single column. The budget still catches runaway growth past that.
+  expect(metrics.scrollHeight).toBeLessThan(15000);
+  expect(metrics.h1).toBe('Everything I run, in one rack.');
+  expect(metrics.heroParagraph).toContain('production servers at InterServer');
   expect(metrics.contactText).toContain('shanekanterman04@gmail.com');
   expect(metrics.contactText).toContain('Cranford');
-  expect(metrics.sectionTops[0]?.id).toBe('projects');
-  expect(metrics.sectionTops[0]?.top).toBeLessThan(1800);
-  expect(metrics.sectionTops[0]?.top).toBeLessThan(metrics.sectionTops[1]?.top ?? 0);
+  // The rack is the body of work: it starts within the first two screens,
+  // and the sheets follow in order.
+  expect(metrics.sectionTops[0]?.id).toBe('kanterlabs');
+  expect(metrics.sectionTops[0]?.top).toBeLessThan(1500);
+  for (let i = 1; i < metrics.sectionTops.length; i += 1) {
+    expect(metrics.sectionTops[i - 1].top).toBeLessThan(metrics.sectionTops[i].top);
+  }
 
   // Keep the capture inside Playwright's output dir (gitignored) and on
   // the HTML report instead of dropping a stray PNG at the repo root.
@@ -53,7 +56,7 @@ test('mobile nav panel is compact', async ({ page }) => {
   const navHeight = await page.locator('#mobile-nav').evaluate((el) => el.getBoundingClientRect().height);
   console.log('Mobile nav panel height:', navHeight);
 
-  // Six section anchors plus the KanterLabs GitHub link, 44px each.
+  // Five section anchors plus the KanterLabs GitHub link, 44px each.
   expect(navHeight).toBeLessThan(340);
 });
 

@@ -1,34 +1,30 @@
 ---
-import AnimatedSection from '../components/AnimatedSection.astro';
-import ArchitectureSnapshot from '../components/ArchitectureSnapshot.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import CaseStudyDetails from '../components/CaseStudyDetails.astro';
 import GitHubIcon from '../components/GitHubIcon.astro';
-import GlassCard from '../components/GlassCard.astro';
-import KanterLabsShowcase from '../components/KanterLabsShowcase.astro';
-import ProjectCard from '../components/ProjectCard.astro';
-import ProjectShowcase from '../components/ProjectShowcase.astro';
-import SectionIntro from '../components/SectionIntro.astro';
+import RackElevation from '../components/RackElevation.astro';
+import RepoPlates from '../components/RepoPlates.astro';
+import Sheet from '../components/Sheet.astro';
 import SiteHeader from '../components/SiteHeader.astro';
-import StackBadge from '../components/StackBadge.astro';
-import SystemConstellation from '../components/SystemConstellation.astro';
 import { getCollection } from 'astro:content';
 import { KANTERLABS_ORG_URL, allPublicRepos } from '../lib/kanterlabs';
+import { leadUnit } from '../lib/rack';
 
 const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
 const portfolioProjects = sorted.filter((project) => project.data.kind === 'project');
-const featuredProject = portfolioProjects.find((project) => project.data.featured)!;
-const supportingProjects = portfolioProjects.filter((project) => !project.data.featured);
 const dataCenterExperience = sorted.find((entry) => entry.data.kind === 'experience')!;
 
 const navItems = [
+  { label: 'Rack', href: '#kanterlabs' },
+  { label: 'Case studies', href: '#projects' },
   { label: 'Experience', href: '#about' },
-  { label: 'Projects', href: '#projects' },
-  { label: 'Open Source', href: '#kanterlabs' },
-  { label: 'Architecture', href: '#architecture' },
   { label: 'Skills', href: '#skills' },
   { label: 'Contact', href: '#contact' },
 ];
+
+const SHEET_COUNT = 6;
+const lastDetailLetter = String.fromCharCode(64 + portfolioProjects.length);
 
 const capabilityGroups = [
   {
@@ -48,21 +44,13 @@ const capabilityGroups = [
   },
 ];
 
-// Fragments, not sentences. This panel is the fastest read on the page and
-// shares the fold with the headline — anything that wraps past two lines
-// stops being a glance and starts being a paragraph.
-const systemSummary = [
-  { label: 'Current role', value: 'Data Center Technician at InterServer' },
-  { label: 'Operations', value: 'Build, rack, image, and decommission production servers' },
-  { label: 'Platform', value: 'Two-site Proxmox estate, public and private zones' },
-  { label: 'Delivery', value: 'Ephemeral CI, atomic releases, rollback retained' },
-  { label: 'Lead project', value: 'Helm: a self-hosted board for people and agents' },
-];
-
-const heroMetrics = [
-  { value: '2 sites', label: 'Proxmox platform' },
-  { value: '1–3 runners', label: 'Ephemeral CI capacity' },
-  { value: `${allPublicRepos.length} repos`, label: 'Public on KanterLabs GitHub' },
+// The fact table beside the rack. Fragments, not sentences: it shares the
+// fold with the headline and has to read at a glance.
+const heroFacts = [
+  { label: 'Racks wired, one buildout', value: '~72' },
+  { label: 'Proxmox sites', value: '2' },
+  { label: 'Active projects', value: String(allPublicRepos.length) },
+  { label: 'Ephemeral CI runners', value: '1–3' },
 ];
 
 const profilePoints = [
@@ -115,6 +103,15 @@ const personalGithubUrl = 'https://github.com/ShaneKanterman04';
 const linkedInUrl = 'https://www.linkedin.com/in/shane-kanterman-4511a2234';
 const emailUrl = 'mailto:shanekanterman04@gmail.com';
 
+// The rack's patch panel. No résumé link: the site deliberately doesn't
+// publish one (tests/home.spec.ts).
+const contactLinks = [
+  { label: 'Email', href: emailUrl },
+  { label: 'LinkedIn', href: linkedInUrl, external: true },
+  { label: 'GitHub', href: KANTERLABS_ORG_URL, external: true },
+  { label: 'Personal GitHub', href: personalGithubUrl, external: true },
+];
+
 const siteUrl = Astro.site?.toString() ?? 'https://shanekanterman.dev';
 
 const structuredData = [
@@ -166,7 +163,6 @@ const structuredData = [
   },
 ];
 ---
-
 <BaseLayout
   title="Shane Kanterman | Data Center Technician and Infrastructure Work"
   description="Portfolio of Shane Kanterman, a Data Center Technician at InterServer, featuring production server operations, Linux systems, deployment tooling, and infrastructure projects."
@@ -175,353 +171,233 @@ const structuredData = [
   structuredData={structuredData}
   chatEnabled={true}
 >
-  <SystemConstellation />
-  <div class="page-shell editorial-shell relative z-10 pb-10">
+  <div class="page-shell relative z-10 pb-10">
     <SiteHeader home={true} navItems={navItems} />
 
-    <main class="pt-8" id="main-content">
-      <section
-        class="hero-surface grid grid-cols-[minmax(0,1.1fr)_minmax(19rem,25rem)] gap-12 items-start pt-14 pb-20 max-[960px]:grid-cols-1 max-[960px]:gap-8 max-[960px]:pt-8 max-[960px]:pb-10 max-[780px]:pt-4 max-[780px]:pb-8"
+    <main class="pt-6 max-[780px]:pt-1" id="main-content">
+      <Sheet
         id="top"
+        sheet={1}
+        of={SHEET_COUNT}
+        label="Rack elevation"
+        drawing="KanterLabs / DWG SK-01"
+        animate={false}
+        class="hero-sheet"
       >
-        <div>
-          <p class="eyebrow hero-reveal hero-reveal-1">
-            Data Center Technician at InterServer &middot; Computer Science Student
-          </p>
-          <h1
-            class="hero-reveal hero-reveal-2 mb-6 max-w-[24ch] font-extrabold overflow-wrap-break-word text-text-base"
-          >
+        <div class="hero-grid">
+          <div class="hero-intro">
+            <p class="dwg-label hero-tag">Shane Kanterman · Data center technician</p>
             {/* A comma, not an em dash: a break is permitted after an em dash,
                 so at narrow widths the dash wraps to the head of the next
                 line. A comma can never start a line. */}
-            I keep production infrastructure moving, <span class="gradient-text">from rack to release.</span>
-          </h1>
-          <p class="hero-reveal hero-reveal-3 text-text-muted leading-[1.7] text-[1.08rem] max-w-[36rem]">
-            I am a Data Center Technician at InterServer, where I provision production hardware,
-            image servers, and troubleshoot physical infrastructure. Outside the data center, I run
-            KanterLabs, my open-source studio, and the two-site Proxmox platform and CI that ship it.
-          </p>
-
-          <div class="hero-reveal hero-reveal-4 flex flex-wrap gap-4 mt-8 max-[780px]:flex-col max-[780px]:items-stretch">
-            <a class="btn btn-primary" href={`/projects/${dataCenterExperience.id}`}>
-              Explore Data Center Work
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
-                <path d="M7 17L17 7" />
-                <path d="M9 7h8v8" />
-              </svg>
-            </a>
-            <a class="btn btn-secondary" href={`/projects/${featuredProject.id}`}>
-              Explore {featuredProject.data.title}
-            </a>
-            <a
-              class="btn btn-secondary"
-              href={linkedInUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              LinkedIn
-            </a>
-            <a
-              class="btn btn-secondary kl-btn-github"
-              href={KANTERLABS_ORG_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <GitHubIcon size={18} />
-              KanterLabs on GitHub
-            </a>
-          </div>
-        </div>
-
-        <GlassCard class="hero-reveal hero-reveal-5 sticky top-28 flex flex-col gap-8 p-8 max-[960px]:static" hover={false}>
-          <div>
-            <h2 class="mb-4 field-label">
-              Proof at a glance
-            </h2>
-            <ul class="grid gap-4 p-0 list-none">
-              {systemSummary.map((item) => (
-                <li class="system-summary-row">
-                  <span class="system-summary-label">{item.label}</span>
-                  <span class="system-summary-copy">{item.value}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div class="grid gap-2.5 pt-5 border-t border-line">
-            {heroMetrics.map((metric) => (
-              <div class="flex justify-between items-baseline gap-4 overflow-wrap-break-word">
-                <span class="text-[1.05rem] font-bold text-text-base leading-snug shrink-0">
-                  {metric.value}
-                </span>
-                <span class="text-[0.82rem] text-text-soft leading-snug text-right">
-                  {metric.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-      </section>
-
-      <AnimatedSection
-        id="projects"
-        delay={1}
-      >
-        <SectionIntro
-          eyebrow="Selected work"
-          title="Platforms and delivery systems built for real operation."
-          body="These case studies focus on the boundaries, failure modes, and release decisions behind the work—not just the finished interface."
-        />
-
-        <div class="project-collection">
-          <ProjectShowcase project={featuredProject} />
-
-          <div class="project-card-grid">
-            {supportingProjects.map((project) => (
-              <ProjectCard project={project} />
-            ))}
-          </div>
-        </div>
-      </AnimatedSection>
-
-      <AnimatedSection
-        id="kanterlabs"
-        delay={1}
-      >
-        <SectionIntro
-          eyebrow="Open source · KanterLabs"
-          title="Everything I build ships from KanterLabs."
-          body={`${allPublicRepos.length} public projects across self-hosted platforms, developer tools, and desktop software. The flagships lead, the rest of the catalog follows, and every card links straight to the source.`}
-        />
-
-        <KanterLabsShowcase />
-      </AnimatedSection>
-
-      <AnimatedSection
-        id="about"
-        delay={1}
-      >
-        <SectionIntro
-          eyebrow="Current role"
-          title="Hands-on in a live data center."
-          body="At InterServer, I work directly with the production hardware and deployment workflows that make reliable infrastructure possible."
-        />
-
-        <GlassCard
-          class="panel-split p-8 max-[780px]:p-6"
-          style="--panel-split-cols: minmax(0,1.55fr) minmax(0,1fr)"
-          hover={false}
-        >
-          <div>
-            <p class="text-text-muted leading-[1.75] text-[1.04rem]">
-              Data Center Technician at InterServer, with hands-on experience in server builds and
-              hardware mods, rack-and-stack, Linux administration, hardware troubleshooting, and
-              PXE boot imaging in a live production environment. I am also pursuing a Computer
-              Science degree at SCSU.
+            <h1 class="hero-title">
+              <span class="hero-title-line">Everything I run,</span> <span class="dwg-serif">in one rack.</span>
+            </h1>
+            <p class="hero-copy">
+              I build, rack, image, and decommission production servers at InterServer. Everything
+              I build on my own time ships from KanterLabs, my open-source studio, and this is the
+              elevation drawing of it. Pick a unit to open it.
             </p>
-            <p class="text-text-muted leading-[1.75] text-[1.04rem] mt-4">
-              That background changed how I evaluate software work: not only what gets built, but
-              how it is deployed, operated, and kept reliable over time.
-            </p>
-            <p class="text-text-muted leading-[1.75] text-[1.04rem] mt-4">
-              I prefer simple, reliable systems with clear deployment paths. I care about how
-              software fails, how it is maintained, and how its infrastructure can stay lean
-              without sacrificing reliability.
-            </p>
-          </div>
-
-          <div>
-            <h3 class="field-label mb-4">
-              What that looks like in practice
-            </h3>
-            <ul class="grid gap-3 p-0 list-none">
-              {profilePoints.map((point) => (
-                <li class="relative pl-5 text-text-muted leading-[1.6] text-[0.95rem]">
-                  <span
-                    class="profile-point-dot absolute left-0 top-[0.72rem] -translate-y-1/2 w-1.5 h-1.5 rounded-full"
-                    aria-hidden="true"
-                  ></span>
-                  {point}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </GlassCard>
-
-        <GlassCard class="p-8 max-[780px]:p-6 mt-9 max-[780px]:mt-6" hover={false}>
-          <h3 class="field-label mb-6">
-            Track record
-          </h3>
-          <ol class="timeline">
-            {timelineEntries.map((entry) => (
-              <li class="timeline-entry">
-                <p class="timeline-date">{entry.date}</p>
-                <div class="timeline-body">
-                  <p class="field-label">{entry.org}</p>
-                  <h4 class="timeline-title">{entry.title}</h4>
-                  <p class="timeline-copy">{entry.body}</p>
-                  {entry.href && (
-                    <a class="text-link w-fit text-[0.9rem]" href={entry.href}>
-                      {entry.linkLabel}
-                      <span aria-hidden="true">↗</span>
-                    </a>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        </GlassCard>
-      </AnimatedSection>
-
-      <AnimatedSection
-        id="architecture"
-        delay={1}
-      >
-        <SectionIntro
-          eyebrow="Architecture"
-          title="A portfolio site backed by real deployment decisions."
-          body="The application layer is intentionally simple. The interesting work is in private origin isolation, shared edge routing, verified TLS, atomic delivery, and recovery."
-        />
-
-        <GlassCard
-          class="panel-split p-8 max-[780px]:p-6"
-          style="--panel-split-cols: minmax(0,1fr) minmax(20rem,26rem)"
-          hover={false}
-        >
-          <div>
-            <h3 class="mb-3 field-label">
-              Why it stands out
-            </h3>
-            <p class="text-text-muted leading-[1.75] text-[1.04rem] m-0">
-              Instead of stopping at a static frontend, this site separates public ingress from
-              a private origin and deploys commit-addressed releases with automated rollback.
-            </p>
-
-            <div class="architecture-proof-rows">
-              <div class="proof-inline-row">
-                <span class="project-proof-label">Edge services</span>
-                <span class="project-proof-copy">Cloudflare and Caddy provide DNS, TLS, headers, and routing.</span>
-              </div>
-              <div class="proof-inline-row">
-                <span class="project-proof-label">Origin</span>
-                <span class="project-proof-copy">A private unprivileged LXC keeps the workload off the edge VM.</span>
-              </div>
-              <div class="proof-inline-row">
-                <span class="project-proof-label">Delivery</span>
-                <span class="project-proof-copy">GitHub Actions validates and atomically activates each release.</span>
-              </div>
+            <div class="hero-actions">
+              <a class="dwg-btn dwg-btn-primary" href={leadUnit.href}>
+                Open detail A: {leadUnit.repo.name}
+                <span aria-hidden="true">→</span>
+              </a>
+              <a class="dwg-btn" href={`/projects/${dataCenterExperience.id}`}>
+                Data center work
+              </a>
+              <a class="dwg-btn kl-btn-github" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
+                <GitHubIcon size={17} />
+                KanterLabs on GitHub
+              </a>
             </div>
-          </div>
-
-          <div>
-            <ArchitectureSnapshot />
-          </div>
-        </GlassCard>
-      </AnimatedSection>
-
-      <AnimatedSection
-        id="skills"
-        delay={1}
-      >
-        <SectionIntro
-          eyebrow="Skills"
-          title="Skills used to build, deploy, and maintain systems."
-          body="These are the tools and workflows I use across application work, Linux administration, deployment, and troubleshooting."
-        />
-
-        <div class="grid grid-cols-3 gap-5 min-[960px]:gap-7 max-[960px]:grid-cols-2 max-[580px]:grid-cols-1">
-          {capabilityGroups.map((group) => (
-            <GlassCard
-              class="grid content-start gap-4 p-8 min-h-full overflow-wrap-break-word min-w-0 max-[780px]:p-6"
-              hover={true}
-            >
-              <h3 class="field-label">
-                {group.name}
-              </h3>
-              <p class="text-text-muted leading-[1.65] text-[0.95rem]">{group.description}</p>
-              <div class="stack-list">
-                {group.items.map((item) => (
-                  <StackBadge label={item} />
+            <table class="dwg-table hero-facts">
+              <caption class="dwg-label">Facts at a glance</caption>
+              <tbody>
+                {heroFacts.map((fact) => (
+                  <tr>
+                    <th scope="row">{fact.label}</th>
+                    <td>{fact.value}</td>
+                  </tr>
                 ))}
-              </div>
-            </GlassCard>
-          ))}
+              </tbody>
+            </table>
+          </div>
+          <RackElevation id="kanterlabs" contactLinks={contactLinks} />
         </div>
-      </AnimatedSection>
+      </Sheet>
 
-      <AnimatedSection
-        id="contact"
-        delay={1}
+      <Sheet
+        id="projects"
+        sheet={2}
+        of={SHEET_COUNT}
+        label="Case studies"
+        drawing={`DWG SK-02 · Details A–${lastDetailLetter}`}
+        labelledBy="projects-title"
       >
-        <GlassCard
-          class="panel-split contact-panel p-8 max-[780px]:p-6"
-          style="--panel-split-cols: minmax(0,1.6fr) minmax(15rem,18rem)"
-          hover={false}
-        >
-          <div>
-            <p class="eyebrow">
-              Contact
+        <h2 class="sheet-title" id="projects-title">Detail drawings of systems that run.</h2>
+        <p class="sheet-intro">
+          Every case study opens with its drawing: the boundaries, failure modes, and release
+          decisions behind the work, not just the finished interface.
+        </p>
+
+        <CaseStudyDetails projects={portfolioProjects} />
+      </Sheet>
+
+      <Sheet
+        id="plates"
+        sheet={3}
+        of={SHEET_COUNT}
+        label="Plates · flagship units"
+        drawing="DWG SK-03 · Plates 1–5"
+        labelledBy="plates-title"
+      >
+        <h2 class="sheet-title" id="plates-title">The flagship units, photographed.</h2>
+        <p class="sheet-intro">
+          Real screenshots and recordings of the larger units in the rack, keyed to their callout
+          numbers. Every plate links straight to its source on GitHub.
+        </p>
+        <RepoPlates />
+      </Sheet>
+
+      <Sheet
+        id="about"
+        sheet={4}
+        of={SHEET_COUNT}
+        label="Experience"
+        drawing="DWG SK-04 · Unit P"
+        labelledBy="about-title"
+      >
+        <h2 class="sheet-title" id="about-title">Hands-on in a live data center.</h2>
+        <p class="sheet-intro">
+          The solid unit at the bottom of the rack. At InterServer I work directly with the
+          production hardware and deployment workflows that reliable infrastructure depends on.
+        </p>
+        <div class="experience-grid">
+          <div class="dwg-box experience-unit">
+            <p class="dwg-label">Unit P · power · InterServer, Secaucus NJ</p>
+            <h3 class="detail-title">Data Center Technician</h3>
+            <p class="detail-summary">
+              Server builds and hardware mods, rack-and-stack, Linux administration, hardware
+              troubleshooting, and PXE imaging in a live production environment. I am also
+              finishing a Computer Science degree at SCSU.
             </p>
-            <h2
-              class="text-[length:var(--step-title)] leading-[1.08] tracking-[-0.02em] mb-5 font-extrabold text-text-base"
-            >
-              Data center and infrastructure roles.
-            </h2>
-            <p class="text-text-muted leading-[1.75] text-[1.04rem]">
+            <p class="detail-summary">
+              That background changed how I judge software: not only what gets built, but how it is
+              deployed, operated, and kept reliable over time.
+            </p>
+            <ul class="general-notes general-notes-bullets">
+              {profilePoints.map((point) => <li>{point}</li>)}
+            </ul>
+            <a class="text-link detail-more" href={`/projects/${dataCenterExperience.id}`}>
+              Read experience notes
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+          <table class="dwg-table revision-table">
+            <caption class="dwg-label">Revision history</caption>
+            <thead>
+              <tr><th scope="col">Rev</th><th scope="col">Date</th><th scope="col">Description</th></tr>
+            </thead>
+            <tbody>
+              {timelineEntries.map((entry, index) => (
+                <tr>
+                  <td>{String.fromCharCode(64 + timelineEntries.length - index)}</td>
+                  <td class="dwg-nowrap">{entry.date}</td>
+                  <td>
+                    <strong class="revision-title">{entry.title}</strong>
+                    <span class="revision-org">{entry.org}</span>
+                    {entry.body}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Sheet>
+
+      <Sheet
+        id="skills"
+        sheet={5}
+        of={SHEET_COUNT}
+        label="Bill of materials"
+        drawing="DWG SK-05 · BOM"
+        labelledBy="skills-title"
+      >
+        <h2 class="sheet-title" id="skills-title">Skills used to build, deploy, and maintain systems.</h2>
+        <p class="sheet-intro">
+          The parts list behind the rack: the tools and workflows I use across application work,
+          Linux administration, deployment, and troubleshooting.
+        </p>
+        <div class="bom-scroll">
+          <table class="dwg-table bom-table">
+            <caption class="sr-only">Bill of materials: skills by assembly</caption>
+            <thead>
+              <tr><th scope="col">Item</th><th scope="col">Assembly</th><th scope="col">Parts</th><th scope="col">Used for</th></tr>
+            </thead>
+            <tbody>
+              {capabilityGroups.map((group, index) => (
+                <tr>
+                  <td>{String(index + 1).padStart(2, '0')}</td>
+                  <th scope="row">{group.name}</th>
+                  <td>
+                    <ul class="bom-parts">
+                      {group.items.map((item) => <li>{item}</li>)}
+                    </ul>
+                  </td>
+                  <td>{group.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Sheet>
+
+      <Sheet
+        id="contact"
+        sheet={6}
+        of={SHEET_COUNT}
+        label="Title block · contact"
+        drawing="DWG SK-06"
+        labelledBy="contact-title"
+      >
+        <div class="contact-grid">
+          <div>
+            <h2 class="sheet-title" id="contact-title">Data center and infrastructure roles.</h2>
+            <p class="sheet-intro">
               Most interested in work where production operations, Linux systems, networking,
               deployment automation, and software delivery share the same operational owner.
             </p>
-
-            <dl class="contact-details">
-              <dt class="field-label">Email</dt>
-              <dd>shanekanterman04@gmail.com</dd>
-              <dt class="field-label">Based in</dt>
-              <dd>Cranford, NJ and New Haven, CT</dd>
-            </dl>
+            <div class="detail-actions">
+              <a class="dwg-btn dwg-btn-primary" href={emailUrl}>Email me</a>
+              <a class="dwg-btn" href={linkedInUrl} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              <a class="dwg-btn kl-btn-github" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
+                <GitHubIcon size={17} />
+                KanterLabs on GitHub
+              </a>
+            </div>
           </div>
-
-          <div class="contact-link-grid min-w-[12rem] max-[780px]:w-full">
-            <a
-              class="btn btn-primary max-[780px]:w-full"
-              href={emailUrl}
-            >
-              Email me
-            </a>
-            <a
-              class="btn btn-secondary max-[780px]:w-full"
-              href={linkedInUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              LinkedIn
-            </a>
-            <a
-              class="btn btn-secondary kl-btn-github max-[780px]:w-full"
-              href={KANTERLABS_ORG_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <GitHubIcon size={18} />
-              KanterLabs on GitHub
-            </a>
-            <a
-              class="text-link w-fit justify-self-center text-[0.88rem]"
-              href={personalGithubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Personal GitHub
-              <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        </GlassCard>
-      </AnimatedSection>
-
+          <dl class="title-block contact-title-block">
+            <div class="tb-wide">
+              <dt>Drawn by</dt>
+              <dd class="tb-name">Shane Kanterman</dd>
+            </div>
+            <div><dt>Role</dt><dd>Data Center Technician, InterServer</dd></div>
+            <div><dt>Studio</dt><dd><a href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">KanterLabs</a></dd></div>
+            <div class="tb-wide"><dt>Email</dt><dd><a href={emailUrl}>shanekanterman04@gmail.com</a></dd></div>
+            <div class="tb-wide"><dt>Based in</dt><dd>Cranford, NJ and New Haven, CT</dd></div>
+            <div><dt>LinkedIn</dt><dd><a href={linkedInUrl} target="_blank" rel="noopener noreferrer">/in/shane-kanterman</a></dd></div>
+            <div><dt>Personal GitHub</dt><dd><a href={personalGithubUrl} target="_blank" rel="noopener noreferrer">ShaneKanterman04</a></dd></div>
+            <div><dt>Sheet</dt><dd>06 of 06</dd></div>
+            <div><dt>Scale</dt><dd>1:1</dd></div>
+          </dl>
+        </div>
+      </Sheet>
     </main>
   </div>
 
   <script>
-    const sectionIds = ['projects', 'kanterlabs', 'about', 'architecture', 'skills', 'contact'];
+    const sectionIds = ['kanterlabs', 'projects', 'about', 'skills', 'contact'];
     const sectionLinks = Array.from(document.querySelectorAll('[data-nav-link]'));
 
     const setActiveSection = (sectionId) => {

@@ -1,0 +1,63 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+/**
+ * Renders a case study's `system` frontmatter as a detail drawing: tiers of
+ * boxed nodes joined by arrows, a hatched frame on the accent node, lettered
+ * callouts, and the footer as general notes. The content is the case
+ * study's own architecture, so the drawing stays honest by construction.
+ */
+interface Props {
+  system: NonNullable<CollectionEntry<'projects'>['data']['system']>;
+  label: string;
+  id: string;
+  showNotes?: boolean;
+  /** Hide the drawing's own label when the surrounding card already names it. */
+  showLabel?: boolean;
+}
+
+const { system, label, id, showNotes = true, showLabel = true } = Astro.props;
+const captionId = `${id}-caption`;
+let letter = 0;
+const nextLetter = () => String.fromCharCode(97 + letter++);
+---
+
+<figure class="detail-drawing" id={id} aria-labelledby={captionId}>
+  {showLabel && <p class="dwg-label dd-head" aria-hidden="true">{label}</p>}
+  <div class="dd-body" role="group" aria-label={`${label}: system drawing`}>
+    {system.tiers.map((tier, tierIndex) => (
+      <Fragment>
+        {tierIndex > 0 && (
+          <div
+            class="dd-connector"
+            data-from={system.tiers[tierIndex - 1].nodes.length}
+            data-to={tier.nodes.length}
+            aria-hidden="true"
+          >
+            <span></span>
+          </div>
+        )}
+        <div class="dd-tier" data-split={tier.nodes.length === 2 ? '' : undefined}>
+          {tier.nodes.map((node) => (
+            <div class="dd-node-wrap" data-accent={node.kind === 'accent' ? '' : undefined}>
+              <span class="dd-callout" aria-hidden="true">{nextLetter()}</span>
+              <div class="dd-node">
+                {node.label && <span class="dd-node-label">{node.label}</span>}
+                <strong>{node.title}</strong>
+                {node.detail && <span class="dd-node-detail">{node.detail}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Fragment>
+    ))}
+  </div>
+  {showNotes && system.footer && (
+    <ol class="dd-notes">
+      {system.footer.map((item) => (
+        <li><span class="dwg-label">{item.label}</span>{item.title}</li>
+      ))}
+    </ol>
+  )}
+  <figcaption class="dd-caption" id={captionId}>{system.caption}</figcaption>
+</figure>

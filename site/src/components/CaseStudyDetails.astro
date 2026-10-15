@@ -1,0 +1,73 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import DetailDrawing from './DetailDrawing.astro';
+
+/**
+ * The case-study sheet body: the featured study as Detail A (drawing beside
+ * its general notes), then every other study as a smaller lettered detail.
+ */
+interface Props {
+  projects: CollectionEntry<'projects'>[];
+}
+
+const { projects } = Astro.props;
+const featured = projects.find((project) => project.data.featured) ?? projects[0];
+const supporting = projects.filter((project) => project !== featured);
+const letter = (index: number) => String.fromCharCode(65 + index);
+---
+
+<article class="detail-feature dwg-box" data-project-entry>
+  {featured.data.system && (
+    <DetailDrawing system={featured.data.system} label={`Detail A · ${featured.data.title}`} id="detail-a" />
+  )}
+  <div class="detail-feature-copy">
+    <p class="dwg-label">Detail A · lead project</p>
+    <h3 class="detail-title">
+      <a href={`/projects/${featured.id}`}>{featured.data.title}</a>
+    </h3>
+    <p class="detail-summary">{featured.data.summary}</p>
+    <ol class="general-notes">
+      <li><span class="dwg-label">Impact</span>{featured.data.impact}</li>
+      <li><span class="dwg-label">Constraint</span>{featured.data.constraint}</li>
+      <li><span class="dwg-label">Outcome</span>{featured.data.keyOutcome}</li>
+    </ol>
+    <p class="detail-stack dwg-label">{featured.data.stack.join(' · ')}</p>
+    <div class="detail-actions">
+      <a class="dwg-btn dwg-btn-primary" href={`/projects/${featured.id}`}>
+        Read the case study<span class="sr-only">: {featured.data.title}</span>
+      </a>
+      {featured.data.links?.[0] && (
+        <a class="dwg-btn" href={featured.data.links[0].href} target="_blank" rel="noopener noreferrer">
+          {featured.data.links[0].label}
+        </a>
+      )}
+    </div>
+  </div>
+</article>
+
+{supporting.length > 0 && (
+  <div class="detail-grid">
+    {supporting.map((project, index) => (
+      <article class="detail-card dwg-box" data-project-entry>
+        <p class="dwg-label">Detail {letter(index + 1)}</p>
+        <h3 class="detail-title">
+          <a href={`/projects/${project.id}`}>{project.data.title}</a>
+        </h3>
+        <p class="detail-summary">{project.data.highlight}</p>
+        {project.data.system && (
+          <DetailDrawing
+            system={project.data.system}
+            label={`Detail ${letter(index + 1)} · ${project.data.title}`}
+            id={`detail-${letter(index + 1).toLowerCase()}`}
+            showNotes={false}
+            showLabel={false}
+          />
+        )}
+        <a class="text-link detail-more" href={`/projects/${project.id}`}>
+          Read the case study<span class="sr-only">: {project.data.title}</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      </article>
+    ))}
+  </div>
+)}
