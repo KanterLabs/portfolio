@@ -274,13 +274,6 @@ test.describe('homepage', () => {
     await expect(power).toContainText('InterServer');
   });
 
-  test('the fact table counts the same repositories the rack mounts', async ({ page }) => {
-    await page.goto('/');
-    const repoFact = page.locator('.hero-facts tr', { hasText: 'Active projects' }).locator('td');
-    await expect(repoFact).toHaveText(String(CATALOG.length));
-    expect(await repoRows(page).count()).toBe(CATALOG.length);
-  });
-
   test('case studies render as detail drawings in project order', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');

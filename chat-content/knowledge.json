@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-15",
+  "version": "2026-10-15.3",
   "entries": [
     {
       "id": "profile",
@@ -23,7 +23,6 @@
         "data center technician",
         "Southern Connecticut State University",
         "SCSU",
-        "football",
         "Linux",
         "networking",
         "hardware mods",
@@ -33,7 +32,7 @@
         "KanterLabs",
         "Helm"
       ],
-      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. He is also an active member of the university football program. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with building servers and hardware modifications, rack-and-stack work, Linux administration, server deployment, decommissioning, hardware troubleshooting, and practical software delivery, including a recent data center deployment buildout of roughly 72 racks, racked and wired end to end. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025). Outside InterServer he founded and operates KanterLabs, an independent product and infrastructure studio whose public projects are on GitHub at github.com/KanterLabs. His lead project is Helm, a self-hosted project board and bug tracker where people and software agents move work together."
+      "content": "Shane Kanterman is a Computer Science student at Southern Connecticut State University, expected to complete the program in May 2027, and a current Data Center Technician at InterServer since June 2025. His public portfolio focuses on Linux platforms, server provisioning, networking, deployment tooling, ephemeral CI, and self-hosted infrastructure. He has experience with building servers and hardware modifications, rack-and-stack work, Linux administration, server deployment, decommissioning, hardware troubleshooting, and practical software delivery, including helping rack and wire an ongoing data center buildout of roughly 72 racks. The buildout is still in progress. The portfolio lists a Technical Support Fundamentals certificate from Google/Coursera (June 2025). Outside InterServer he founded and operates KanterLabs, an independent product and infrastructure studio whose public projects are on GitHub at github.com/KanterLabs. His lead project is Helm, a self-hosted project board and bug tracker where people and software agents move work together."
     },
     {
       "id": "contact",
@@ -88,7 +87,7 @@
         "GNOME Shell extension",
         "self-hosted"
       ],
-      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio lists 9 active public projects, drawn on the homepage as units in a rack elevation, with Helm as the hatched 4U lead unit. Helm is the lead project: a Go and Svelte self-hosted project board and bug tracker where people and software agents move work together, with scoped agent tokens and an auditable API (v0.1.0, with a case study). Other flagships: ActionView (GNOME Shell extension showing the KanterLabs self-hosted GitHub Actions runner fleet), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Zeus OS (a Fedora bootc laptop desktop, 0.1 preview), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). Other active public projects: Linkshare (Go link inbox for a person and their coding agents), an ncspot fork, RunComp (running-competition app with private groups, streaks, weekly challenges, and push alerts), and this portfolio's source."
+      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio lists 9 active public projects, drawn on the homepage as units in a rack elevation, with Helm as the hatched 4U lead unit. Helm is the lead project: a Go and Svelte self-hosted project board and bug tracker where people and software agents move work together, with scoped agent tokens and an auditable API (v0.2.0, with a case study). Other flagships: ActionView (GNOME Shell extension showing the KanterLabs self-hosted GitHub Actions runner fleet), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Zeus OS (a Fedora bootc laptop desktop, 0.1 preview), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). Other active public projects: Linkshare (Go link inbox for a person and their coding agents), an ncspot fork, RunComp (running-competition app with private groups, streaks, weekly challenges, and push alerts), and this portfolio's source."
     },
     {
       "id": "skills-and-architecture",
@@ -134,7 +133,7 @@
         "path": "site/src/content/projects/helm.mdx",
         "href": "/projects/helm"
       },
-      "lastReviewed": "2026-10-02",
+      "lastReviewed": "2026-10-15",
       "topics": [
         "project",
         "helm",
@@ -162,9 +161,9 @@
         "ETag",
         "idempotency",
         "Codex skill",
-        "v0.1.0"
+        "v0.2.0"
       ],
-      "content": "Helm is Shane's lead KanterLabs project: a small, self-hosted project board and bug tracker where people and software agents move work together. People use a Svelte and TypeScript Kanban board with Focus, My work, Live Work, and Roadmap views; agents use the same versioned Go REST API (/api/v1, described by an OpenAPI document) with their own hashed, project-scoped bearer tokens. Agents claim tasks as renewable leases, post live progress, and follow a cursor-based event feed; a claimed task with no update for 15 minutes is marked stale. Every mutation uses ETag/If-Match optimistic concurrency and idempotency keys so retries are safe, and board audits are read-only until someone confirms a recommendation. It runs as one unprivileged container with a read-only root filesystem on a single SQLite (WAL) database, supports local accounts, Cloudflare Access, or a private Tailnet mode, and ships an installable Codex skill. Helm v0.1.0 is the first public release; Shane runs it in production on the KanterLabs homelab, deployed through a private beta with signed SHA-tagged releases, verified pre-upgrade backups, schema preflight, and rollback. The production instance is private."
+      "content": "Helm is Shane's lead KanterLabs project: a small, self-hosted project board and bug tracker where people and software agents move work together. People use a Svelte and TypeScript Kanban board with Focus, My work, Live Work, and Roadmap views; agents use the same versioned Go REST API (/api/v1, described by an OpenAPI document) with their own hashed, project-scoped bearer tokens. Agents claim tasks as renewable leases, post live progress, and follow a cursor-based event feed; a claimed task with no update for 15 minutes is marked stale. Every mutation uses ETag/If-Match optimistic concurrency and idempotency keys so retries are safe, and board audits are read-only until someone confirms a recommendation. It runs as one unprivileged container with a read-only root filesystem on a single SQLite (WAL) database, supports local accounts, Cloudflare Access, or a private Tailnet mode, and ships an installable Codex skill. Helm v0.2.0 shipped October 11, 2026, adding a Tickets workspace, Generic JSON and Coolify HTTP webhooks, email inboxes, and guided Cloudflare public access. New intake enters one Needs triage queue without requiring a project; filing preserves old links and evidence, and agent tokens need an explicit grant to see that queue. Repeated webhook alerts increase counts without overwriting human edits; duplicate email delivery changes nothing. Cloudflare Tunnel exposes a separate intake listener while the dashboard and other API routes stay private; Shane runs it in production on the KanterLabs homelab, deployed through a private beta with signed SHA-tagged releases, verified pre-upgrade backups, schema preflight, and rollback. The production instance is private."
     },
     {
       "id": "kanterlabs-homelab",
@@ -245,7 +244,7 @@
         "path": "site/src/content/projects/data-center-operations.mdx",
         "href": "/projects/data-center-operations"
       },
-      "lastReviewed": "2026-10-02",
+      "lastReviewed": "2026-10-15",
       "topics": [
         "experience",
         "data center",
@@ -276,7 +275,7 @@
         "server deployment",
         "PXE"
       ],
-      "content": "Shane's InterServer Data Center Technician experience covers building servers, hardware modifications and upgrades, rack-and-stack, cabling and wiring, Linux, Windows and Proxmox installation, inventory checks, hardware diagnostics, failed-drive and memory troubleshooting, NIC and boot troubleshooting, decommissioning retired systems, and deployment documentation. More recently the work has included a full deployment buildout: roughly 72 racks stood up inside a data center and wired end to end, covering rack layout, power and network runs, labeling, and staged build order at scale. He is also experienced with PXE-based network-boot imaging from doing it at volume, though it is background depth rather than a current day-to-day task. The case study emphasizes evidence-based diagnosis, deliberate sequencing, communication, repeatable patterns, and operational care around live infrastructure."
+      "content": "Shane's InterServer Data Center Technician experience covers building servers, hardware modifications and upgrades, rack-and-stack, cabling and wiring, Linux, Windows and Proxmox installation, inventory checks, hardware diagnostics, failed-drive and memory troubleshooting, NIC and boot troubleshooting, decommissioning retired systems, and deployment documentation. He is helping with an ongoing data center buildout of roughly 72 racks, covering rack layout, power and network runs, labeling, and staged build order at scale. The buildout is still in progress, not completed. He is also experienced with PXE-based network-boot imaging from doing it at volume, though it is background depth rather than a current day-to-day task. The case study emphasizes evidence-based diagnosis, deliberate sequencing, communication, repeatable patterns, and operational care around live infrastructure."
     }
   ]
 }
