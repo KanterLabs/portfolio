@@ -22,24 +22,24 @@
 </section>
 
 <style>
+  /* A strip of title-block cells: shared borders, paper fill. */
   .infrastructure-stats {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.75rem;
     margin: 2rem 0 2.5rem;
+    border: 2px solid var(--ink);
+    background: var(--paper);
   }
 
   .infrastructure-stats > div {
     min-width: 0;
     padding: 1rem;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: var(--panel);
+    border: 1px solid var(--ink);
   }
 
   .infrastructure-stats strong {
     display: block;
-    color: #9db07a;
+    color: var(--color-accent);
     font-family: var(--font-family-mono);
     font-size: 1.7rem;
     line-height: 1;
@@ -48,7 +48,7 @@
   .infrastructure-stats span {
     display: block;
     margin-top: 0.55rem;
-    color: #f2ede3;
+    color: var(--ink);
     font-size: 0.83rem;
     font-weight: 700;
     line-height: 1.35;
@@ -56,21 +56,9 @@
 
   .infrastructure-stats p {
     margin: 0.45rem 0 0;
-    color: #8f8a7f;
+    color: var(--color-text-muted);
     font-size: 0.75rem;
     line-height: 1.5;
-  }
-
-  :global([data-theme='light']) .infrastructure-stats strong {
-    color: #56693c;
-  }
-
-  :global([data-theme='light']) .infrastructure-stats span {
-    color: #1b1b1d;
-  }
-
-  :global([data-theme='light']) .infrastructure-stats p {
-    color: #57524a;
   }
 
   @media (max-width: 780px) {

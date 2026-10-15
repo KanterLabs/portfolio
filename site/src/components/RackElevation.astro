@@ -1,0 +1,132 @@
+---
+import { RACK_HEIGHT_U, RACK_NAME, rackUnits, unitNumbers, unitRange } from '../lib/rack';
+
+interface Props {
+  id?: string;
+  contactLinks: { label: string; href: string; external?: boolean }[];
+}
+
+const { id, contactLinks } = Astro.props;
+const captionId = 'rack-elevation-caption';
+---
+
+<figure class="rack-figure" id={id} aria-labelledby={captionId}>
+  <figcaption class="dwg-label rack-caption" id={captionId}>
+    Elevation A · front view · rack {RACK_NAME} · {RACK_HEIGHT_U}U
+  </figcaption>
+  <ol class="rack" role="list">
+    {rackUnits.map((unit, index) => (
+      <li
+        class="rack-row"
+        data-kind={unit.kind}
+        data-lab-repo={unit.kind === 'repo' || unit.kind === 'lead' ? unit.repo.slug : undefined}
+        style={`--units: ${unit.u}; --row: ${index}`}
+        aria-hidden={unit.kind === 'blank' ? 'true' : undefined}
+      >
+        <span class="rack-rail" aria-hidden="true">
+          {unitNumbers(unit).map((number) => <span>{number}</span>)}
+          <span class="rack-range">{unitRange(unit)}</span>
+        </span>
+
+        {unit.kind === 'blank' && <span class="rack-face"></span>}
+
+        {unit.kind === 'patch' && (
+          <span class="rack-face" aria-hidden="true">
+            <span class="rack-name">Patch</span>
+            {Array.from({ length: 9 }, (_, port) => (
+              <span class="rack-port" data-live={port < contactLinks.length ? '' : undefined}></span>
+            ))}
+          </span>
+        )}
+
+        {unit.kind === 'repo' && (
+          <span class="rack-face" aria-hidden="true">
+            <span class="rack-led"></span>
+            <span class="rack-name">{unit.repo.name}</span>
+            <span class="rack-vent"></span>
+            <span class="rack-code">{unit.code}</span>
+          </span>
+        )}
+
+        {unit.kind === 'lead' && (
+          <span class="rack-face" aria-hidden="true">
+            <span class="rack-lead-plate">
+              <strong>{unit.repo.name}</strong>
+              <span>Lead project · <span class="rack-version">{unit.repo.status}</span></span>
+              <span class="rack-bays"><i></i><i></i><i></i></span>
+            </span>
+          </span>
+        )}
+
+        {unit.kind === 'power' && (
+          <span class="rack-face" aria-hidden="true">
+            <span>InterServer</span>
+            <span class="rack-lcd">Online · 2025</span>
+          </span>
+        )}
+
+        <span class="rack-rail rack-rail-right" aria-hidden="true">
+          {unitNumbers(unit).map((number) => <span>{number}</span>)}
+        </span>
+
+        {unit.kind !== 'blank' && (
+          <span class="rack-callout">
+            <span class="rack-leader" aria-hidden="true"></span>
+            <span class="rack-num" aria-hidden="true">{unit.callout}</span>
+
+            {unit.kind === 'patch' && (
+              <span class="rack-note rack-note-links">
+                <span class="sr-only">Contact:</span>
+                {contactLinks.map((link) => (
+                  <a
+                    href={link.href}
+                    target={link.external ? '_blank' : undefined}
+                    rel={link.external ? 'noopener noreferrer' : undefined}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </span>
+            )}
+
+            {unit.kind === 'repo' && (
+              <span class="rack-note">
+                <a
+                  class="rack-link"
+                  href={unit.href}
+                  target={unit.internal ? undefined : '_blank'}
+                  rel={unit.internal ? undefined : 'noopener noreferrer'}
+                >
+                  <span class="sr-only">{unit.repo.name}: </span>{unit.repo.tagline}
+                </a>
+              </span>
+            )}
+
+            {unit.kind === 'lead' && (
+              <span class="rack-note">
+                <span class="rack-note-title">{unit.repo.name} · lead project</span>
+                <span>{unit.repo.tagline}.</span>
+                <span>One Go API for both, on one SQLite file.</span>
+                <a class="rack-link rack-note-more" href={unit.href}>
+                  <span class="sr-only">{unit.repo.name}, lead project: </span>See detail A
+                  <span aria-hidden="true"> →</span>
+                </a>
+              </span>
+            )}
+
+            {unit.kind === 'power' && (
+              <span class="rack-note">
+                <a class="rack-link" href={unit.href}>
+                  <span class="rack-note-title">InterServer</span> data center technician since June 2025
+                </a>
+              </span>
+            )}
+          </span>
+        )}
+      </li>
+    ))}
+  </ol>
+  <p class="dwg-label rack-legend">
+    Legend: hatched = lead project · outline = public repo · solid = day job · dashed = open slot
+  </p>
+</figure>
