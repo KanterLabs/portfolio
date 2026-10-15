@@ -21,6 +21,8 @@ interface StructuredDataEntry {
 interface Props {
   title: string;
   description: string;
+  socialTitle?: string;
+  socialDescription?: string;
   image?: string;
   imageAlt?: string;
   type?: 'website' | 'article';
@@ -32,7 +34,9 @@ interface Props {
 const {
   title,
   description,
-  image = '/og/portfolio-preview-kanterlabs.png',
+  socialTitle = title,
+  socialDescription = description,
+  image = '/og/portfolio-rack-v2.png',
   imageAlt = `${title} social preview`,
   type = 'website',
   structuredData,
@@ -61,8 +65,8 @@ const jsonLdItems = structuredData
     <meta name="description" content={description} />
     <meta name="theme-color" content="#141416" />
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={socialTitle} />
+    <meta property="og:description" content={socialDescription} />
     <meta property="og:type" content={type} />
     <meta property="og:site_name" content="Shane Kanterman" />
     {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
@@ -71,8 +75,8 @@ const jsonLdItems = structuredData
     {socialImageUrl && <meta property="og:image:height" content="627" />}
     {socialImageUrl && <meta property="og:image:alt" content={imageAlt} />}
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={socialTitle} />
+    <meta name="twitter:description" content={socialDescription} />
     {socialImageUrl && <meta name="twitter:image" content={socialImageUrl} />}
     {socialImageUrl && <meta name="twitter:image:alt" content={imageAlt} />}
     <link rel="preload" as="font" type="font/woff2" href={groteskLatin400} crossorigin />
