@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627" role="img" aria-labelledby="title desc">
+  <title id="title">Shane Kanterman — Everything I run, in one rack.</title>
+  <desc id="desc">A cream engineering drawing with Shane's name, data center and software work, and a simplified rack with Helm as its lead unit.</desc>
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#1b1b1d" stroke-opacity=".055"/></pattern>
+    <pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V10" stroke="#657b43" stroke-width="2"/></pattern>
+  </defs>
+  <rect width="1200" height="627" fill="#f6f1e7"/>
+  <rect width="1200" height="627" fill="url(#grid)"/>
+  <rect x="24" y="24" width="1152" height="579" fill="none" stroke="#1b1b1d" stroke-width="2"/>
+  <g fill="#1b1b1d" font-family="Space Grotesk, sans-serif">
+    <text x="64" y="107" font-size="45" font-weight="600" letter-spacing="-1.4">Shane Kanterman</text>
+    <text x="1120" y="103" text-anchor="end" font-size="28" font-weight="600" fill="#576c3b">KanterLabs</text>
+    <path d="M64 139H1136" fill="none" stroke="#1b1b1d" stroke-width="1.5"/>
+    <text x="62" y="265" font-size="78" font-weight="600" letter-spacing="-3">Everything I run,</text>
+    <text x="62" y="362" font-family="Instrument Serif, serif" font-style="italic" font-size="112" fill="#576c3b" letter-spacing="-1">in one rack.</text>
+    <text x="64" y="441" font-size="32" font-weight="500">Data center technician</text>
+    <text x="64" y="485" font-size="27" fill="#55564e">Infrastructure &amp; open-source software</text>
+    <path d="M64 533H1136" fill="none" stroke="#1b1b1d" stroke-width="1.5"/>
+    <text x="64" y="577" font-size="25" font-weight="500">shanekanterman.dev</text>
+    <text x="1136" y="577" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="19" letter-spacing="2" fill="#55564e">BUILT. SHIPPED. RUN.</text>
+  </g>
+  <g transform="translate(884 180)" stroke="#1b1b1d" fill="#f6f1e7">
+    <rect width="252" height="324" stroke-width="3"/>
+    <path d="M18 0V324M234 0V324" stroke-width="1.5"/>
+    <rect x="28" y="14" width="196" height="24" stroke-width="1.5"/>
+    <g fill="#9db07a" stroke-width="1.5">
+      <rect x="38" y="21" width="14" height="10"/><rect x="60" y="21" width="14" height="10"/>
+      <rect x="82" y="21" width="14" height="10"/><rect x="104" y="21" width="14" height="10"/>
+    </g>
+    <rect x="28" y="49" width="196" height="100" fill="url(#hatch)" stroke-width="1.5"/>
+    <rect x="36" y="57" width="180" height="84" stroke-width="1.5"/>
+    <text x="49" y="101" fill="#1b1b1d" stroke="none" font-family="Space Grotesk, sans-serif" font-size="33" font-weight="600">HELM</text>
+    <path d="M50 121H93M102 121H145M154 121H197" stroke-width="4"/>
+    <g stroke-width="1.5">
+      <rect x="28" y="160" width="196" height="37"/>
+      <rect x="28" y="206" width="196" height="37"/>
+      <rect x="28" y="252" width="196" height="37"/>
+    </g>
+    <g fill="#9db07a" stroke-width="1.5"><circle cx="43" cy="178" r="4"/><circle cx="43" cy="224" r="4"/><circle cx="43" cy="270" r="4"/></g>
+    <path d="M62 178H205M62 224H205M62 270H205M28 304H224" stroke-width="1.5"/>
+  </g>
+</svg>
