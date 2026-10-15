@@ -992,20 +992,20 @@ body {
 }
 
 .hero-facts th {
+  width: 32%;
   color: var(--color-text-muted);
   font-weight: 400;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  vertical-align: top;
 }
 
 .hero-facts td {
-  width: 1%;
   color: var(--ink);
   font-family: var(--font-family-sans);
-  font-size: 1rem;
-  font-weight: 700;
-  text-align: right;
-  white-space: nowrap;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  vertical-align: top;
 }
 
 @media (width < 960px) {

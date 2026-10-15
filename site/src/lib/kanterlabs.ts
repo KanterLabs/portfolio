@@ -53,11 +53,11 @@ export const flagshipRepos: LabRepo[] = [
     name: 'Helm',
     tagline: 'Board for people and coding agents',
     summary:
-      'The lead KanterLabs project: a small, self-hosted project board and bug tracker where people and software agents move work together, with a stable, auditable API for scoped agent automation.',
+      'The lead KanterLabs project: a small, self-hosted project board and bug tracker where people and software agents move work together, with a stable, auditable API for scoped agent automation, plus ticket triage and webhook and email intake.',
     category: 'platforms',
     stack: ['Go', 'Svelte', 'SQLite', 'Docker'],
     language: 'Go',
-    status: 'v0.1.0',
+    status: 'v0.2.0',
     caseStudy: { href: HELM_CASE_STUDY_URL, label: 'Case study' },
     media: {
       kind: 'themed-image',

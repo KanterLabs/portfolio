@@ -72,11 +72,6 @@ test.describe('KanterLabs on the homepage', () => {
       expect(href).toBe(slug === 'helm' ? '/projects/helm' : `${ORG_URL}/${slug}`);
     }
 
-    // The stated count is derived from the catalog, so it can't drift.
-    await expect(page.locator('.hero-facts tr', { hasText: 'Active projects' }).locator('td')).toHaveText(
-      String(slugs.length),
-    );
-
     await expectNoHorizontalOverflow(page);
   });
 
@@ -226,6 +221,7 @@ for (const theme of ['light', 'dark'] as const) {
         '.rack-lcd',
         '.rack-legend',
         '.hero-facts th',
+        '.hero-facts td',
         '.dd-node-label',
         '.dd-node-detail',
         '.dd-caption',

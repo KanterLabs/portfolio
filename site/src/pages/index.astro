@@ -7,7 +7,7 @@ import RepoPlates from '../components/RepoPlates.astro';
 import Sheet from '../components/Sheet.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { getCollection } from 'astro:content';
-import { KANTERLABS_ORG_URL, allPublicRepos } from '../lib/kanterlabs';
+import { KANTERLABS_ORG_URL } from '../lib/kanterlabs';
 import { leadUnit } from '../lib/rack';
 
 const allProjects = await getCollection('projects', ({ data }) => !data.draft);
@@ -44,15 +44,6 @@ const capabilityGroups = [
   },
 ];
 
-// The fact table beside the rack. Fragments, not sentences: it shares the
-// fold with the headline and has to read at a glance.
-const heroFacts = [
-  { label: 'Racks wired, one buildout', value: '~72' },
-  { label: 'Proxmox sites', value: '2' },
-  { label: 'Active projects', value: String(allPublicRepos.length) },
-  { label: 'Ephemeral CI runners', value: '1–3' },
-];
-
 const profilePoints = [
   'Rack-and-stack and server deployment experience',
   'Linux administration and troubleshooting background',
@@ -76,7 +67,7 @@ const timelineEntries = [
     org: 'InterServer — Secaucus, NJ',
     title: 'Data Center Technician',
     body:
-      'Live data center work: server builds and hardware mods, rack-and-stack, OS installs (Linux, Windows, Proxmox), hardware diagnostics, decommissioning, a ~72-rack data center deployment racked and wired end to end, and PXE imaging.',
+      'Live data center work: server builds and hardware mods, rack-and-stack, OS installs (Linux, Windows, Proxmox), hardware diagnostics, decommissioning, an ongoing ~72-rack data center buildout, and PXE imaging.',
     href: `/projects/${dataCenterExperience.id}`,
     linkLabel: 'Read experience notes',
   },
@@ -85,7 +76,7 @@ const timelineEntries = [
     org: 'Southern Connecticut State University',
     title: 'Computer Science Student',
     body:
-      'Building skills in software engineering, operating systems, and networking. Active member of the university football program.',
+      'Building skills in software engineering, operating systems, and networking.',
     href: '',
     linkLabel: '',
   },
@@ -212,14 +203,20 @@ const structuredData = [
               </a>
             </div>
             <table class="dwg-table hero-facts">
-              <caption class="dwg-label">Facts at a glance</caption>
+              <caption class="dwg-label">A few things about me</caption>
               <tbody>
-                {heroFacts.map((fact) => (
-                  <tr>
-                    <th scope="row">{fact.label}</th>
-                    <td>{fact.value}</td>
-                  </tr>
-                ))}
+                <tr>
+                  <th scope="row">Hands-on work</th>
+                  <td>I’m helping rack and wire an ongoing buildout of roughly 72 racks at InterServer.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Built for my own work</th>
+                  <td>I built Helm and use it to track the work my coding agents do.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Beyond the rack</th>
+                  <td>I study computer science at Southern Connecticut State, with graduation expected in May 2027.</td>
+                </tr>
               </tbody>
             </table>
           </div>

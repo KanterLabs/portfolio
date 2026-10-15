@@ -6,7 +6,7 @@ impact: Gives agents a durable work record (claims, live progress, and an event 
 constraint: Keep the model small enough to run as one unprivileged container on a single SQLite file, and make every agent mutation safe to retry.
 role: Product designer, full-stack builder, and release operator.
 scope: Go API, Svelte and TypeScript UI, SQLite, OpenAPI contract, agent tokens and scopes, Codex skill, Docker, Proxmox LXC deployment, Cloudflare Access, and GitHub Actions.
-keyOutcome: Shipped Helm v0.1.0 as a public, self-hostable release, and run it in production on the KanterLabs homelab behind a private beta, verified backups, and rollback.
+keyOutcome: Shipped Helm v0.2.0 with ticket triage, webhook and email intake, and guided Cloudflare public access, and run it in production on the KanterLabs homelab behind a private beta, verified backups, and rollback.
 featured: true
 order: 1
 stack:
@@ -67,7 +67,7 @@ It is deliberately small: one board per project, ordered semantic columns (Backl
 Helm is the lead KanterLabs project, and I run it in production on my homelab as the work record for my own coding agents: they pick up tasks, report progress while they work, and close them out when a change lands.
 
 <Callout type="note" title="Current status">
-  Helm v0.1.0 is the first tagged public release. The source, API contract, and self-hosting quick start are open on GitHub. The production instance I run is private, behind Cloudflare Access.
+  Helm v0.2.0 shipped on October 11, 2026, adding Tickets, HTTP webhook and email intake, and guided Cloudflare public access. The source, API contract, and self-hosting quick start are open on GitHub. The production instance I run is private, behind Cloudflare Access.
 </Callout>
 
 ## Why I Built It
@@ -106,6 +106,14 @@ Browser (Svelte)        Agents (bearer tokens)
 ```
 
 Keeping one contract for both audiences matters. The UI cannot do anything the API does not allow, so the agent-facing behavior is exercised every time a person uses the board.
+
+## Ticket Intake and Human Triage
+
+Version 0.2.0 adds a dedicated Tickets workspace. New tickets from webhooks, email inboxes, Coolify, and the UI enter a shared **Needs triage** queue without requiring a project. People can assign them, set priority, add notes, and move them through Ready, In progress, Waiting, and Completed. Filing into a project is optional and preserves old links, notes, evidence, and repeat tracking.
+
+Administrators connect Generic JSON or Coolify webhooks and create named email inboxes. Repeated webhook alerts count on an open ticket without overwriting human edits; email intake also ignores duplicate delivery of the same message. Agents need an explicit project grant to access the built-in ticket queue.
+
+Guided Cloudflare setup connects a public webhook URL and optional email inbox. A Cloudflare Tunnel reaches a separate intake listener, keeping the dashboard and other API routes private. Webhook test deliveries create real tickets, while public URL probes check reachability without creating work.
 
 ## Agents as Teammates
 
