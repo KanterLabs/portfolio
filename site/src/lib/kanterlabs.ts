@@ -187,7 +187,7 @@ export const moreRepos: LabRepo[] = [
     name: 'Portfolio',
     tagline: 'Source for this site',
     summary:
-      'This site: the Astro source, case studies, and the dual-origin deployment behind shanekanterman.dev.',
+      'This site: the Astro source, case studies, and the Coolify container deployment behind shanekanterman.dev.',
     category: 'apps',
     stack: ['Astro', 'TypeScript'],
     language: 'TypeScript',

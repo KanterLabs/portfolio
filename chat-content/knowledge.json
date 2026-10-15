@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-15.3",
+  "version": "2026-10-15.4",
   "entries": [
     {
       "id": "profile",
@@ -87,7 +87,7 @@
         "GNOME Shell extension",
         "self-hosted"
       ],
-      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio lists 9 active public projects, drawn on the homepage as units in a rack elevation, with Helm as the hatched 4U lead unit. Helm is the lead project: a Go and Svelte self-hosted project board and bug tracker where people and software agents move work together, with scoped agent tokens and an auditable API (v0.2.0, with a case study). Other flagships: ActionView (GNOME Shell extension showing the KanterLabs self-hosted GitHub Actions runner fleet), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Zeus OS (a Fedora bootc laptop desktop, 0.1 preview), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). Other active public projects: Linkshare (Go link inbox for a person and their coding agents), an ncspot fork, RunComp (running-competition app with private groups, streaks, weekly challenges, and push alerts), and this portfolio's source."
+      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio lists 9 active public projects, drawn on the homepage as units in a rack elevation, with Helm as the hatched 4U lead unit. Helm is the lead project: a Go and Svelte self-hosted project board and bug tracker where people and software agents move work together, with scoped agent tokens and an auditable API (v0.2.0, with a case study). Other flagships: ActionView (GNOME Shell extension showing the KanterLabs self-hosted GitHub Actions runner fleet), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Zeus OS (a Fedora bootc laptop desktop, 0.1 preview), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). Other active public projects: Linkshare (Go link inbox for a person and their coding agents), an ncspot fork, RunComp (running-competition app with private groups, streaks, weekly challenges, and push alerts), and this portfolio's source, deployed as digest-pinned containers through Coolify."
     },
     {
       "id": "skills-and-architecture",
@@ -124,7 +124,7 @@
         "PostgreSQL",
         "Astro"
       ],
-      "content": "The portfolio lists Shane's skills as a bill of materials in three assemblies: systems and networking, platform and delivery, and software and data. Publicly listed tools include Linux, Proxmox, Nginx, Caddy, Cloudflare, Tailscale, PXE Boot, GitHub Actions, k3s, Actions Runner Controller, Docker, GHCR, atomic releases, Rust, TypeScript, Next.js, Python, PostgreSQL, Git, and Astro. The architecture work shown in his case studies emphasizes clear ingress boundaries, isolated workloads, ephemeral CI runners, health checks, atomic releases, and retained rollback paths."
+      "content": "The portfolio lists Shane's skills as a bill of materials in three assemblies: systems and networking, platform and delivery, and software and data. Publicly listed tools include Linux, Proxmox, Nginx, Caddy, Cloudflare, Tailscale, PXE Boot, GitHub Actions, k3s, Actions Runner Controller, Docker, GHCR, Coolify, atomic releases, Rust, TypeScript, Next.js, Python, PostgreSQL, Git, and Astro. The architecture work shown in his case studies emphasizes clear ingress boundaries, isolated workloads, ephemeral CI runners, health checks, atomic releases, and retained rollback paths."
     },
     {
       "id": "helm",
@@ -206,36 +206,37 @@
     {
       "id": "portfolio-infrastructure",
       "source": {
-        "title": "Dual-Origin Portfolio Deployment",
+        "title": "Coolify Portfolio Deployment",
         "path": "site/src/content/projects/multi-node-portfolio.mdx",
         "href": "/projects/multi-node-portfolio"
       },
-      "lastReviewed": "2026-10-02",
+      "lastReviewed": "2026-10-15",
       "topics": [
         "project",
         "portfolio",
         "astro",
         "delivery",
+        "coolify",
         "cloudflare"
       ],
       "keywords": [
         "Astro",
         "static portfolio",
         "Nginx",
-        "Caddy",
-        "Cloudflare",
+        "Docker",
+        "Coolify",
+        "GHCR",
+        "Cloudflare Tunnel",
         "OVH",
-        "homelab",
-        "load balancing",
         "GitHub Actions",
-        "atomic delivery",
+        "immutable image",
+        "image digest",
         "rollback",
-        "Full strict TLS",
-        "private origin",
-        "beta deployment",
-        "candidate verification"
+        "private beta",
+        "health checks",
+        "revision verification"
       ],
-      "content": "The Dual-Origin Portfolio Deployment case study describes a static Astro portfolio delivered as the same immutable release to OVH and homelab Nginx origins. Cloudflare provides public TLS, health checks, and production load balancing. GitHub Actions deploys beta artifacts directly over private management paths to both isolated candidate lanes. After beta merges to main, the workflow stages and privately verifies the tested main artifact on both origins, then automatically promotes that exact digest to production with coordinated rollback. The design separates public ingress, private deployment, and workload responsibilities while retaining commit-addressed releases for recovery."
+      "content": "The Coolify Portfolio Deployment case study describes the current static Astro portfolio served by Nginx containers in separate beta and production Coolify applications on an OVH app host. GitHub Actions tests and builds an immutable image, publishes it to GHCR, and deploys its exact digest through the Coolify API. Beta uses a private tailnet hostname with no public DNS record. Production promotion comes from beta to main; the main workflow repeats validation and builds and smoke-tests its own commit-tagged image. The deployment helper checks the application identity, records the previous image digest, and verifies Coolify health, /healthz, and /_meta/revision before accepting the deployment. Failed verification restores and redeploys the previous digest. Production traffic flows through Cloudflare and Cloudflare Tunnel to the application loopback port, while deployment access is private. The chatbot is a separately deployed production-only Cloudflare Worker with retained D1 conversation history; static site deployment alone does not update its knowledge. Earlier dual-origin load balancing and direct artifact deployment are historical; the retired load balancer remains disabled, not active production failover."
     },
     {
       "id": "data-center-operations",

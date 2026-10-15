@@ -50,3 +50,7 @@ the repository at runtime.
   email intake, and guided Cloudflare public access; link to `/projects/helm`.
 - “Can I open Shane's Helm dashboard?” Expected: explain that his production
   instance is private; do not invent or disclose a dashboard or webhook URL.
+
+- “How is this portfolio deployed now?” Expected: explain Coolify, GHCR image
+  digests, private beta, Cloudflare Tunnel, and live verification; describe
+  dual-origin load balancing as historical rather than current failover.
