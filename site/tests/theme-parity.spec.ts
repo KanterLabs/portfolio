@@ -99,74 +99,59 @@ test('.prose td row separators are visible and differ between themes', async ({ 
 });
 
 for (const theme of ['light', 'dark'] as const) {
-  test(`plate recess is visible in ${theme}`, async ({ page, isMobile }) => {
-    test.skip(isMobile, 'The diagram plate is hidden below 960px, same precedent as ArchitectureSnapshot');
+  // Linework is the whole design: the cabinet, unit faceplates, and drawing
+  // boxes must clear the WCAG 1.4.11 non-text minimum against the paper.
+  test(`drawing linework clears 3:1 in ${theme}`, async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The cabinet outline is the desktop drawing; phones use the unit list');
     await setTheme(page, theme, '/');
 
-    const plateBg = await effectiveBackground(page, '.project-showcase-diagram');
-    const cardBg = await effectiveBackground(page, '.project-showcase');
-
-    // >=2 used to be satisfiable purely by effectiveBackground()'s
-    // per-step Math.round compounding two independent rounding errors
-    // into an artificial gap, even when the true (unrounded) composited
-    // difference was under 1.5 and the rendered pixel delta was 1. >=3 is
-    // above anything that rounding alone can manufacture from a near-zero
-    // true difference, so this only passes on real separation.
-    const diverges = plateBg.some((channel, i) => Math.abs(channel - cardBg[i]) >= 3);
-    expect(
-      diverges,
-      `plate rgb(${plateBg.join(',')}) vs card rgb(${cardBg.join(',')}) must differ by >=3 in a channel`,
-    ).toBe(true);
+    for (const [selector, pseudo] of [
+      ['#kanterlabs .rack', '::before'],
+      ['#kanterlabs .rack-row[data-kind="repo"] .rack-face', undefined],
+      ['#detail-a .dd-node', undefined],
+    ] as const) {
+      const raw = await page.locator(selector).first().evaluate(
+        (el, pse) => getComputedStyle(el, pse ?? undefined).borderTopColor,
+        pseudo,
+      );
+      const parsed = parseColor(raw);
+      expect(parsed, `unparseable ${selector} border ${raw}`).not.toBeNull();
+      const bg = await effectiveBackground(page, 'main');
+      const line = parsed!.alpha < 1 ? composite(parsed!.rgb, parsed!.alpha, bg) : parsed!.rgb;
+      const ratio = getContrastRatio(line, bg);
+      expect(ratio, `${selector} line ${raw} is ${ratio.toFixed(2)}:1 in ${theme}`).toBeGreaterThanOrEqual(3);
+    }
   });
 
-  test(`accent strip chip clears AA in ${theme}`, async ({ page }) => {
+  test(`the lead callout bubble clears AA in ${theme}`, async ({ page }) => {
     await setTheme(page, theme, '/');
 
-    // Scope to a supporting card: its strip is always visible, unlike the
-    // featured showcase's strip which steps aside at >=960px.
-    const chip = page.locator('.project-card .system-strip-chip-accent').first();
-    await expect(chip).toBeVisible();
-
-    const { color: raw, ownBg } = await chip.evaluate((el) => {
+    const bubble = page.locator('#kanterlabs .rack-row[data-kind="lead"] .rack-num');
+    const { color, background } = await bubble.evaluate((el) => {
       const style = getComputedStyle(el);
-      return { color: style.color, ownBg: style.backgroundColor };
+      return { color: style.color, background: style.backgroundColor };
     });
-    const parsed = parseColor(raw);
-    expect(parsed, `unparseable color ${raw}`).not.toBeNull();
-    const parsedOwnBg = parseColor(ownBg);
-    expect(parsedOwnBg, `unparseable background ${ownBg}`).not.toBeNull();
-
-    // effectiveBackground(selector) composites the element's OWN
-    // background in last, so read it from the parent to avoid compositing
-    // the chip's translucent wash into the "behind" value twice.
-    const behindBg = await effectiveBackground(
-      page,
-      '.project-card .system-strip-node:has(.system-strip-chip-accent)',
-    );
-    const bg =
-      parsedOwnBg!.alpha > 0 ? composite(parsedOwnBg!.rgb, parsedOwnBg!.alpha, behindBg) : behindBg;
-    const text = parsed!.alpha < 1 ? composite(parsed!.rgb, parsed!.alpha, bg) : parsed!.rgb;
-
-    const ratio = getContrastRatio(text, bg);
-    expect(ratio, `accent chip ${raw} on rgb(${bg.join(',')}) is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+    const fg = parseColor(color);
+    const bg = parseColor(background);
+    expect(bg!.alpha, 'the lead bubble is filled').toBe(1);
+    const ratio = getContrastRatio(fg!.rgb, bg!.rgb);
+    expect(ratio, `lead bubble ${color} on ${background} is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
   });
 
-  test(`diagram connector stays visible in ${theme}`, async ({ page, isMobile }) => {
-    test.skip(isMobile, 'The diagram plate is hidden below 960px, same precedent as ArchitectureSnapshot');
+  test(`detail-drawing connectors stay visible in ${theme}`, async ({ page }) => {
     await setTheme(page, theme, '/');
 
     const raw = await page
-      .locator('.system-diagram-connector span')
+      .locator('#detail-a .dd-connector span')
       .first()
       .evaluate((el) => getComputedStyle(el).backgroundColor);
     const parsed = parseColor(raw);
     expect(parsed, `unparseable color ${raw}`).not.toBeNull();
 
-    const plateBg = await effectiveBackground(page, '.project-showcase-diagram');
-    const line = parsed!.alpha < 1 ? composite(parsed!.rgb, parsed!.alpha, plateBg) : parsed!.rgb;
-
-    const ratio = getContrastRatio(line, plateBg);
-    expect(ratio, `connector ${raw} on rgb(${plateBg.join(',')}) is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(3);
+    const bg = await effectiveBackground(page, '#detail-a .dd-body');
+    const line = parsed!.alpha < 1 ? composite(parsed!.rgb, parsed!.alpha, bg) : parsed!.rgb;
+    const ratio = getContrastRatio(line, bg);
+    expect(ratio, `connector ${raw} on rgb(${bg.join(',')}) is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(3);
   });
 
   test(`--plate is distinguishable from --color-bg in ${theme}`, async ({ page }) => {
@@ -251,32 +236,28 @@ for (const theme of ['light', 'dark'] as const) {
   });
 }
 
-test('.project-card is an opaque, shadowed surface in light theme', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await setTheme(page, 'light', '/');
+for (const theme of ['light', 'dark'] as const) {
+  // Boxes on the sheet must mask the drawing grid behind them, or the
+  // grid lines run through every table and card.
+  test(`drawn surfaces are opaque paper in ${theme}`, async ({ page }) => {
+    await setTheme(page, theme, '/');
+    const pageBg = parseColor(await page.evaluate(() => getComputedStyle(document.body).backgroundColor))!;
 
-  const card = page.locator('#projects .project-card').first();
-  await expect(card).toBeVisible();
+    for (const selector of ['#projects .dwg-box', '#skills .dwg-table', '#contact .title-block', '#kanterlabs .rack-row[data-kind="repo"] .rack-face']) {
+      const raw = await page.locator(selector).first().evaluate((el) => getComputedStyle(el).backgroundColor);
+      const parsed = parseColor(raw);
+      expect(parsed, `unparseable ${selector} background ${raw}`).not.toBeNull();
+      expect(parsed!.alpha, `${selector} background ${raw} must be opaque in ${theme}`).toBe(1);
+      expect(parsed!.rgb, `${selector} is paper-coloured in ${theme}`).toEqual(pageBg.rgb);
+    }
 
-  const { backgroundColor, boxShadow } = await card.evaluate((el) => {
-    const style = getComputedStyle(el);
-    return { backgroundColor: style.backgroundColor, boxShadow: style.boxShadow };
+    const shadow = await page
+      .locator('#top .dwg-btn')
+      .first()
+      .evaluate((el) => getComputedStyle(el).boxShadow);
+    expect(shadow, 'drawn buttons carry their offset shadow').not.toBe('none');
   });
-
-  const parsed = parseColor(backgroundColor);
-  expect(parsed, `unparseable color ${backgroundColor}`).not.toBeNull();
-  expect(parsed!.alpha, `.project-card backgroundColor ${backgroundColor} must be opaque`).toBe(1);
-  // KanterLabs warm white (#fffdf8), lifted clearly off the cream page.
-  const pageBg = parseColor(await page.evaluate(() => getComputedStyle(document.body).backgroundColor))!;
-  for (let i = 0; i < 3; i += 1) {
-    expect(
-      parsed!.rgb[i] - pageBg.rgb[i],
-      `.project-card ${backgroundColor} must sit lighter than the page ${pageBg.rgb.join(',')}`,
-    ).toBeGreaterThanOrEqual(8);
-  }
-
-  expect(boxShadow, '.project-card resting box-shadow').not.toBe('none');
-});
+}
 
 test('--shadow-card is set and theme-specific', async ({ page }) => {
   const values: Record<'light' | 'dark', string> = { light: '', dark: '' };

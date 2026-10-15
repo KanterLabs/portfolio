@@ -1,0 +1,150 @@
+---
+import sprite from '../assets/brand/rabbit-sprite.webp';
+
+/**
+ * The KanterLabs lop, animated from a sprite strip
+ * (scripts/build-rabbit-sprite.py builds src/assets/brand/rabbit-sprite.webp).
+ *
+ * Modes:
+ *   logo  – waves hello once, then blinks / looks around / hops in place
+ *           every few seconds; waves again when its link is hovered/focused.
+ *   idle  – same, minus the greeting.
+ *   hop   – hops in a loop (the 404 page moves it across the sheet).
+ *
+ * Purely decorative: always aria-hidden, and frozen on the resting frame
+ * under prefers-reduced-motion or without JS.
+ */
+interface Props {
+  height: number;
+  mode?: 'logo' | 'idle' | 'hop';
+  class?: string;
+}
+
+const { height, mode = 'idle', class: className = '' } = Astro.props;
+---
+
+<span
+  class:list={['brand-rabbit', className]}
+  data-rabbit={mode}
+  style={`--rabbit-h: ${height}px; --rabbit-sprite: url(${sprite.src});`}
+  aria-hidden="true"
+></span>
+
+<style is:global>
+  .brand-rabbit {
+    /* Frames are 110 x 94; the strip is 8 columns x 5 rows. */
+    display: inline-block;
+    flex: none;
+    width: calc(var(--rabbit-h) * 110 / 94);
+    height: var(--rabbit-h);
+    background-image: var(--rabbit-sprite);
+    background-repeat: no-repeat;
+    background-size: 800% 500%;
+    background-position: calc(var(--col, 0) * 100% / 7) calc(var(--row, 0) * 100% / 4);
+    /* A hairline rim in the text colour: invisible on cream, and on ink
+       paper it lifts the black lop off the background. */
+    filter: drop-shadow(0 0 0.75px color-mix(in srgb, var(--color-text-base) 55%, transparent));
+  }
+</style>
+
+<script>
+  type Sequence = { row: number; frames: number[]; loop?: boolean };
+
+  // Rows match scripts/build-rabbit-sprite.py.
+  const SEQUENCES: Record<string, Sequence> = {
+    blink: { row: 0, frames: [0, 1, 2, 3, 4, 5, 0] },
+    wave: { row: 1, frames: [0, 1, 2, 1, 2, 1, 3, 0] },
+    jump: { row: 2, frames: [0, 1, 2, 3, 4, 0] },
+    look: { row: 3, frames: [0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0] },
+    hop: { row: 4, frames: [0, 1, 2, 3, 4, 5, 6, 7], loop: true },
+  };
+  const FRAME_MS = 110;
+  const HOP_FRAME_MS = 90;
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  class Rabbit {
+    private timer = 0;
+    private idleTimer = 0;
+    private playing: string | null = null;
+
+    constructor(
+      private el: HTMLElement,
+      private mode: string,
+    ) {
+      if (mode === 'hop') {
+        this.play('hop');
+        return;
+      }
+      const host = el.closest<HTMLElement>('a, button');
+      host?.addEventListener('pointerenter', () => this.play('wave'));
+      host?.addEventListener('focus', () => this.play('wave'));
+      if (mode === 'logo') window.setTimeout(() => this.play('wave'), 900);
+      this.scheduleIdle();
+    }
+
+    private setFrame(row: number, col: number) {
+      this.el.style.setProperty('--row', String(row));
+      this.el.style.setProperty('--col', String(col));
+    }
+
+    rest() {
+      window.clearTimeout(this.timer);
+      this.playing = null;
+      this.setFrame(0, 0);
+    }
+
+    play(name: string) {
+      if (reducedMotion.matches || this.playing === name) return;
+      const sequence = SEQUENCES[name];
+      window.clearTimeout(this.timer);
+      this.playing = name;
+      let index = 0;
+      const step = () => {
+        if (index >= sequence.frames.length) {
+          if (!sequence.loop) {
+            this.rest();
+            return;
+          }
+          index = 0;
+        }
+        this.setFrame(sequence.row, sequence.frames[index]);
+        index += 1;
+        this.timer = window.setTimeout(step, sequence.loop ? HOP_FRAME_MS : FRAME_MS);
+      };
+      step();
+    }
+
+    private scheduleIdle() {
+      window.clearTimeout(this.idleTimer);
+      this.idleTimer = window.setTimeout(() => {
+        if (!document.hidden && !this.playing) {
+          const roll = Math.random();
+          this.play(roll < 0.65 ? 'blink' : roll < 0.9 ? 'look' : 'jump');
+        }
+        this.scheduleIdle();
+      }, 4500 + Math.random() * 4500);
+    }
+
+    freeze() {
+      window.clearTimeout(this.idleTimer);
+      this.rest();
+    }
+  }
+
+  const rabbits = Array.from(document.querySelectorAll<HTMLElement>('[data-rabbit]'));
+  let instances: Rabbit[] = [];
+  const start = () => {
+    instances = rabbits.map((el) => new Rabbit(el, el.dataset.rabbit ?? 'idle'));
+  };
+
+  if (!reducedMotion.matches) start();
+  reducedMotion.addEventListener('change', (event) => {
+    if (event.matches) {
+      instances.forEach((rabbit) => rabbit.freeze());
+      instances = [];
+    } else if (instances.length === 0) {
+      start();
+    }
+  });
+</script>

@@ -1,0 +1,41 @@
+---
+/**
+ * One drawing sheet: a bordered section with zone markers and a header
+ * strip ("SHT 02 · CASE STUDIES" on the left, a drawing number on the right).
+ */
+interface Props {
+  id?: string;
+  sheet: number;
+  of: number;
+  label: string;
+  drawing?: string;
+  class?: string;
+  animate?: boolean;
+  labelledBy?: string;
+}
+
+const { id, sheet, of, label, drawing, class: className = '', animate = true, labelledBy } = Astro.props;
+const pad = (value: number) => String(value).padStart(2, '0');
+const zonesTop = ['1', '2', '3', '4', '5', '6', '7', '8'];
+const zonesLeft = ['A', 'B', 'C', 'D'];
+---
+
+<section
+  id={id}
+  class:list={['sheet', animate && 'observe-animate', className]}
+  aria-labelledby={labelledBy}
+>
+  <div class="sheet-zones sheet-zones-top" aria-hidden="true">
+    {zonesTop.map((zone) => <span>{zone}</span>)}
+  </div>
+  <div class="sheet-zones sheet-zones-left" aria-hidden="true">
+    {zonesLeft.map((zone) => <span>{zone}</span>)}
+  </div>
+  <div class="sheet-head">
+    <p class="dwg-label">
+      {of > 0 && <span aria-hidden="true">SHT {pad(sheet)} of {pad(of)} · </span>}{label}
+    </p>
+    {drawing && <p class="dwg-label" aria-hidden="true">{drawing}</p>}
+  </div>
+  <slot />
+</section>

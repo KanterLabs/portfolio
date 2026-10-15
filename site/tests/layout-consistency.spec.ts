@@ -38,17 +38,20 @@ test.describe('shared page frame', () => {
     }
   });
 
-  test('case-study title, prose, and header share one left edge', async ({ page, isMobile }) => {
+  test('case-study sheet, prose, and header share one left edge', async ({ page, isMobile }) => {
     test.skip(isMobile, 'desktop-only frame check (1440px)');
 
     for (const route of ['/projects/helm', '/projects/data-center-operations']) {
       await page.goto(route);
 
       const headerBox = await box(page, '[data-site-header] .header-inner');
-      const h1Box = await box(page, 'h1');
+      const sheetBox = await box(page, '.case-sheet');
       const proseBox = await box(page, '.case-prose');
 
-      expect(Math.abs(h1Box.x - headerBox.x), `${route} h1 x vs header x`).toBeLessThanOrEqual(1);
+      // The title sits inside the drawing sheet; the sheet's frame is what
+      // lines up with the header and the prose below it.
+      expect(Math.abs(sheetBox.x - headerBox.x), `${route} sheet x vs header x`).toBeLessThanOrEqual(1);
+      expect(Math.abs(sheetBox.width - headerBox.width), `${route} sheet width vs header`).toBeLessThanOrEqual(1);
       expect(Math.abs(proseBox.x - headerBox.x), `${route} prose x vs header x`).toBeLessThanOrEqual(1);
       expect(proseBox.width, `${route} prose width`).toBeGreaterThanOrEqual(560);
       expect(proseBox.width, `${route} prose width`).toBeLessThanOrEqual(700);
@@ -136,53 +139,26 @@ test.describe('shared page frame', () => {
     expect(top, 'homepage h1 document-relative top at 390px').toBeLessThan(190);
   });
 
-  test('.field-label computes identically on the homepage and a case study', async ({ page }) => {
-    await page.goto('/');
-    const homeLabel = await page
-      .locator('#skills .field-label')
-      .first()
-      .evaluate((el) => {
-        const style = getComputedStyle(el);
-        return {
-          fontSize: style.fontSize,
-          fontWeight: style.fontWeight,
-          letterSpacing: style.letterSpacing,
-          textTransform: style.textTransform,
-        };
-      });
-
-    await page.goto('/projects/helm');
-    const caseLabel = await page
-      .locator('.project-detail-facts .field-label')
-      .first()
-      .evaluate((el) => {
-        const style = getComputedStyle(el);
-        return {
-          fontSize: style.fontSize,
-          fontWeight: style.fontWeight,
-          letterSpacing: style.letterSpacing,
-          textTransform: style.textTransform,
-        };
-      });
-
-    expect(caseLabel).toEqual(homeLabel);
-  });
-
-  // .field-label is an unlayered rule; Tailwind's mb-* utilities live in
-  // @layer utilities. If .field-label ever regains `margin: 0` it silently
-  // wins the cascade over `mb-*` again, and headings that adopted the
-  // shared label class (hero "Proof at a glance", "Where I am headed",
-  // "Why it stands out") lose their spacing above the copy beneath them.
-  test('.field-label does not clobber the mb-* utility on its call sites', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'the hero proof card is hidden below 960px by design');
+  test('sheet header labels compute identically on the homepage and the project index', async ({ page }) => {
+    const labelStyle = async () =>
+      page
+        .locator('.sheet-head .dwg-label')
+        .first()
+        .evaluate((el) => {
+          const style = getComputedStyle(el);
+          return {
+            fontFamily: style.fontFamily,
+            fontSize: style.fontSize,
+            fontWeight: style.fontWeight,
+            letterSpacing: style.letterSpacing,
+            textTransform: style.textTransform,
+          };
+        });
 
     await page.goto('/');
-    const heroLabelMarginBottom = await page
-      .locator('.hero-surface .glass h2.field-label')
-      .first()
-      .evaluate((el) => parseFloat(getComputedStyle(el).marginBottom));
-
-    expect(heroLabelMarginBottom, '"Proof at a glance" marginBottom').toBeGreaterThan(0);
+    const home = await labelStyle();
+    await page.goto('/projects');
+    expect(await labelStyle()).toEqual(home);
   });
 
   // Explicit acceptance-criterion coverage: the Role/Scope/Outcome copy
