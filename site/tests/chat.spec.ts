@@ -116,6 +116,22 @@ test('launcher opens and closes the panel, and Escape restores launcher focus', 
   await expect(launcher).toBeFocused();
 });
 
+test('closing chat before the opening frame keeps focus on the launcher', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('[data-chat-launcher]')).toBeVisible();
+  const launcherKeepsFocus = await page.evaluate(async () => {
+    const launcher = document.querySelector<HTMLButtonElement>('[data-chat-launcher]')!;
+    launcher.click();
+    if (launcher.getAttribute('aria-expanded') !== 'true') throw new Error('Chat did not open');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    return document.activeElement === launcher;
+  });
+  expect(launcherKeepsFocus).toBe(true);
+  await expect(page.locator('[data-chat-panel]')).toBeHidden();
+  await expect(page.locator('[data-chat-launcher]')).toBeFocused();
+});
+
 test('discloses that chat content is stored', async ({ page }) => {
   await page.goto('/');
   await openChat(page);

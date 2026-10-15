@@ -16,7 +16,7 @@ Cloudflare Worker (portfolio-chat)
 ```
 
 The Worker route intercepts only `shanekanterman.dev/api/chat*`; every other
-request continues through the OVH Caddy edge to Nginx. The site is public, so
+request continues through Cloudflare Tunnel to the Coolify application’s Nginx container. The site is public, so
 the Worker is the application boundary in front of the model. The Tailnet-only
 candidate validates Worker code but does not publish a beta Worker or expose a
 candidate chat API.
@@ -131,7 +131,7 @@ renders in every environment.
 ## Deployment and rollback
 
 Pull requests into `beta` validate both packages without publishing a Worker.
-Static candidate deployment and exact-artifact promotion are independent of
+Coolify site deployment and exact-image-digest promotion are independent of
 the production-provider Worker release. A production Worker deployment must
 apply migrations, deploy `portfolio-chat`, and verify both the site and Worker
 health endpoints. Worker secrets remain stored by Cloudflare across code

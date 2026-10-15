@@ -945,8 +945,18 @@ body {
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 37rem);
-  gap: 2.5rem;
+  grid-template-areas: 'intro rack' 'facts rack';
+  grid-template-rows: auto 1fr;
+  gap: 1.9rem 2.5rem;
   align-items: start;
+}
+
+.hero-intro {
+  grid-area: intro;
+}
+
+.hero-grid > .rack-figure {
+  grid-area: rack;
 }
 
 .hero-tag {
@@ -988,7 +998,7 @@ body {
 }
 
 .hero-facts {
-  margin-top: 1.9rem;
+  grid-area: facts;
 }
 
 .hero-facts th {
@@ -1011,14 +1021,57 @@ body {
 @media (width < 960px) {
   .hero-grid {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'intro' 'rack' 'facts';
+    grid-template-rows: auto;
     gap: 2rem;
   }
 }
 
 @media (width < 780px) {
+  .page-shell {
+    width: calc(100% - 1.5rem);
+  }
+
+  .header-inner {
+    padding-block: 0.75rem;
+  }
+
+  .hero-copy {
+    font-size: 0.97rem;
+    line-height: 1.55;
+  }
+
   .hero-actions {
-    flex-direction: column;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .hero-actions > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .hero-actions .dwg-btn {
+    padding-inline: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .hero-facts th {
+    width: 30%;
+    letter-spacing: 0.03em;
+  }
+
+  .detail-feature-copy {
+    order: -1;
+  }
+
+  .detail-feature .dd-node {
+    padding: 0.6rem;
+  }
+
+  .detail-feature .dd-tier {
+    gap: 0.8rem;
   }
 }
 

@@ -1,19 +1,20 @@
 ---
-title: Dual-Origin Portfolio Deployment
-summary: A static Astro portfolio deployed as the same immutable release to OVH and homelab origins, with Cloudflare load balancing in production and direct private beta verification on both.
-highlight: Keeps public failover separate from the private candidate delivery path.
-impact: Replaced a single-origin deployment story with an exercised dual-origin release and rollback workflow.
-constraint: Keep both origins small, independently verifiable, and unreachable through public deployment paths.
+title: Coolify Portfolio Deployment
+summary: A static Astro portfolio shipped as digest-pinned containers to separate beta and production applications in Coolify, with Cloudflare Tunnel ingress and verified rollback.
+highlight: Makes each deployment traceable to a tested commit and an immutable image digest.
+impact: Replaced direct deployment to two static origins with a guarded container release workflow in Coolify.
+constraint: Keep beta private, isolate deployment credentials, and restore the previous image if live verification fails.
 role: Designer, builder, and operator.
-scope: Astro, Debian, Nginx, Caddy, Cloudflare Load Balancing, private networking, and CI/CD.
-keyOutcome: A portfolio whose production resilience and beta validation follow the same release contract.
+scope: Astro, Nginx, Docker, GHCR, Coolify, Cloudflare Tunnel, Tailscale, and GitHub Actions.
+keyOutcome: Separate beta and production applications with exact-digest deployment, public health and revision checks, and automatic rollback on failed verification.
 featured: false
 order: 5
 stack:
   - Astro
   - Nginx
-  - Caddy
-  - Cloudflare
+  - Docker
+  - Coolify
+  - Cloudflare Tunnel
   - GitHub Actions
 status: shipped
 date: 2026-07-18
@@ -22,120 +23,100 @@ links:
   - label: View portfolio repo
     href: https://github.com/KanterLabs/portfolio
 system:
-  caption: GitHub Actions builds one artifact, deploys it directly to both private beta origins, then promotes the exact verified artifact to the two load-balanced production origins.
+  caption: GitHub Actions builds and publishes an immutable image to GHCR. Coolify deploys its exact digest to the selected application; production traffic reaches Nginx through Cloudflare Tunnel.
   tiers:
     - nodes:
         - title: GitHub Actions
+          detail: Tests + image build
     - nodes:
-        - title: Private deploy paths
-    - nodes:
-        - title: Immutable candidates
+        - title: GHCR image digest
           kind: accent
     - nodes:
-        - title: OVH + homelab origins
+        - title: Coolify application
+          detail: Beta or production
+    - nodes:
+        - title: Cloudflare Tunnel
+          detail: Public production ingress
 ---
 
 ## Overview
 
-The portfolio is intentionally static. The operational work is in making one
-small artifact deploy safely to two independent origins, keeping the beta lane
-private, and recovering without rebuilding a server by hand.
+This portfolio runs as a static Astro build served by Nginx in a container.
+Coolify operates separate beta and production applications on an OVH app host.
+GitHub Actions builds the image, publishes it to GHCR, and tells Coolify exactly
+which immutable digest to deploy.
 
-Production is **Cloudflare → load-balanced OVH and homelab origins**. Each
-origin serves the same commit-addressed Astro release through Nginx. The OVH
-path includes the shared Caddy edge; the homelab origin has its own reviewed
-ingress path. Neither public route is used for deployment.
+The important distinction is between building a release and running it:
+Coolify does not rebuild the source or deploy a mutable branch tag. Every
+running image can be traced to a tested Git commit.
 
 ## Current Architecture
 
-```text
-Internet
-   |
-Cloudflare DNS, CDN, Full (strict) TLS, and health checks
-   |
-Cloudflare Load Balancer
-   |                         |
-OVH edge → Nginx          Homelab ingress → Nginx
-   \_________________________/
-        identical immutable release
-```
+Production requests follow **Cloudflare → Cloudflare Tunnel → the Coolify
+application's Nginx container**. The tunnel connector forwards traffic to the
+application's loopback port, so the app host keeps inbound web ports closed.
 
-## Why This Shape
+The chatbot is a separate production-only Cloudflare Worker on `/api/chat*`,
+with retained D1 conversation history. Its code and reviewed knowledge require
+a separate Worker deployment; publishing the static site alone does not update
+chatbot answers.
 
-The public edge and the workload should not share an operational boundary. A
-single origin was simple, but it made a maintenance event or failed host a
-single point of failure. The current design adds a homelab origin without
-making either origin responsible for public DNS, load-balancer policy, or the
-other origin's state.
+## Beta Before Production
 
-The resulting boundary is small and explicit:
+A push to `beta` runs dependency audits, Worker validation, browser tests, and
+container smoke tests. CI publishes an immutable image, then deploys that
+exact digest to the beta application. Beta uses a private hostname reached
+over the tailnet and has no public DNS record.
 
-- Cloudflare health checks and load balancing decide which production origin
-  receives public traffic
-- each origin accepts only its reviewed ingress and management peers
-- OVH is reached over private management SSH; homelab is reached through the
-  reviewed jump host
-- neither workload runs Docker, Tailscale, or a public deployment listener
+Production promotion comes from a pull request from `beta` to `main`. After
+merge, the main workflow repeats validation, builds and smoke-tests its own
+commit-tagged image, and deploys the resulting digest to production. The two
+lanes use separate Coolify application identities, credentials, and protected
+GitHub environments. A stale workflow cannot replace a newer release: the
+job checks that its commit is still the branch tip before deployment.
 
-## Atomic Delivery
+## Exact-Digest Deployment
 
-GitHub Actions builds and tests the Astro site on an ephemeral homelab runner.
-A beta push produces one compressed artifact and sends it directly over private
-management paths to the beta account on each origin. Beta is deliberately not a
-load-balancer backend: it has no public DNS record, Tunnel, Funnel, or public
-worker route.
+The deployment helper first checks the target application's identity,
+environment, server, destination, port, and existing image digest. It records
+the previous digest before changing anything.
 
-The remote account cannot open a shell. It can only request the fixed deploy,
-verify, promote, activation, and rollback commands. Each helper validates the
-archive, extracts it into a commit-addressed release, validates its local
-private HTTPS health endpoint, and atomically swaps the relevant `current`
-symlink. A failed local check restores the prior symlink.
+It then sets the requested digest, starts a Coolify deployment, and waits for
+completion. Success requires all three checks:
 
-When `beta` merges to `main`, the workflow stages the tested main artifact in
-both private candidate lanes and verifies its SHA and content there. Both
-production origins then prepare that exact digest before either activates it.
-If activation on one origin fails, the workflow rolls both origins back to
-their recorded prior release. Retained releases make rollback independent of
-GitHub, npm, or a rebuild.
+- Coolify reports the application healthy.
+- `/healthz` returns `ok`.
+- `/_meta/revision` matches the requested Git commit.
 
-## TLS and Health
+Production checks go through the public hostname, exercising Cloudflare, the
+tunnel, and the application together. If verification fails after the image
+changes, the helper restores and redeploys the recorded previous digest.
 
-Cloudflare uses **Full (strict)** origin mode and health-checks the two public
-origins. The apex and `www` hostnames are served through the production pool,
-with `www` redirecting to the canonical apex. Both origins use their own
-private origin identity and trust chain.
+## Public Ingress, Private Deployment
 
-Nginx exposes `/healthz` with an exact `ok` response. The deployment helper
-checks the private vhost after activation, while Cloudflare monitors the public
-origins. That separates release, origin, and edge failures instead of treating
-the site as one opaque endpoint.
+The public tunnel carries site traffic. Protected deploy jobs reach the
+Coolify API and private beta verification URL through the tailnet. Deployment
+credentials are supplied at runtime and are not part of the static site or
+container image.
 
-## Recovery
-
-The deployment has three recovery layers:
-
-| Failure                      | Recovery                                                                    |
-| ---------------------------- | --------------------------------------------------------------------------- |
-| Bad release on either origin | Roll both origins back to retained commit-addressed releases                |
-| Failed origin                | Cloudflare health checks remove it while the other origin continues serving |
-| Broken workload              | Restore that origin's verified backup without changing the other origin     |
+This keeps the release path separate from the public request path while
+letting production verification prove that visitors receive the right build.
 
 ## Architecture Evolution
 
-The first version used two GCP `e2-micro` origins behind a paid Cloudflare Load
-Balancer. That design was useful for learning Terraform, multi-zone origins,
-and health checks. Over time the second origin became disabled, leaving the
-published redundancy claim out of step with reality.
+Earlier versions used static Nginx origins on GCP, then OVH and the homelab,
+with Cloudflare load balancing and coordinated artifact promotion. Those
+were earlier deployments, not the current production topology.
 
-The initial homelab migration simplified that to one private origin while the
-delivery controls matured. The current iteration restores real redundancy with
-two active origins and makes it part of the normal beta and promotion workflow,
-rather than a standby path that is never exercised.
+The current Coolify workflow replaces direct artifact uploads and symlink
+activation with immutable container releases. The retired static-origin load
+balancer remains disabled as an emergency recovery option; it is not active
+production failover.
 
 ## What It Shows
 
-- **Linux operations:** two hardened services with narrow firewall rules
-- **Network design:** public load balancing, ingress, and private workloads have separate roles
-- **Delivery engineering:** build once, validate twice, and promote the exact artifact
-- **Recovery design:** coordinated release rollback plus origin-level failover
-- **Operational honesty:** the public writeup describes the deployment that actually runs
+- **Delivery engineering:** tested, commit-tagged images deployed by exact digest.
+- **Environment isolation:** separate beta and production applications and credentials.
+- **Network boundaries:** public tunnel ingress and private deployment access.
+- **Recovery:** live verification and automatic return to the previous image.
+- **Operational accuracy:** the case study and chatbot describe the deployment that runs.

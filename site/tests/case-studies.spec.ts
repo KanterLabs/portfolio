@@ -10,8 +10,8 @@ const caseStudies = [
   },
   {
     path: '/projects/multi-node-portfolio',
-    title: 'Dual-Origin Portfolio Deployment | Shane Kanterman',
-    heading: 'Dual-Origin Portfolio Deployment',
+    title: 'Coolify Portfolio Deployment | Shane Kanterman',
+    heading: 'Coolify Portfolio Deployment',
     backLabel: 'Back to selected work',
     backHref: '/#projects',
   },
