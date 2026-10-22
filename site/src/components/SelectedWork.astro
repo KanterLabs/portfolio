@@ -1,0 +1,40 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import RepoMedia from './RepoMedia.astro';
+import { flagshipRepos } from '../lib/kanterlabs';
+
+interface Props { projects: CollectionEntry<'projects'>[] }
+const { projects } = Astro.props;
+const featured = projects.find((project) => project.data.featured) ?? projects[0];
+const supporting = projects.filter((project) => project !== featured);
+const helm = flagshipRepos.find((repo) => repo.slug === 'helm')!;
+---
+
+<article class="selected-feature dwg-box" data-project-entry>
+  <div class="selected-preview">
+    {helm.media && <RepoMedia media={helm.media} name={helm.name} />}
+    <p class="dwg-label">Helm · a board for people and coding agents</p>
+  </div>
+  <div class="selected-copy">
+    <p class="dwg-label">Lead project · {helm.status}</p>
+    <h3 class="detail-title"><a href={`/projects/${featured.id}`}>{featured.data.title}</a></h3>
+    <p class="detail-summary">{featured.data.highlight}</p>
+    <p class="selected-result">I built a self-hosted board where agents claim work, report progress, and leave a durable record. I use it to run my own projects.</p>
+    <p class="dwg-label selected-stack">Go · Svelte · SQLite · Docker</p>
+    <div class="detail-actions">
+      <a class="dwg-btn dwg-btn-primary" href={`/projects/${featured.id}`}>Read Helm case study</a>
+      <a class="text-link" href="https://github.com/KanterLabs/helm" target="_blank" rel="noopener noreferrer">Source & setup <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+</article>
+<div class="detail-grid selected-supporting">
+  {supporting.map((project) => (
+    <article class="detail-card dwg-box" data-project-entry>
+      <p class="dwg-label">Infrastructure case study</p>
+      <h3 class="detail-title"><a href={`/projects/${project.id}`}>{project.data.title}</a></h3>
+      <p class="detail-summary">{project.data.highlight}</p>
+      <p class="selected-result">{project.data.impact}</p>
+      <a class="text-link detail-more" href={`/projects/${project.id}`}>Read the case study<span class="sr-only">: {project.data.title}</span> <span aria-hidden="true">→</span></a>
+    </article>
+  ))}
+</div>

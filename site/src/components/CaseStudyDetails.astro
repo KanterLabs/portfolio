@@ -22,9 +22,9 @@ const letter = (index: number) => String.fromCharCode(65 + index);
   )}
   <div class="detail-feature-copy">
     <p class="dwg-label">Detail A · lead project</p>
-    <h3 class="detail-title">
+    <h2 class="detail-title">
       <a href={`/projects/${featured.id}`}>{featured.data.title}</a>
-    </h3>
+    </h2>
     <p class="detail-summary">{featured.data.summary}</p>
     <ol class="general-notes">
       <li><span class="dwg-label">Impact</span>{featured.data.impact}</li>
@@ -50,9 +50,9 @@ const letter = (index: number) => String.fromCharCode(65 + index);
     {supporting.map((project, index) => (
       <article class="detail-card dwg-box" data-project-entry>
         <p class="dwg-label">Detail {letter(index + 1)}</p>
-        <h3 class="detail-title">
+        <h2 class="detail-title">
           <a href={`/projects/${project.id}`}>{project.data.title}</a>
-        </h3>
+        </h2>
         <p class="detail-summary">{project.data.highlight}</p>
         {project.data.system && (
           <DetailDrawing

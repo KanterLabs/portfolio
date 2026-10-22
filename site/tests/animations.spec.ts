@@ -1,12 +1,17 @@
 import { test, expect } from '@playwright/test';
 
-test('homepage motion is brief and never gates the hero', async ({ page, isMobile }) => {
+test('homepage reveals four supporting sheets without gating the hero', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Phones reveal everything immediately (BaseLayout skips the observer below 780px)');
   await page.goto('/');
 
   // The hero sheet is legible on arrival: no reveal class on it.
   await expect(page.locator('#top')).not.toHaveClass(/observe-animate/);
-  await expect(page.locator('main > .sheet.observe-animate')).toHaveCount(5);
+  await expect(page.locator('main > .sheet.observe-animate')).toHaveCount(4);
+});
+
+test('catalog rack motion stays brief', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Phones reveal everything immediately');
+  await page.goto('/kanterlabs');
 
   // Leader lines draw in, and the whole cascade lands well inside 500ms.
   const leaders = page.locator('#kanterlabs .rack-leader');
@@ -32,19 +37,23 @@ test('motion is disabled when reduced motion is requested', async ({ page }) => 
   await page.goto('/');
 
   const motion = await page.evaluate(() => {
-    const leader = document.querySelector('#kanterlabs .rack-leader');
     const sheet = document.querySelector('#projects');
     return {
-      leaderAnimation: leader ? getComputedStyle(leader).animationName : null,
       sheetOpacity: sheet ? getComputedStyle(sheet).opacity : null,
       sheetTransform: sheet ? getComputedStyle(sheet).transform : null,
     };
   });
 
-  expect(motion.leaderAnimation).toBe('none');
   expect(motion.sheetOpacity).toBe('1');
   // Settled: no transform, or the identity matrix .visible leaves behind.
   expect(['none', 'matrix(1, 0, 0, 1, 0, 0)']).toContain(motion.sheetTransform);
+
+  await page.goto('/kanterlabs');
+  const leaders = page.locator('#kanterlabs .rack-leader');
+  expect(await leaders.count()).toBeGreaterThan(10);
+  for (const leader of await leaders.all()) {
+    await expect(leader).toHaveCSS('animation-name', 'none');
+  }
 });
 
 test('theme icons transition to match the selected mode', async ({ page }) => {

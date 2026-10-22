@@ -1,0 +1,199 @@
+@theme {
+  --font-family-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Consolas, monospace;
+
+  --color-bg: #141416;
+  --color-bg-elevated: #1b1b1d;
+  --color-text-base: #f2ede3;
+  --color-text-muted: #aba69b;
+  --color-text-soft: #8f8a7f; /* 5.3:1 on --color-bg; keep AA for small text */
+  --color-accent: #9db07a;
+  --color-accent-strong: #b3c48f;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+}
+
+:root {
+  color-scheme: dark;
+  --panel: rgba(255, 255, 255, 0.02);
+  --panel-strong: #1f1f22;
+  --panel-soft: #18181a;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --accent-color: #9db07a;
+  --accent-ink: #141416;
+  /* The single recessed-data surface for the whole site. Derived from
+     --color-text-base/--color-bg, so it resolves correctly in light mode
+     and its no-JS mirror with no per-theme override. 1.6% keeps
+     .field-label (0.72rem/700, needs 4.5:1) clearing ~4.6:1 against
+     --color-text-soft in both themes — do not raise this without
+     re-checking that contrast (see tests/theme-parity.spec.ts). */
+  --plate: color-mix(in srgb, var(--color-text-base) 1.6%, var(--color-bg));
+  /* A second, distinct recess for a plate that sits *inside* a --panel
+     card (the featured showcase diagram), rather than directly on
+     --color-bg (fact boxes, proof rows). --plate is derived upward from
+     --color-bg toward --color-text-base, which in dark lands right on
+     top of --panel itself (both are tiny lightenings of the same near-
+     black) and the card->recess step nearly disappears. This one is
+     derived downward from --color-bg instead, composited under whatever
+     panel currently sits behind it, so the recess reads as sunk *below*
+     the card in both themes, not flush with it. Do not point on-page
+     plates (fact boxes, proof rows) at this token — it is calibrated for
+     nesting inside a --panel, not for sitting on --color-bg. */
+  --plate-recess: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  /* Resting and raised elevation for the three card surfaces. Dark stays
+     a tight near-black contact shadow plus a soft wide one; light is
+     overridden below with the ink color at low alpha, wide enough to
+     separate an opaque white card from #f6f1e7. */
+  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.5), 0 18px 32px -16px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover: 0 1px 0 rgba(0, 0, 0, 0.55), 0 26px 44px -18px rgba(0, 0, 0, 0.55);
+  /* Sticky header ≈85px, plus the 12px translateY of the .observe-animate
+     reveal — anchor scrolls are computed from the pre-reveal rect, so the
+     section settles 12px higher than the scroll target. */
+  --header-offset: 7rem;
+  --radius-lg: 20px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+  --transition: 180ms ease;
+
+  /* One type ramp, shared by the homepage and the case-study layout.
+     Each step is ~1.25x the one below it. The display step is deliberately
+     modest: the hero h1 shares the fold with the proof panel, so a headline
+     that wraps past two lines pushes the supporting copy and the CTAs off
+     screen. Size the ramp for the two-line headline, not the other way
+     round. */
+  --step-display: clamp(2.4rem, 2.4vw + 1.5rem, 3.4rem); /* homepage hero h1 only */
+  --step-title: clamp(2.25rem, 3.4vw, 2.7rem); /* case-study h1, 404 h1, contact h2 */
+  --step-section: clamp(1.6rem, 2.7vw, 2.15rem); /* homepage section h2 */
+  --step-heading: clamp(1.35rem, 2.1vw, 1.7rem); /* prose h2 */
+
+  /* One section rhythm, shared by the homepage and the case-study layout. */
+  --space-section: 4.5rem;
+}
+
+@media (width < 780px) {
+  :root {
+    /* --step-display needs no mobile override: its vw+rem interpolation is
+       continuous across this breakpoint, where a second clamp would step. */
+    --space-section: 3rem;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-family-sans);
+  color: var(--color-text-base);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-family-sans);
+  /* Headings here are short and set large, which is exactly the case where
+     the default greedy line-breaker strands a single word on the last
+     line. Balancing costs nothing at these lengths. */
+  text-wrap: balance;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent-color) 22%, transparent);
+  color: var(--color-text-base);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: var(--accent-color);
+  color: var(--accent-ink);
+  font-weight: 600;
+  transform: translateY(-140%);
+  transition: transform var(--transition);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+@utility glass {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+@utility gradient-text {
+  color: var(--accent-color);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 3.3rem;
+  padding: 0.9rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-weight: 600;
+  font-family: var(--font-family-sans);
+  transition:
+    border-color var(--transition),
+    background-color var(--transition),
+    color var(--transition);
+}
+
+.btn-primary {
+  background: var(--accent-color);
+  color: var(--accent-ink);
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-strong);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-text-base);
+  border-color: var(--line-strong);
+}
+
+.btn-secondary:hover {
+  border-color: rgba(157, 176, 122, 0.5);
+}
+

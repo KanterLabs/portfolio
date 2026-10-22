@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-15.4",
+  "version": "2026-10-22.1",
   "entries": [
     {
       "id": "profile",
@@ -8,7 +8,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/"
       },
-      "lastReviewed": "2026-10-15",
+      "lastReviewed": "2026-10-22",
       "topics": [
         "profile",
         "experience",
@@ -41,7 +41,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#contact"
       },
-      "lastReviewed": "2026-10-15",
+      "lastReviewed": "2026-10-22",
       "topics": [
         "contact",
         "email",
@@ -65,7 +65,7 @@
         "path": "site/src/lib/kanterlabs.ts",
         "href": "/#kanterlabs"
       },
-      "lastReviewed": "2026-10-15",
+      "lastReviewed": "2026-10-22",
       "topics": [
         "kanterlabs",
         "open source",
@@ -96,7 +96,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#skills"
       },
-      "lastReviewed": "2026-10-15",
+      "lastReviewed": "2026-10-22",
       "topics": [
         "skills",
         "architecture",
@@ -133,7 +133,7 @@
         "path": "site/src/content/projects/helm.mdx",
         "href": "/projects/helm"
       },
-      "lastReviewed": "2026-10-15",
+      "lastReviewed": "2026-10-22",
       "topics": [
         "project",
         "helm",
@@ -172,7 +172,7 @@
         "path": "site/src/content/projects/kanterlabs-homelab.mdx",
         "href": "/projects/kanterlabs-homelab"
       },
-      "lastReviewed": "2026-10-02",
+      "lastReviewed": "2026-10-22",
       "topics": [
         "project",
         "homelab",
@@ -210,7 +210,7 @@
         "path": "site/src/content/projects/multi-node-portfolio.mdx",
         "href": "/projects/multi-node-portfolio"
       },
-      "lastReviewed": "2026-10-15",
+      "lastReviewed": "2026-10-22",
       "topics": [
         "project",
         "portfolio",
@@ -245,7 +245,7 @@
         "path": "site/src/content/projects/data-center-operations.mdx",
         "href": "/projects/data-center-operations"
       },
-      "lastReviewed": "2026-10-15",
+      "lastReviewed": "2026-10-22",
       "topics": [
         "experience",
         "data center",

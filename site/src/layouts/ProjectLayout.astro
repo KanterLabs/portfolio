@@ -2,13 +2,11 @@
 import GithubSlugger from 'github-slugger';
 import BaseLayout from './BaseLayout.astro';
 import DetailDrawing from '../components/DetailDrawing.astro';
-import GitHubIcon from '../components/GitHubIcon.astro';
 import BrandRabbit from '../components/BrandRabbit.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import StackBadge from '../components/StackBadge.astro';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
-import { KANTERLABS_ORG_URL, allPublicRepos } from '../lib/kanterlabs';
 
 interface Props {
   project: CollectionEntry<'projects'>;
@@ -17,6 +15,8 @@ interface Props {
 const { project } = Astro.props;
 const { title, summary, stack, status, date, links, heroImage, socialImage, role, scope, keyOutcome, kind, system } = project.data;
 const isExperience = kind === 'experience';
+// Helm leads with a reader-controlled workflow; its architecture follows the article.
+const showHeaderDrawing = system && project.id !== 'helm';
 const contentLabel = isExperience ? 'Experience Notes' : 'Case Study';
 const returnHref = isExperience ? '/#about' : '/#projects';
 const returnLabel = isExperience ? 'Back to experience' : 'Back to selected work';
@@ -129,7 +129,7 @@ const structuredData = {
           </span>
           <span>~{readingTime} min read</span>
         </div>
-        <div class:list={['case-head', system && 'case-head-split']}>
+        <div class:list={['case-head', showHeaderDrawing && 'case-head-split']}>
           <div class="min-w-0">
             <h1 class="case-title" id="case-title">
               {title}
@@ -157,7 +157,7 @@ const structuredData = {
               </div>
             )}
           </div>
-          {system && (
+          {showHeaderDrawing && system && (
             <div class="case-drawing dwg-box">
               <DetailDrawing system={system} label={`Detail drawing · ${title}`} id="case-detail" />
             </div>
@@ -215,6 +215,11 @@ const structuredData = {
           <div class="prose">
             <slot />
           </div>
+          {project.id === 'helm' && system && (
+            <section class="mt-10 dwg-box" aria-label="Helm architecture reference">
+              <DetailDrawing system={system} label="Architecture reference · Helm" id="case-detail" />
+            </section>
+          )}
         </div>
 
         {tocItems.length > 0 && (
@@ -261,20 +266,20 @@ const structuredData = {
           </nav>
         )}
 
-        <div class="glass case-lab-cta mb-8">
+        <section class="glass case-lab-cta mb-8" aria-labelledby="case-contact-title">
           <BrandRabbit height={52} />
           <p class="case-lab-cta-copy">
-            <strong>More from KanterLabs</strong>
+            <strong id="case-contact-title">Talk infrastructure or products</strong>
             <span>
-              {allPublicRepos.length} public projects across self-hosted platforms, developer
-              tools, and desktop software, all open on GitHub.
+              Hiring for data center or infrastructure work? Get in touch with Shane.
+              Explore KanterLabs for self-hosted products and developer tools.
             </span>
           </p>
-          <a class="btn btn-secondary kl-btn-github" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
-            <GitHubIcon size={18} />
-            KanterLabs on GitHub
+          <a class="btn btn-primary" href="/#contact">
+            Discuss infrastructure work
           </a>
-        </div>
+          <a class="btn btn-secondary" href="/kanterlabs">Explore KanterLabs products</a>
+        </section>
 
         <a
           href={returnHref}

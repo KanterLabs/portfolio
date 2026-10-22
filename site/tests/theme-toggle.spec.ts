@@ -58,6 +58,8 @@ test.describe('theme toggle layout', () => {
       // The visible (untransformed) icon mirrors the selected mode and
       // fills the slot exactly.
       const visibleIcon = toggle.locator(theme === 'light' ? '.theme-icon-sun' : '.theme-icon-moon');
+      // Theme selection changes the transform; wait for its final frame before measuring.
+      await expect(visibleIcon).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
       const visibleBox = await box(visibleIcon);
       expect(Math.abs(visibleBox.x - stackBox.x)).toBeLessThanOrEqual(0.5);
       expect(Math.abs(visibleBox.y - stackBox.y)).toBeLessThanOrEqual(0.5);

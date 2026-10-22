@@ -34,13 +34,19 @@ site/
 
 Project write-ups live in `src/content/projects/*.mdx` and are rendered by `src/pages/projects/[slug].astro`.
 
-The KanterLabs open-source catalog on the homepage (`#kanterlabs`) is curated in
+The KanterLabs open-source catalog at `/kanterlabs` is curated in
 `src/lib/kanterlabs.ts`. List **public** repositories only:
 `tests/kanterlabs.spec.ts` fails if the site links a KanterLabs repository that
 is private or missing from that file. Repository media lives in
 `src/assets/kanterlabs/` (optimized at build) and `public/kanterlabs/` (video
 and theme-matched SVG artwork). Brand colors come from the
 [KanterLabs/.github](https://github.com/KanterLabs/.github) brand assets.
+
+The homepage gives infrastructure hiring and product discovery separate routes.
+Profile facts live in `src/lib/profile.ts`, selected work pairs project evidence
+with media, and the full interactive rack and flagship plates live in the catalog.
+Global and drawing styles are split by responsibility; their entry files preserve
+the shared cascade order.
 
 ## Build Output
 

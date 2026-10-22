@@ -1,0 +1,185 @@
+---
+import { Image } from 'astro:assets';
+import type { LabMedia } from '../lib/kanterlabs';
+
+interface Props {
+  media: LabMedia;
+  name: string;
+}
+
+const { media, name } = Astro.props;
+---
+
+<div class:list={['lab-media', 'plate-media', `lab-media-${media.kind}`]}>
+  {media.kind === 'image' && (
+    <Image
+      src={media.src}
+      alt={media.alt}
+      widths={[420, 720]}
+      sizes="(width >= 960px) 22rem, (width >= 780px) 45vw, 92vw"
+      loading="lazy"
+      decoding="async"
+      style={`object-fit: ${media.fit}; object-position: ${media.position ?? 'center'};`}
+    />
+  )}
+  {media.kind === 'themed-image' && (
+    <>
+      <img class="lab-themed-light" src={media.light} alt={media.alt} width={media.width} height={media.height} loading="lazy" decoding="async" />
+      <img class="lab-themed-dark" src={media.dark} alt={media.alt} width={media.width} height={media.height} loading="lazy" decoding="async" />
+    </>
+  )}
+  {media.kind === 'video' && (
+    <>
+      <video
+        controls
+        muted
+        loop
+        playsinline
+        preload="none"
+        poster={media.poster}
+        width={media.width}
+        height={media.height}
+        aria-label={media.alt}
+        data-lab-video
+      >
+        <source src={media.webm} type="video/webm" />
+        <source src={media.mp4} type="video/mp4" />
+        <p><a href={media.mp4}>Watch the {name} video</a></p>
+      </video>
+      <button class="lab-video-toggle" type="button" data-lab-video-toggle data-video-name={name} hidden>
+        Play {name} video
+      </button>
+    </>
+  )}
+  {media.kind === 'terminal' && (
+    <div class="lab-terminal" role="img" aria-label={`${name} quick start: ${media.lines.filter((line) => line.command).map((line) => line.command).join(', ')}`}>
+      <div class="lab-terminal-bar" aria-hidden="true">
+        <span></span><span></span><span></span>
+        <em>{media.title}</em>
+      </div>
+      <div class="lab-terminal-body" aria-hidden="true">
+        {media.lines.map((line) => (
+          <p>
+            {line.command && (<><span class="lab-terminal-prompt">$</span> {line.command}</>)}
+            {line.note && <span class="lab-terminal-note">{line.command ? '  # ' : '# '}{line.note}</span>}
+          </p>
+        ))}
+        <p><span class="lab-terminal-prompt">$</span> <span class="lab-terminal-cursor"></span></p>
+      </div>
+    </div>
+  )}
+</div>
+
+<style>
+  .lab-video-toggle {
+    position: absolute;
+    top: 0.65rem;
+    left: 0.65rem;
+    z-index: 1;
+    max-width: calc(100% - 1.3rem);
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .lab-video-toggle:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+  }
+</style>
+
+<script>
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll<HTMLVideoElement>('[data-lab-video]').forEach((video) => {
+    const button = video.parentElement?.querySelector<HTMLButtonElement>('[data-lab-video-toggle]');
+    if (!button) return;
+
+    let userPaused = false;
+    let visible = false;
+    let automaticPause = false;
+    let automaticPlay = false;
+    let request = 0;
+
+    const syncButton = () => {
+      button.textContent = `${video.paused ? 'Play' : 'Pause'} ${button.dataset.videoName} video`;
+    };
+
+    // Remember intent separately from paused: leaving the viewport pauses the
+    // media too, but must never erase a pause requested by the visitor.
+    const pauseAutomatically = () => {
+      request += 1;
+      if (video.paused) return;
+      automaticPause = true;
+      video.pause();
+      syncButton();
+    };
+
+    const play = async (automatic: boolean) => {
+      const current = ++request;
+      automaticPlay = automatic;
+      try {
+        await video.play();
+        // A pause, motion change, or scroll may arrive while play is pending.
+        if (current !== request && (userPaused || !visible || reducedMotion.matches)) {
+          pauseAutomatically();
+        }
+      } catch {
+        // Autoplay can be denied. Native controls and the explicit button
+        // remain usable; the label continues to reflect the actual state.
+      } finally {
+        automaticPlay = false;
+        syncButton();
+      }
+    };
+
+    video.addEventListener('play', () => {
+      if (!automaticPlay) userPaused = false;
+      syncButton();
+    });
+    video.addEventListener('pause', () => {
+      if (!automaticPause) {
+        userPaused = true;
+        request += 1;
+      }
+      automaticPause = false;
+      syncButton();
+    });
+
+    button.addEventListener('click', () => {
+      if (video.paused) {
+        userPaused = false;
+        void play(false);
+      } else {
+        userPaused = true;
+        request += 1;
+        video.pause();
+        syncButton();
+      }
+    });
+    syncButton();
+    button.hidden = false;
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        visible = entries[0].isIntersecting;
+        if (!visible) {
+          pauseAutomatically();
+        } else if (!userPaused && !reducedMotion.matches) {
+          void play(true);
+        }
+      }, { threshold: 0.35 });
+      observer.observe(video);
+    }
+
+    reducedMotion.addEventListener('change', (event) => {
+      if (event.matches) pauseAutomatically();
+    });
+  });
+</script>

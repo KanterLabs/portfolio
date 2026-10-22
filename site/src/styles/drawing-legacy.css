@@ -1,0 +1,232 @@
+/* ── Legacy surfaces, redrawn ──
+   Panels that predate the drawing system (TOC, callouts, pager, the
+   KanterLabs CTA, prose diagrams) keep their markup but take the drawn
+   look: square corners, ink rules, paper fill. */
+
+.glass,
+.callout,
+.case-pager-link {
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+}
+
+.btn {
+  border-radius: 0;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 4px 4px 0 var(--fill-accent);
+}
+
+.btn-primary:hover {
+  background: var(--ink);
+}
+
+.btn-secondary {
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.header-back {
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.diagram-trigger {
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+}
+
+.toc-link-active {
+  border-radius: 0;
+}
+
+/* Plates */
+.plate-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.plate {
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem 1.2rem 1.3rem;
+}
+
+/* The lead plate spans the sheet (it is the 4U unit), with its media
+   beside the copy instead of above it. The banner is ~2.6:1, so it gets
+   its own aspect ratio rather than the 16:10 frame. */
+.plate:first-child {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  column-gap: 1.5rem;
+}
+
+.plate:first-child .plate-head {
+  grid-column: 1 / -1;
+}
+
+@media (width >= 960px) {
+  .plate:first-child .plate-media {
+    aspect-ratio: 900 / 340;
+  }
+}
+
+.plate:first-child .plate-body {
+  margin-top: 0;
+}
+
+.plate-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--ink);
+}
+
+.plate-callout {
+  display: grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+}
+
+.plate:first-child .plate-callout {
+  background: var(--fill-accent);
+  color: var(--fill-accent-ink);
+}
+
+.plate-media {
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+}
+
+.plate-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin-top: 1rem;
+}
+
+.plate-meta {
+  margin: 0 0 0.9rem;
+}
+
+.plate-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.25rem;
+  margin-top: auto;
+}
+
+@media (width < 960px) {
+  .plate-grid,
+  .plate:first-child {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .plate:first-child .plate-body {
+    margin-top: 1rem;
+  }
+}
+
+/* Title-block values are standalone targets, not links inside prose:
+   they need the full WCAG 2.5.8 size (44px on touch layouts). */
+.title-block a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+@media (width < 780px) {
+  .title-block a {
+    min-height: 44px;
+  }
+
+  /* The revision table stacks: rev + date on one line, the entry under it. */
+  .revision-table thead {
+    display: none;
+  }
+
+  .revision-table,
+  .revision-table tbody {
+    display: block;
+  }
+
+  .revision-table tr {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    border: 1px solid var(--ink);
+  }
+
+  .revision-table tr + tr {
+    border-top: 0;
+  }
+
+  .revision-table td {
+    border: 0;
+  }
+
+  .revision-table td:nth-child(3) {
+    grid-column: 1 / -1;
+    padding-top: 0;
+  }
+}
+
+@media (width < 370px) {
+  .hero-title-line {
+    white-space: normal;
+  }
+}
+
+/* ── Brand rabbit placements ── */
+
+.site-header-rabbit {
+  margin-block: -0.25rem;
+}
+
+/* 404: the lop hops across the sheet along a dimension-line floor. */
+.hop-track {
+  position: relative;
+  height: 4.5rem;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  border-bottom: 1px dashed color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.hop-rabbit {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .hop-rabbit {
+    animation: rabbit-cross 7s linear infinite;
+  }
+}
+
+/* `left` rather than a transform so the run is measured against the
+   track's own width at every viewport. */
+@keyframes rabbit-cross {
+  from {
+    left: -5rem;
+  }
+
+  to {
+    left: calc(100% + 1rem);
+  }
+}

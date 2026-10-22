@@ -41,6 +41,17 @@ test.describe('case studies', () => {
       await expect(page.getByText('Role').first()).toBeVisible();
       await expect(page.getByText('Scope').first()).toBeVisible();
       await expect(page.getByText('Outcome').first()).toBeVisible();
+      const prose = page.locator('.prose');
+      await expect(prose.getByRole('heading', { level: 2, name: 'Problem' })).toBeVisible();
+      await expect(prose.getByRole('heading', { level: 2, name: 'My Contribution' })).toBeVisible();
+      await expect(prose.getByRole('heading', { level: 2, name: 'Result and Evidence' })).toBeVisible();
+      const contact = page.getByRole('region', { name: 'Talk infrastructure or products' });
+      await expect(contact.getByRole('link', { name: 'Discuss infrastructure work' })).toHaveAttribute(
+        'href', '/#contact',
+      );
+      await expect(contact.getByRole('link', { name: 'Explore KanterLabs products' })).toHaveAttribute(
+        'href', '/kanterlabs',
+      );
       await expect(page.getByRole('link', { name: entry.backLabel })).toHaveAttribute(
         'href',
         entry.backHref,
@@ -60,6 +71,84 @@ test.describe('case studies', () => {
       'https://github.com/KanterLabs/helm/releases',
     );
     await expect(page.getByText(/Build \d{2}-\d{2}-\d{4} · [0-9a-f]{7}/)).toBeVisible();
+  });
+
+  test('Helm example explains the contract through three deliberate keyboard actions', async ({ page }, testInfo) => {
+    const requests: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).pathname.startsWith('/api/v1/')) requests.push(request.url());
+    });
+    await page.goto('/projects/helm');
+    const demo = page.getByRole('region', { name: 'Helm example workflow' });
+    await expect(demo).toContainText('Illustrative example, not a real product recording.');
+    await expect(demo).toContainText('Example task');
+    await expect(demo).toContainText('Helm uses a separate move request.');
+    const claim = demo.getByRole('button', { name: '1. Claim task', exact: true });
+    const progress = demo.getByRole('button', { name: '2. Report progress', exact: true });
+    const complete = demo.getByRole('button', { name: '3. Complete task', exact: true });
+    const status = demo.getByRole('status');
+    await expect(status).toHaveText('Ready. This example task has no claimant.');
+    await expect(progress).toBeDisabled();
+    await expect(complete).toBeDisabled();
+    // The example waits for the reader; it never auto-plays a claim or API call.
+    await claim.focus();
+    await page.keyboard.press('Enter');
+    await expect(progress).toBeFocused();
+    await expect(status).toHaveText('Claimed. Example agent holds a leased claim; the task is in progress.');
+    await expect(demo.locator('[data-column="active"] [data-example-task]')).toHaveCount(1);
+    await expect(complete).toBeDisabled();
+    await page.keyboard.press('Enter');
+    await expect(complete).toBeFocused();
+    await expect(status).toHaveText('Progress reported. The board shows the current phase and next action.');
+    await expect(demo).toContainText('Next: record the verification result.');
+    await page.keyboard.press('Enter');
+    await expect(status).toHaveText('Completed. The task is done and its claim is cleared.');
+    await expect(demo.locator('[data-column="completed"] [data-example-task]')).toHaveCount(1);
+    await expect(demo).toContainText('Claim: cleared');
+    await expect(demo.getByRole('button', { name: 'Reset example' })).toBeFocused();
+    await expect(demo.getByRole('link', { name: 'Read the API contract' })).toHaveAttribute(
+      'href', 'https://github.com/KanterLabs/helm/blob/main/docs/API_CONTRACT.md',
+    );
+    const architecture = page.getByRole('heading', { level: 2, name: 'System Shape' });
+    const demoBox = await demo.boundingBox();
+    const architectureBox = await architecture.boundingBox();
+    expect(demoBox).not.toBeNull();
+    expect(architectureBox).not.toBeNull();
+    expect(demoBox!.y).toBeLessThan(architectureBox!.y);
+    await demo.scrollIntoViewIfNeeded();
+    await testInfo.attach('helm-example-complete', {
+      body: await demo.screenshot(), contentType: 'image/png',
+    });
+    await demo.getByRole('button', { name: 'Reset example' }).click();
+    await expect(status).toHaveText('Ready. This example task has no claimant.');
+    await expect(claim).toBeFocused();
+    await expect(demo.locator('[data-column="ready"] [data-example-task]')).toHaveCount(1);
+    await expect(progress).toBeDisabled();
+    await expect(complete).toBeDisabled();
+    expect(requests).toEqual([]);
+  });
+
+  test('Helm example fits a narrow viewport and remains usable without JavaScript', async ({ page, browser }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/projects/helm');
+    const demo = page.getByRole('region', { name: 'Helm example workflow' });
+    await demo.scrollIntoViewIfNeeded();
+    expect(await demo.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    await testInfo.attach('helm-example-mobile', {
+      body: await demo.screenshot(), contentType: 'image/png',
+    });
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    try {
+      const staticPage = await context.newPage();
+      await staticPage.goto(new URL('/projects/helm', page.url()).href);
+      const staticDemo = staticPage.getByRole('region', { name: 'Helm example workflow' });
+      await expect(staticDemo).toContainText('A leased claim identifies who owns the work.');
+      await expect(staticDemo).toContainText('Completion clears the claim and records the outcome.');
+      await expect(staticDemo.getByRole('link', { name: 'Read the API contract' })).toBeVisible();
+      await expect(staticDemo.getByRole('button')).toHaveCount(0);
+    } finally {
+      await context.close();
+    }
   });
 
   test('homelab case study source link is correct', async ({ page }) => {

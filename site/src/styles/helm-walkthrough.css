@@ -1,0 +1,134 @@
+/* Keep this illustrative workflow distinct from a screenshot of the product. */
+.helm-walkthrough {
+  margin: 1.5rem 0 2rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+  color: var(--color-text-base);
+  overflow-wrap: anywhere;
+}
+
+.helm-walkthrough .helm-example-label {
+  margin: 0 0 0.5rem;
+  font: 600 0.75rem/1.5 var(--font-family-mono);
+  color: var(--color-text-muted);
+}
+
+.helm-walkthrough h3 {
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: 0;
+  font-size: 1.25rem;
+}
+
+.helm-walkthrough .helm-example-disclosure,
+.helm-walkthrough .helm-example-sources {
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+
+.helm-example-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1.25rem 0;
+}
+
+.helm-example-column {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 6px;
+  background: var(--plate-recess);
+}
+
+.helm-walkthrough .helm-example-column h4 {
+  margin: 0 0 0.75rem;
+  color: var(--color-text-muted);
+  font: 600 0.8rem/1.5 var(--font-family-mono);
+}
+
+.helm-example-task {
+  padding: 0.8rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  background: var(--color-bg-elevated);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.helm-walkthrough .helm-example-task p {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.helm-walkthrough .helm-example-task .helm-example-label {
+  margin: 0 0 0.5rem;
+}
+
+.helm-walkthrough .helm-example-steps {
+  margin: 1rem 0;
+  padding-left: 1.4rem;
+  list-style: decimal;
+  font-size: 0.85rem;
+}
+
+.helm-walkthrough .helm-example-steps li {
+  margin: 0.5rem 0;
+  padding: 0;
+}
+
+.helm-walkthrough .helm-example-steps li::before {
+  content: none;
+}
+
+.helm-example-controls:not([hidden]) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.helm-example-controls button {
+  min-height: 44px;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  background: var(--accent-color);
+  color: var(--accent-ink);
+  font: 600 0.8rem/1.4 var(--font-family-sans);
+  cursor: pointer;
+}
+
+.helm-example-controls button:disabled {
+  border-color: var(--color-line-strong);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
+.helm-example-controls [data-example-reset] {
+  background: transparent;
+  color: var(--color-text-base);
+  border-color: var(--color-line-strong);
+}
+
+.helm-example-controls button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 4px;
+}
+
+.helm-walkthrough .helm-example-status {
+  margin: 1rem 0;
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--accent-color);
+  color: var(--color-text-base);
+  font-size: 0.9rem;
+}
+
+@media (width < 640px) {
+  .helm-example-board { grid-template-columns: minmax(0, 1fr); }
+  .helm-example-column { min-height: 3rem; }
+  .helm-example-controls button { flex: 1 1 10rem; }
+}

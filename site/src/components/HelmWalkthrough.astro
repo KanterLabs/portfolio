@@ -1,0 +1,126 @@
+---
+import '../styles/helm-walkthrough.css';
+
+// A local teaching example of the public contract, never a view of a live board.
+const steps = [
+  {
+    title: 'Claim task',
+    detail: 'A leased claim identifies who owns the work. This example also moves it to In progress; Helm uses a separate move request.',
+  },
+  { title: 'Report progress', detail: 'A structured update gives the current phase and next action.' },
+  { title: 'Complete task', detail: 'Completion clears the claim and records the outcome.' },
+];
+---
+
+<section class="helm-walkthrough" aria-label="Helm example workflow" data-helm-walkthrough>
+  <p class="helm-example-label">Interactive · Example workflow</p>
+  <h3>One task, three explicit actions</h3>
+  <p class="helm-example-disclosure">
+    Illustrative example, not a real product recording. This simplified board uses invented
+    example content to explain the public API contract. It connects to no Helm instance.
+  </p>
+
+  <div class="helm-example-board" role="group" aria-label="Example task board">
+    {[
+      { state: 'ready', label: 'Ready' },
+      { state: 'active', label: 'In progress' },
+      { state: 'completed', label: 'Done' },
+    ].map(({ state, label }) => (
+      <div class="helm-example-column" data-column={state}>
+        <h4>{label}</h4>
+        {state === 'ready' && (
+          <div class="helm-example-task" data-example-task>
+            <p class="helm-example-label">Example task</p>
+            <strong>Verify a service deployment</strong>
+            <p data-example-claim>Claim: unclaimed</p>
+            <p data-example-phase>Phase: ready to start</p>
+            <p data-example-next>Next: claim the task.</p>
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+
+  <ol class="helm-example-steps">
+    {steps.map(({ title, detail }) => <li><strong>{title}.</strong> {detail}</li>)}
+  </ol>
+  <div class="helm-example-controls" role="group" aria-label="Workflow steps" hidden data-example-controls>
+    {steps.map(({ title }, index) => (
+      <button type="button" data-example-step={index + 1} disabled={index > 0}>
+        {index + 1}. {title}
+      </button>
+    ))}
+    <button type="button" data-example-reset>Reset example</button>
+  </div>
+  <p class="helm-example-status" role="status" aria-live="polite" aria-atomic="true" data-example-status>
+    Ready. This example task has no claimant.
+  </p>
+  <noscript><p>Enable JavaScript to try the three actions. The sequence above describes the workflow.</p></noscript>
+  <p class="helm-example-sources">
+    <a href="https://github.com/KanterLabs/helm/blob/main/docs/API_CONTRACT.md">Read the API contract</a>
+    <span aria-hidden="true"> · </span>
+    <a href="https://github.com/KanterLabs/helm">Browse Helm source</a>
+    <span aria-hidden="true"> · </span>
+    <a href="https://github.com/KanterLabs/helm/releases">Self-host a release</a>
+  </p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-helm-walkthrough]').forEach((example) => {
+    const controls = example.querySelector<HTMLElement>('[data-example-controls]');
+    const task = example.querySelector<HTMLElement>('[data-example-task]');
+    const claim = example.querySelector<HTMLElement>('[data-example-claim]');
+    const phase = example.querySelector<HTMLElement>('[data-example-phase]');
+    const next = example.querySelector<HTMLElement>('[data-example-next]');
+    const status = example.querySelector<HTMLElement>('[data-example-status]');
+    const reset = example.querySelector<HTMLButtonElement>('[data-example-reset]');
+    const buttons = Array.from(example.querySelectorAll<HTMLButtonElement>('[data-example-step]'));
+    const columns = ['ready', 'active', 'completed'].map((state) =>
+      example.querySelector<HTMLElement>(`[data-column="${state}"]`),
+    );
+    if (!controls || !task || !claim || !phase || !next || !status || !reset || columns.some((c) => !c)) return;
+
+    const snapshots = [
+      {
+        column: 0, claim: 'unclaimed', phase: 'ready to start', next: 'claim the task.',
+        status: 'Ready. This example task has no claimant.',
+      },
+      {
+        column: 1, claim: 'Example agent · leased', phase: 'verification', next: 'check service health.',
+        status: 'Claimed. Example agent holds a leased claim; the task is in progress.',
+      },
+      {
+        column: 1, claim: 'Example agent · leased', phase: 'service health checked', next: 'record the verification result.',
+        status: 'Progress reported. The board shows the current phase and next action.',
+      },
+      {
+        column: 2, claim: 'cleared', phase: 'complete', next: 'none; verification result recorded.',
+        status: 'Completed. The task is done and its claim is cleared.',
+      },
+    ];
+    let current = 0;
+    const render = () => {
+      const snapshot = snapshots[current];
+      columns[snapshot.column]?.append(task);
+      claim.textContent = `Claim: ${snapshot.claim}`;
+      phase.textContent = `Phase: ${snapshot.phase}`;
+      next.textContent = `Next: ${snapshot.next}`;
+      status.textContent = snapshot.status;
+      buttons.forEach((button, index) => { button.disabled = index !== current; });
+    };
+    buttons.forEach((button, index) => {
+      button.addEventListener('click', () => {
+        if (index !== current) return;
+        current += 1;
+        render();
+        (buttons[current] ?? reset).focus();
+      });
+    });
+    reset.addEventListener('click', () => {
+      current = 0;
+      render();
+      buttons[0]?.focus();
+    });
+    controls.hidden = false;
+  });
+</script>

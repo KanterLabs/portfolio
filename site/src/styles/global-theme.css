@@ -1,0 +1,254 @@
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition), background-color var(--transition);
+}
+
+.theme-toggle:hover {
+  color: var(--color-text-base);
+  border-color: var(--accent-color);
+  background: var(--panel);
+}
+
+.theme-toggle-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* Fixed-size in-flow slot; both icons stack inside it so the hidden one
+   never leaves a gap and the visible one can't drift over the label. */
+.theme-icon-stack {
+  position: relative;
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+
+/* The visible icon mirrors the selected mode: monitor for "follow the OS"
+   (also the pre-hydration/no-JS default), sun for light, moon for dark. */
+.theme-icon {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: rotate(-25deg) scale(0.7);
+  transition: opacity var(--transition), transform var(--transition);
+}
+
+.theme-icon-auto {
+  transform: scale(0.7);
+}
+
+html:not([data-theme-mode="light"]):not([data-theme-mode="dark"]) .theme-icon-auto,
+[data-theme-mode="light"] .theme-icon-sun,
+[data-theme-mode="dark"] .theme-icon-moon {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+@media (width < 780px) {
+  .theme-toggle-label {
+    display: none;
+  }
+
+  .theme-toggle {
+    width: 2.75rem;
+    padding-inline: 0;
+  }
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #f6f1e7;
+  --color-bg-elevated: #fffdf8;
+  --color-text-base: #1b1b1d;
+  --color-text-muted: #57524a;
+  --color-text-soft: #696358;
+  --color-accent: #56693c;
+  --color-accent-strong: #45542f;
+  --color-line: rgba(27, 27, 29, 0.12);
+  --color-line-strong: rgba(27, 27, 29, 0.2);
+  --panel: #fffdf8;
+  --panel-strong: #fffdf8;
+  --panel-soft: #efe8da;
+  --line: rgba(27, 27, 29, 0.12);
+  --line-strong: rgba(27, 27, 29, 0.2);
+  --accent-color: #56693c;
+  --accent-ink: #ffffff;
+  --shadow-card: 0 1px 0 rgba(27, 27, 29, 0.06), 0 18px 32px -16px rgba(27, 27, 29, 0.12);
+  --shadow-card-hover: 0 1px 0 rgba(27, 27, 29, 0.08), 0 26px 44px -18px rgba(27, 27, 29, 0.18);
+}
+
+[data-theme="light"] body {
+  color: #1b1b1d;
+  background: #f6f1e7;
+}
+
+/* No-JS fallback: a verbatim mirror of the [data-theme="light"] variable
+   block above — keep the two in sync. JS always sets data-theme before
+   paint, so this only applies with scripts disabled and an OS light
+   preference. Pages that lock the theme server-render data-theme="dark"
+   and are excluded by :not([data-theme]). */
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) {
+    color-scheme: light;
+    --color-bg: #f6f1e7;
+    --color-bg-elevated: #fffdf8;
+    --color-text-base: #1b1b1d;
+    --color-text-muted: #57524a;
+    --color-text-soft: #696358;
+    --color-accent: #56693c;
+    --color-accent-strong: #45542f;
+    --color-line: rgba(27, 27, 29, 0.12);
+    --color-line-strong: rgba(27, 27, 29, 0.2);
+    --panel: #fffdf8;
+    --panel-strong: #fffdf8;
+    --panel-soft: #efe8da;
+    --line: rgba(27, 27, 29, 0.12);
+    --line-strong: rgba(27, 27, 29, 0.2);
+    --accent-color: #56693c;
+    --accent-ink: #ffffff;
+    --shadow-card: 0 1px 0 rgba(27, 27, 29, 0.06), 0 18px 32px -16px rgba(27, 27, 29, 0.12);
+    --shadow-card-hover: 0 1px 0 rgba(27, 27, 29, 0.08), 0 26px 44px -18px rgba(27, 27, 29, 0.18);
+  }
+
+  html:not([data-theme]) body {
+    color: var(--color-text-base);
+    background: var(--color-bg);
+  }
+}
+
+[data-theme="light"] .site-header.is-scrolled .header-inner {
+  background: rgba(246, 241, 231, 0.94);
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(110, 132, 80, 0.2);
+  color: #1b1b1d;
+}
+
+[data-theme="light"] :focus-visible {
+  outline-color: #56693c;
+}
+
+[data-theme="light"] .skip-link,
+[data-theme="light"] .btn-primary {
+  background: #56693c;
+  color: #ffffff;
+}
+
+[data-theme="light"] .btn-primary:hover {
+  background: #45542f;
+}
+
+[data-theme="light"] .text-link,
+[data-theme="light"] .prose h2,
+[data-theme="light"] .prose h3,
+[data-theme="light"] .prose strong,
+[data-theme="light"] .prose th {
+  color: #1b1b1d;
+}
+
+[data-theme="light"] .prose h2 .heading-anchor,
+[data-theme="light"] .prose h3 .heading-anchor {
+  color: rgba(27, 27, 29, 0.65);
+}
+
+[data-theme="light"] .text-link:hover,
+[data-theme="light"] .nav-link[aria-current='location'],
+[data-theme="light"] .prose h2 > .heading-anchor:hover,
+[data-theme="light"] .prose h3 > .heading-anchor:hover,
+[data-theme="light"] .toc-link-active {
+  color: #56693c !important;
+}
+
+[data-theme="light"] .text-link:hover {
+  border-color: rgba(110, 132, 80, 0.5);
+}
+
+[data-theme="light"] .project-proof-copy,
+[data-theme="light"] .prose,
+[data-theme="light"] .prose td,
+[data-theme="light"] .prose blockquote {
+  color: #57524a;
+}
+
+[data-theme="light"] .project-status-progress {
+  color: #696358;
+}
+
+[data-theme="light"] .project-status-shipped .project-status-dot,
+[data-theme="light"] .project-progress-bar {
+  background: #56693c;
+}
+
+[data-theme="light"] .project-status-shipped {
+  color: #56693c;
+}
+
+[data-theme="light"] .project-status-progress .project-status-dot {
+  background: #696358;
+}
+
+[data-theme="light"] .project-status-archived .project-status-dot {
+  background: #a39d91;
+}
+
+[data-theme="light"] .prose a:not(.heading-anchor) {
+  color: #45542f;
+}
+
+[data-theme="light"] .prose :not(pre) > code {
+  color: #45542f;
+  background: rgba(110, 132, 80, 0.08);
+  border-color: rgba(110, 132, 80, 0.2);
+}
+
+[data-theme="light"] .prose pre.astro-code,
+[data-theme="light"] .prose pre.shiki {
+  background: #1b1b1d !important;
+}
+
+[data-theme="light"] .prose thead {
+  background: rgba(27, 27, 29, 0.04);
+}
+
+[data-theme="light"] .prose em {
+  color: #4d483f;
+}
+
+[data-theme="light"] .callout-warning .callout-label {
+  color: #7d5f1f;
+}
+
+[data-theme="light"] .toc-link-active {
+  background: rgba(110, 132, 80, 0.09);
+}
+
+[data-theme="light"] .mobile-toggle span {
+  background: #1b1b1d !important;
+}
+
+/* .diagram-zoom-hint and .diagram-dialog-caption keep their dark-theme
+   colors in light mode on purpose: both sit on dark overlay surfaces. */
+
+[data-theme="light"] .diagram-trigger {
+  background: var(--panel);
+  border-color: var(--line);
+}
+
+[data-theme="light"] figure > figcaption {
+  color: #57524a !important;
+}
+

@@ -1,14 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import CaseStudyDetails from '../components/CaseStudyDetails.astro';
+import SelectedWork from '../components/SelectedWork.astro';
+import '../styles/home.css';
+import { capabilityGroups, profilePoints, timelineEntries, emailUrl, linkedInUrl, personalGithubUrl, structuredDataFor } from '../lib/profile';
 import GitHubIcon from '../components/GitHubIcon.astro';
-import RackElevation from '../components/RackElevation.astro';
-import RepoPlates from '../components/RepoPlates.astro';
 import Sheet from '../components/Sheet.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { getCollection } from 'astro:content';
 import { KANTERLABS_ORG_URL } from '../lib/kanterlabs';
-import { leadUnit } from '../lib/rack';
 
 const allProjects = await getCollection('projects', ({ data }) => !data.draft);
 const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
@@ -16,143 +15,16 @@ const portfolioProjects = sorted.filter((project) => project.data.kind === 'proj
 const dataCenterExperience = sorted.find((entry) => entry.data.kind === 'experience')!;
 
 const navItems = [
-  { label: 'Rack', href: '#kanterlabs' },
-  { label: 'Case studies', href: '#projects' },
+  { label: 'Work', href: '#projects' },
   { label: 'Experience', href: '#about' },
+  { label: 'KanterLabs', href: '/kanterlabs' },
   { label: 'Skills', href: '#skills' },
   { label: 'Contact', href: '#contact' },
 ];
 
-const SHEET_COUNT = 6;
-const lastDetailLetter = String.fromCharCode(64 + portfolioProjects.length);
+const SHEET_COUNT = 5;
+const structuredData = structuredDataFor(Astro.site?.toString() ?? 'https://shanekanterman.dev');
 
-const capabilityGroups = [
-  {
-    name: 'Systems and Networking',
-    description: 'Provision, connect, and troubleshoot Linux systems across physical and virtual infrastructure.',
-    items: ['Linux', 'Proxmox', 'Nginx', 'Caddy', 'Cloudflare', 'Tailscale', 'PXE Boot'],
-  },
-  {
-    name: 'Platform and Delivery',
-    description: 'Build repeatable delivery paths with isolated CI, container workflows, health checks, and rollback.',
-    items: ['GitHub Actions', 'k3s', 'ARC', 'Docker', 'GHCR', 'Coolify', 'Atomic Releases'],
-  },
-  {
-    name: 'Software and Data',
-    description: 'Write the application and automation code that makes infrastructure practical to operate.',
-    items: ['Rust', 'TypeScript', 'Next.js', 'Python', 'PostgreSQL', 'Git', 'Astro'],
-  },
-];
-
-const profilePoints = [
-  'Rack-and-stack and server deployment experience',
-  'Linux administration and troubleshooting background',
-  'Self-hosted systems for development, backups, and web app hosting',
-];
-
-const certifications = [
-  {
-    name: 'Technical Support Fundamentals',
-    issuer: 'Google / Coursera',
-    date: 'June 2025',
-    credentialId: '5BHVX4W2WMD5',
-  },
-];
-
-const [topCertification] = certifications;
-
-const timelineEntries = [
-  {
-    date: 'June 2025 – Present',
-    org: 'InterServer — Secaucus, NJ',
-    title: 'Data Center Technician',
-    body:
-      'Live data center work: server builds and hardware mods, rack-and-stack, OS installs (Linux, Windows, Proxmox), hardware diagnostics, decommissioning, an ongoing ~72-rack data center buildout, and PXE imaging.',
-    href: `/projects/${dataCenterExperience.id}`,
-    linkLabel: 'Read experience notes',
-  },
-  {
-    date: 'Sept. 2023 – May 2027',
-    org: 'Southern Connecticut State University',
-    title: 'Computer Science Student',
-    body:
-      'Building skills in software engineering, operating systems, and networking.',
-    href: '',
-    linkLabel: '',
-  },
-  {
-    date: topCertification.date,
-    org: `${topCertification.issuer} · Certification`,
-    title: topCertification.name,
-    body: `Credential ${topCertification.credentialId}`,
-    href: '',
-    linkLabel: '',
-  },
-];
-
-const personalGithubUrl = 'https://github.com/ShaneKanterman04';
-const linkedInUrl = 'https://www.linkedin.com/in/shane-kanterman-4511a2234';
-const emailUrl = 'mailto:shanekanterman04@gmail.com';
-
-// The rack's patch panel. No résumé link: the site deliberately doesn't
-// publish one (tests/home.spec.ts).
-const contactLinks = [
-  { label: 'Email', href: emailUrl },
-  { label: 'LinkedIn', href: linkedInUrl, external: true },
-  { label: 'GitHub', href: KANTERLABS_ORG_URL, external: true },
-  { label: 'Personal GitHub', href: personalGithubUrl, external: true },
-];
-
-const siteUrl = Astro.site?.toString() ?? 'https://shanekanterman.dev';
-
-const structuredData = [
-  {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'Shane Kanterman',
-    url: siteUrl,
-    description:
-      'Portfolio of Shane Kanterman, a Data Center Technician at InterServer, featuring production server operations, Linux systems, deployment tooling, and infrastructure projects.',
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: 'Shane Kanterman',
-    url: siteUrl,
-    sameAs: [linkedInUrl, KANTERLABS_ORG_URL, personalGithubUrl],
-    email: 'mailto:shanekanterman04@gmail.com',
-    alumniOf: {
-      '@type': 'CollegeOrUniversity',
-      name: 'Southern Connecticut State University',
-    },
-    knowsAbout: [
-      'Linux administration',
-      'Platform engineering',
-      'Deployment automation',
-      'Continuous integration',
-      'Server deployment',
-      'Data center operations',
-      'Network infrastructure',
-      'Proxmox',
-      'Kubernetes',
-      'Docker',
-      'Rust',
-      'Nginx',
-    ],
-    jobTitle: 'Data Center Technician',
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'KanterLabs',
-    url: KANTERLABS_ORG_URL,
-    logo: new URL('/apple-touch-icon.png', siteUrl).toString(),
-    description:
-      'Independent product and infrastructure studio building developer tools, self-hosted platforms, and practical software.',
-    founder: { '@type': 'Person', name: 'Shane Kanterman', url: siteUrl },
-    sameAs: [KANTERLABS_ORG_URL],
-  },
-];
 ---
 <BaseLayout
   title="Shane Kanterman | Data Center Technician and Infrastructure Work"
@@ -168,100 +40,36 @@ const structuredData = [
     <SiteHeader home={true} navItems={navItems} />
 
     <main class="pt-6 max-[780px]:pt-1" id="main-content">
-      <Sheet
-        id="top"
-        sheet={1}
-        of={SHEET_COUNT}
-        label="Rack elevation"
-        drawing="KanterLabs / DWG SK-01"
-        animate={false}
-        class="hero-sheet"
-      >
-        <div class="hero-grid">
-          <div class="hero-intro">
-            <p class="dwg-label hero-tag">Shane Kanterman · Data center technician</p>
-            {/* A comma, not an em dash: a break is permitted after an em dash,
-                so at narrow widths the dash wraps to the head of the next
-                line. A comma can never start a line. */}
-            <h1 class="hero-title">
-              <span class="hero-title-line">Everything I run,</span> <span class="dwg-serif">in one rack.</span>
-            </h1>
-            <p class="hero-copy">
-              I build, rack, image, and decommission production servers at InterServer. Everything
-              I build on my own time ships from KanterLabs, my open-source studio, and this is the
-              elevation drawing of it. Pick a unit to open it.
-            </p>
-            <div class="hero-actions">
-              <a class="dwg-btn dwg-btn-primary" href={leadUnit.href}>
-                Open detail A: {leadUnit.repo.name}
-                <span aria-hidden="true">→</span>
-              </a>
-              <a class="dwg-btn" href={`/projects/${dataCenterExperience.id}`}>
-                Data center work
-              </a>
-              <a class="dwg-btn kl-btn-github" href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">
-                <GitHubIcon size={17} />
-                <span><span class="max-[780px]:sr-only">KanterLabs on </span>GitHub</span>
-              </a>
-            </div>
-          </div>
-          <RackElevation id="kanterlabs" contactLinks={contactLinks} />
-          <table class="dwg-table hero-facts">
-            <caption class="dwg-label">A few things about me</caption>
-            <tbody>
-              <tr>
-                <th scope="row">Hands-on work</th>
-                <td>I’m helping rack and wire an ongoing buildout of roughly 72 racks at InterServer.</td>
-              </tr>
-              <tr>
-                <th scope="row">Built for my own work</th>
-                <td>I built Helm and use it to track the work my coding agents do.</td>
-              </tr>
-              <tr>
-                <th scope="row">Beyond the rack</th>
-                <td>I study computer science at Southern Connecticut State, with graduation expected in May 2027.</td>
-              </tr>
-            </tbody>
-          </table>
+      <Sheet id="top" sheet={1} of={SHEET_COUNT} label="Infrastructure & open source" drawing="KanterLabs / DWG SK-01" animate={false} class="hero-sheet audience-hero">
+        <div class="audience-intro">
+          <p class="dwg-label hero-tag">Data center technician · Open-source builder</p>
+          <h1 class="hero-title"><span class="hero-title-line">Everything I run,</span> <span class="dwg-serif">in one rack.</span></h1>
+          <p class="hero-copy">I work on production infrastructure at InterServer and build open-source tools through KanterLabs, from physical servers to the software that runs on them.</p>
+          <a class="text-link hero-contact" href={emailUrl}>Get in touch <span aria-hidden="true">→</span></a>
         </div>
-      </Sheet>
-
-      <Sheet
-        id="projects"
-        sheet={2}
-        of={SHEET_COUNT}
-        label="Case studies"
-        drawing={`DWG SK-02 · Details A–${lastDetailLetter}`}
-        labelledBy="projects-title"
-      >
-        <h2 class="sheet-title" id="projects-title">Detail drawings of systems that run.</h2>
-        <p class="sheet-intro">
-          Every case study opens with its drawing: the boundaries, failure modes, and release
-          decisions behind the work, not just the finished interface.
-        </p>
-
-        <CaseStudyDetails projects={portfolioProjects} />
-      </Sheet>
-
-      <Sheet
-        id="plates"
-        sheet={3}
-        of={SHEET_COUNT}
-        label="Plates · flagship units"
-        drawing="DWG SK-03 · Plates 1–5"
-        labelledBy="plates-title"
-      >
-        <h2 class="sheet-title" id="plates-title">The flagship units, photographed.</h2>
-        <p class="sheet-intro">
-          Real screenshots and recordings of the larger units in the rack, keyed to their callout
-          numbers. Every plate links straight to its source on GitHub.
-        </p>
-        <RepoPlates />
+        <div class="audience-routes" role="group" aria-label="Explore my work">
+          <a class="audience-route" href="#about" aria-label="Explore my engineering work">
+            <span class="dwg-label">Infrastructure & experience</span>
+            <h2>How I build and operate systems</h2>
+            <p>Production hardware, Linux, and reliable software delivery.</p>
+            <span class="route-action">Explore my engineering work <span aria-hidden="true">→</span></span>
+          </a>
+          <a class="audience-route" href="/kanterlabs" aria-label="Explore KanterLabs">
+            <span class="dwg-label">KanterLabs products</span>
+            <h2>Tools you can use</h2>
+            <p>Start with Helm, then explore the open-source tools I build and operate.</p>
+            <span class="route-action">Explore KanterLabs <span aria-hidden="true">→</span></span>
+          </a>
+        </div>
+        <dl class="hero-facts audience-proof">
+          <div><dt>Hands-on production work</dt><dd>I’m helping rack and wire an ongoing buildout of roughly 72 racks at InterServer.</dd></div>
+          <div><dt>Software I operate myself</dt><dd>I built Helm and use it to track the work my coding agents do.</dd></div>
+        </dl>
       </Sheet>
 
       <Sheet
         id="about"
-        sheet={4}
+        sheet={2}
         of={SHEET_COUNT}
         label="Experience"
         drawing="DWG SK-04 · Unit P"
@@ -269,7 +77,7 @@ const structuredData = [
       >
         <h2 class="sheet-title" id="about-title">Hands-on in a live data center.</h2>
         <p class="sheet-intro">
-          The solid unit at the bottom of the rack. At InterServer I work directly with the
+          At InterServer I work directly with the
           production hardware and deployment workflows that reliable infrastructure depends on.
         </p>
         <div class="experience-grid">
@@ -315,9 +123,20 @@ const structuredData = [
         </div>
       </Sheet>
 
+      <Sheet id="projects" sheet={3} of={SHEET_COUNT} label="Selected work" drawing="DWG SK-03" labelledBy="projects-title">
+        <h2 class="sheet-title" id="projects-title">Built to be used. Designed to be operated.</h2>
+        <p class="sheet-intro">The software, infrastructure, and delivery decisions behind my work. Start with the result, then explore how it runs.</p>
+        <span id="plates" aria-hidden="true"></span>
+        <SelectedWork projects={portfolioProjects} />
+        <div class="catalog-handoff" id="kanterlabs">
+          <div><h3>More from KanterLabs</h3><p>Developer tools, desktop software, and self-hosted projects, all in the interactive rack.</p></div>
+          <a class="dwg-btn" href="/kanterlabs">Explore all products <span aria-hidden="true">→</span></a>
+        </div>
+      </Sheet>
+
       <Sheet
         id="skills"
-        sheet={5}
+        sheet={4}
         of={SHEET_COUNT}
         label="Bill of materials"
         drawing="DWG SK-05 · BOM"
@@ -354,7 +173,7 @@ const structuredData = [
 
       <Sheet
         id="contact"
-        sheet={6}
+        sheet={5}
         of={SHEET_COUNT}
         label="Title block · contact"
         drawing="DWG SK-06"
@@ -387,7 +206,7 @@ const structuredData = [
             <div class="tb-wide"><dt>Based in</dt><dd>Cranford, NJ and New Haven, CT</dd></div>
             <div><dt>LinkedIn</dt><dd><a href={linkedInUrl} target="_blank" rel="noopener noreferrer">/in/shane-kanterman</a></dd></div>
             <div><dt>Personal GitHub</dt><dd><a href={personalGithubUrl} target="_blank" rel="noopener noreferrer">ShaneKanterman04</a></dd></div>
-            <div><dt>Sheet</dt><dd>06 of 06</dd></div>
+            <div><dt>Sheet</dt><dd>05 of 05</dd></div>
             <div><dt>Scale</dt><dd>1:1</dd></div>
           </dl>
         </div>
@@ -396,7 +215,7 @@ const structuredData = [
   </div>
 
   <script>
-    const sectionIds = ['kanterlabs', 'projects', 'about', 'skills', 'contact'];
+    const sectionIds = ['about', 'projects', 'skills', 'contact'];
     const sectionLinks = Array.from(document.querySelectorAll('[data-nav-link]'));
 
     const setActiveSection = (sectionId) => {

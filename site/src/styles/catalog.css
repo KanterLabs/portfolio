@@ -1,0 +1,164 @@
+/* The catalog keeps the portfolio's drawing sheets and rack, with a complete
+   directory below the flagship plates so every public project is readable. */
+.catalog-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 37rem);
+  gap: 2rem;
+  align-items: start;
+}
+
+.catalog-intro {
+  min-width: 0;
+}
+
+.catalog-intro .hero-title {
+  margin-top: 1.15rem;
+  font-size: clamp(2.8rem, 5.8vw, 5rem);
+  overflow-wrap: anywhere;
+}
+
+.catalog-deck {
+  margin: 0.8rem 0 1.25rem;
+  color: var(--ink);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  line-height: 1.2;
+}
+
+.catalog-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+}
+
+.catalog-register {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 2rem 0 1rem;
+  border: 1px solid var(--ink);
+}
+
+.catalog-register > div {
+  min-width: 0;
+  padding: 0.8rem 1rem;
+}
+
+.catalog-register > div:first-child {
+  border-right: 1px solid var(--ink);
+}
+
+.catalog-register > div:last-child {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--ink);
+}
+
+.catalog-register dt {
+  color: var(--color-text-muted);
+  font: 0.72rem var(--font-family-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.catalog-register dd {
+  margin: 0.3rem 0 0;
+  color: var(--ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.catalog-register a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.catalog-reading-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.catalog-directory {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.catalog-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.4fr);
+  gap: 1rem 2rem;
+  padding: 1.2rem;
+}
+
+.catalog-category {
+  margin: 0 0 0.6rem;
+}
+
+.catalog-entry .detail-summary {
+  margin-bottom: 0;
+}
+
+.catalog-entry-source {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.catalog-entry-source p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.catalog-entry-source a {
+  min-height: 2.75rem;
+}
+
+.catalog-return {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ink);
+}
+
+.catalog-return p {
+  flex-basis: 100%;
+  margin: 0 0 0.3rem;
+  color: var(--color-text-muted);
+}
+
+@media (width < 1100px) {
+  .catalog-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .catalog-intro {
+    max-width: 45rem;
+  }
+
+  .catalog-hero > .rack-figure {
+    width: min(100%, 46rem);
+    margin-inline: auto;
+  }
+}
+
+@media (width < 780px) {
+  .catalog-entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .catalog-nav .dwg-btn {
+    flex-grow: 1;
+  }
+}

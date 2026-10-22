@@ -5,6 +5,8 @@ import { expectMinTargetSizes } from './helpers/touchTargets';
 
 const themedRoutes = [
   '/',
+  '/kanterlabs',
+  '/projects',
   '/projects/helm',
   '/projects/multi-node-portfolio',
   '/projects/kanterlabs-homelab',
@@ -150,7 +152,7 @@ test.describe('theme without JavaScript', () => {
 });
 
 // WCAG 2.5.8: 44px targets on touch surfaces, 24px floor with a pointer.
-for (const route of ['/', '/projects/kanterlabs-homelab', '/this-page-does-not-exist'] as const) {
+for (const route of ['/', '/kanterlabs', '/projects', '/projects/kanterlabs-homelab', '/this-page-does-not-exist'] as const) {
   test(`interactive targets meet size minimums on ${route}`, async ({ page, isMobile }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(route);
@@ -178,7 +180,7 @@ for (const route of ['/', '/projects/kanterlabs-homelab', '/this-page-does-not-e
 
 // The larger --step-title makes long title words (Infrastructure, Deployment)
 // the tightest fit on the narrowest supported viewport.
-for (const route of ['/', '/projects/helm', '/this-page-does-not-exist'] as const) {
+for (const route of ['/', '/kanterlabs', '/projects', '/projects/helm', '/this-page-does-not-exist'] as const) {
   test(`${route} reflows at 320px without horizontal overflow`, async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto(route);

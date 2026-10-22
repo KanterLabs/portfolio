@@ -1,0 +1,293 @@
+/* ── Drawing system ──
+   The site is presented as a set of engineering drawing sheets: drawing
+   paper with a fine grid, ink linework, mono annotations, and a title
+   block. Every colour below is a theme token or a color-mix() of one, so
+   the light theme, the dark ("ink") theme, and the no-JS light mirror in
+   global.css all resolve without per-theme entries here. */
+
+:root {
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --ink: var(--color-text-base);
+  --paper: var(--color-bg);
+  --grid-minor: color-mix(in srgb, var(--color-text-base) 5%, transparent);
+  --grid-major: color-mix(in srgb, var(--color-text-base) 9%, transparent);
+  /* Sage fill for callout bubbles and the lead unit. Theme-independent on
+     purpose: ink on sage is ~8:1 in both themes. */
+  --fill-accent: #9db07a;
+  --fill-accent-ink: #1b1b1d;
+  --hatch: repeating-linear-gradient(
+    45deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--color-accent) 70%, transparent) 5px 6.5px
+  );
+  /* One rack unit. 1U rows must stay >= 24px tall: the whole row is the
+     link target (WCAG 2.5.8). */
+  --u: 1.75rem;
+  --rail: 1.75rem;
+  --unit-w: 15rem;
+}
+
+body {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+}
+
+/* ── Annotations ── */
+
+.dwg-label {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.dwg-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: var(--color-accent);
+}
+
+/* ── Sheets ── */
+
+.sheet {
+  position: relative;
+  margin-top: var(--space-section);
+  padding: 2.4rem 2.5rem 2.25rem;
+  border: 1.5px solid var(--ink);
+  scroll-margin-top: var(--header-offset);
+}
+
+.sheet:first-child {
+  margin-top: 0;
+}
+
+.sheet-zones {
+  position: absolute;
+  display: flex;
+  justify-content: space-around;
+  color: var(--color-text-soft);
+  font-family: var(--font-family-mono);
+  font-size: 0.6rem;
+  pointer-events: none;
+}
+
+.sheet-zones-top {
+  top: 0.45rem;
+  left: 0;
+  right: 0;
+}
+
+.sheet-zones-left {
+  top: 0;
+  bottom: 0;
+  left: 0.5rem;
+  flex-direction: column;
+}
+
+.sheet-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.4rem 1.5rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--ink);
+}
+
+.sheet-head .dwg-label {
+  color: var(--ink);
+}
+
+.sheet-title {
+  margin: 0 0 0.75rem;
+  color: var(--ink);
+  font-size: var(--step-section);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.sheet-intro {
+  max-width: 44rem;
+  margin: 0 0 2rem;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+@media (width < 780px) {
+  .sheet {
+    padding: 0.9rem 1.1rem 1.4rem;
+  }
+
+  .sheet-zones {
+    display: none;
+  }
+
+  /* The drawing number is decoration; on a phone it would wrap the strip
+     onto a second line and push the headline down. */
+  .sheet-head {
+    margin-bottom: 1.1rem;
+  }
+
+  .sheet-head .dwg-label + .dwg-label {
+    display: none;
+  }
+}
+
+/* ── Buttons: drawn rectangles with an offset ink shadow ── */
+
+.dwg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 2.9rem;
+  padding: 0.7rem 1.15rem;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 4px 4px 0 var(--ink);
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition);
+}
+
+.dwg-btn:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.dwg-btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 4px 4px 0 var(--fill-accent);
+}
+
+.dwg-btn-primary:hover {
+  box-shadow: 2px 2px 0 var(--fill-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dwg-btn,
+  .dwg-btn:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Surfaces: anything that must read as a block on the grid ── */
+
+.dwg-box {
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  padding: 1.1rem 1.25rem;
+}
+
+.dwg-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--paper);
+  font-family: var(--font-family-mono);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.dwg-table caption {
+  padding-bottom: 0.5rem;
+  text-align: left;
+}
+
+.dwg-table th,
+.dwg-table td {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.dwg-table thead th {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dwg-table td {
+  color: var(--color-text-muted);
+}
+
+.dwg-table .dwg-nowrap {
+  white-space: nowrap;
+}
+
+/* ── Title block ── */
+
+.title-block {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  font-family: var(--font-family-mono);
+  font-size: 0.78rem;
+}
+
+.title-block > * {
+  display: grid;
+  align-content: start;
+  gap: 0.2rem;
+  margin: 0;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.title-block dt,
+.title-block .tb-key {
+  color: var(--color-text-soft);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.title-block dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.title-block .tb-wide {
+  grid-column: 1 / -1;
+}
+
+.title-block .tb-name {
+  font-family: var(--font-family-sans);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.title-block a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.title-block a:hover {
+  color: var(--color-accent);
+}
+

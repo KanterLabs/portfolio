@@ -39,14 +39,14 @@ async function kanterLabsHrefs(page: Page): Promise<string[]> {
 async function setTheme(page: Page, theme: 'light' | 'dark') {
   await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
   await page.addInitScript(() => localStorage.clear());
-  await page.goto('/');
+  await page.goto('/kanterlabs');
   await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
 }
 
-test.describe('KanterLabs on the homepage', () => {
+test.describe('KanterLabs catalog', () => {
   test('the rack mounts the flagships first, then the full public catalog', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/');
+    await page.goto('/kanterlabs');
 
     const rack = page.locator('#kanterlabs');
     await expect(rack.locator('figcaption')).toContainText('rack SK-01');
@@ -77,7 +77,7 @@ test.describe('KanterLabs on the homepage', () => {
 
   test('every flagship gets a plate with real media', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/');
+    await page.goto('/kanterlabs');
 
     const plates = page.locator('#plates .plate');
     expect(await plates.evaluateAll((els) => els.map((el) => el.getAttribute('data-lab-repo')))).toEqual(FLAGSHIPS);
@@ -104,7 +104,7 @@ test.describe('KanterLabs on the homepage', () => {
   test('the lead plate spans the sheet and the rest pair up on desktop', async ({ page, isMobile }) => {
     test.skip(isMobile, 'Single column on phones');
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/');
+    await page.goto('/kanterlabs');
 
     const boxes = await page.locator('#plates .plate').evaluateAll((els) =>
       els.map((el) => {
@@ -119,13 +119,14 @@ test.describe('KanterLabs on the homepage', () => {
   });
 
   test('the site never links a private KanterLabs repository', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/kanterlabs');
     const publicSlugs = await page
       .locator('#kanterlabs [data-lab-repo]')
       .evaluateAll((els) => els.map((el) => el.getAttribute('data-lab-repo')!));
 
     for (const route of [
       '/',
+      '/kanterlabs',
       '/projects',
       '/projects/helm',
       '/projects/kanterlabs-homelab',
@@ -143,21 +144,21 @@ test.describe('KanterLabs on the homepage', () => {
     }
   });
 
-  test('KanterLabs is reachable from the nav, footer, and contact on every page', async ({ page, isMobile }) => {
+  test('KanterLabs is reachable from the nav, footer, and homepage contact', async ({ page, isMobile }) => {
     await page.goto('/');
     if (isMobile) {
       await page.getByRole('button', { name: 'Toggle navigation' }).click();
-      await expect(page.locator('#mobile-nav').getByRole('link', { name: 'KanterLabs on GitHub' })).toHaveAttribute(
+      await expect(page.locator('#mobile-nav').getByRole('link', { name: 'KanterLabs', exact: true })).toHaveAttribute(
         'href',
-        ORG_URL,
+        '/kanterlabs',
       );
     } else {
       await expect(
-        page.locator('nav[aria-label="Primary"]').getByRole('link', { name: 'KanterLabs on GitHub' }),
-      ).toHaveAttribute('href', ORG_URL);
+        page.locator('nav[aria-label="Primary"]').getByRole('link', { name: 'KanterLabs', exact: true }),
+      ).toHaveAttribute('href', '/kanterlabs');
     }
 
-    for (const route of ['/', '/projects/helm']) {
+    for (const route of ['/', '/kanterlabs', '/projects/helm']) {
       await page.goto(route);
       const footer = page.getByLabel('Site footer');
       await expect(footer.getByRole('link', { name: 'GitHub', exact: true })).toHaveAttribute('href', ORG_URL);
@@ -171,9 +172,9 @@ test.describe('KanterLabs on the homepage', () => {
     );
 
     await page.goto('/projects/kanterlabs-homelab');
-    await expect(page.locator('.case-lab-cta').getByRole('link', { name: 'KanterLabs on GitHub' })).toHaveAttribute(
+    await expect(page.locator('.case-lab-cta').getByRole('link', { name: 'Explore KanterLabs products' })).toHaveAttribute(
       'href',
-      ORG_URL,
+      '/kanterlabs',
     );
   });
 
@@ -192,7 +193,7 @@ test.describe('KanterLabs on the homepage', () => {
 
   test('the gamecast video stays paused under reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/');
+    await page.goto('/kanterlabs');
     const video = page.locator('[data-lab-video]');
     await video.scrollIntoViewIfNeeded();
     await page.waitForTimeout(400);
@@ -202,7 +203,7 @@ test.describe('KanterLabs on the homepage', () => {
 });
 
 for (const theme of ['light', 'dark'] as const) {
-  test.describe(`KanterLabs section in the ${theme} theme`, () => {
+  test.describe(`KanterLabs catalog in the ${theme} theme`, () => {
     test('theme-matched artwork shows exactly one variant', async ({ page }) => {
       await setTheme(page, theme);
       const card = page.locator('#plates [data-lab-repo="helm"]');
@@ -213,30 +214,31 @@ for (const theme of ['light', 'dark'] as const) {
     test('rack annotations, plate copy, and drawing labels meet AA contrast', async ({ page }) => {
       await setTheme(page, theme);
 
-      for (const selector of [
-        '.rack-rail span',
-        '.rack-name',
-        '.rack-code',
-        '.rack-note',
-        '.rack-lcd',
-        '.rack-legend',
-        '.hero-facts th',
-        '.hero-facts td',
-        '.dd-node-label',
-        '.dd-node-detail',
-        '.dd-caption',
-        '.plate-meta',
-        '.detail-summary',
-        '.title-block dt',
-        '.kl-header-sub',
-      ]) {
-        const color = await page.locator(selector).first().evaluate((el) => getComputedStyle(el).color);
-        const parsed = parseColor(color);
-        expect(parsed, `unparseable ${selector} color ${color}`).not.toBeNull();
-        const bg = await effectiveBackground(page, selector);
-        const fg = composite(parsed!.rgb, parsed!.alpha, bg);
-        const ratio = getContrastRatio(fg, bg);
-        expect(ratio, `${selector} is ${ratio.toFixed(2)}:1 in ${theme}`).toBeGreaterThanOrEqual(4.5);
+      for (const [route, selectors] of [
+        ['/kanterlabs', [
+          '.rack-rail span',
+          '.rack-name',
+          '.rack-code',
+          '.rack-note',
+          '.rack-lcd',
+          '.rack-legend',
+          '.plate-meta',
+          '.detail-summary',
+          '.kl-header-sub',
+        ]],
+        ['/', ['.hero-facts dt', '.hero-facts dd', '.detail-summary', '.title-block dt']],
+        ['/projects', ['.dd-node-label', '.dd-node-detail', '.dd-caption']],
+      ] as const) {
+        await page.goto(route);
+        for (const selector of selectors) {
+          const color = await page.locator(selector).first().evaluate((el) => getComputedStyle(el).color);
+          const parsed = parseColor(color);
+          expect(parsed, `unparseable ${selector} color ${color}`).not.toBeNull();
+          const bg = await effectiveBackground(page, selector);
+          const fg = composite(parsed!.rgb, parsed!.alpha, bg);
+          const ratio = getContrastRatio(fg, bg);
+          expect(ratio, `${route} ${selector} is ${ratio.toFixed(2)}:1 in ${theme}`).toBeGreaterThanOrEqual(4.5);
+        }
       }
     });
   });
