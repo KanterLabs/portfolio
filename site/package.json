@@ -17,7 +17,7 @@
     "test:e2e:update": "playwright test --update-snapshots"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.13.0",
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.62.1",
     "esbuild": "^0.28.2"
   },
