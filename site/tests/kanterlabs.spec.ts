@@ -28,7 +28,7 @@ const PRIVATE_REPOS = [
 ];
 
 // Helm is the lead project, so it always comes first.
-const FLAGSHIPS = ['helm', 'ActionView', 'nfl-scores', 'zeusos', 'greenlit-app'];
+const FLAGSHIPS = ['helm', 'ActionView', 'nfl-scores', 'resonance', 'greenlit-app'];
 
 async function kanterLabsHrefs(page: Page): Promise<string[]> {
   return page.$$eval('a[href*="github.com/KanterLabs"]', (links) =>
@@ -54,7 +54,7 @@ test.describe('KanterLabs catalog', () => {
     const units = rack.locator('.rack-row[data-lab-repo]');
     const slugs = await units.evaluateAll((els) => els.map((el) => el.getAttribute('data-lab-repo')!));
     expect(slugs.slice(0, FLAGSHIPS.length)).toEqual(FLAGSHIPS);
-    expect(slugs).toHaveLength(FLAGSHIPS.length + 4);
+    expect(slugs).toEqual([...FLAGSHIPS, 'portfolio']);
     expect(new Set(slugs).size, 'no repository is mounted twice').toBe(slugs.length);
 
     // Flagships are taller units than the rest of the catalog.
@@ -99,6 +99,10 @@ test.describe('KanterLabs catalog', () => {
       'href',
       '/projects/helm',
     );
+    // Both a public screenshot and a representative terminal sample expose
+    // named artwork; leave the media choice to the catalog implementation.
+    await expect(page.locator('#plates [data-lab-repo="resonance"] .lab-media').getByRole('img', { name: /\S/ }))
+      .toBeVisible();
   });
 
   test('the lead plate spans the sheet and the rest pair up on desktop', async ({ page, isMobile }) => {

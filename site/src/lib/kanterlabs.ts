@@ -1,18 +1,16 @@
 import type { ImageMetadata } from 'astro';
 import actionViewMenu from '../assets/kanterlabs/actionview-menu.png';
-import zeusDesktop from '../assets/kanterlabs/zeusos-desktop.jpg';
 
 /**
- * The public KanterLabs catalog shown on the homepage.
+ * The curated public KanterLabs catalog shown at /kanterlabs.
  *
  * Curated and checked in on purpose rather than fetched from the GitHub API
  * at build time: builds stay deterministic on ephemeral CI pods, a rate limit
  * can never fail a release, and every line of copy here is reviewed. Each
  * summary is drawn from that repository's own README.
  *
- * Curated to active projects: a public repository that is dormant or still
- * only a design doc stays off the site (Zeus Code, Pulse, and Patchwork
- * Pirates were removed on 2026-10-15 for that reason).
+ * This is Shane's current selection, not an exhaustive list of the org's
+ * public repositories. Repository visibility alone does not imply promotion.
  *
  * Only PUBLIC repositories belong in this file. tests/kanterlabs.spec.ts
  * fails the build if the page links any KanterLabs repository that is not
@@ -108,20 +106,23 @@ export const flagshipRepos: LabRepo[] = [
     },
   },
   {
-    slug: 'zeusos',
-    name: 'Zeus OS',
-    tagline: 'Fedora bootc laptop desktop',
+    slug: 'resonance',
+    name: 'Resonance',
+    tagline: 'Spotify in a native terminal',
     summary:
-      'A focused Fedora bootc laptop desktop with a macOS-inspired layout, original Zeus artwork, signed updates, and native GNOME security and accessibility.',
+      'A terminal Spotify client built from ncspot, with a Rust playback engine, an OpenTUI workspace, keyboard controls, and local radio. Requires Spotify Premium.',
     category: 'desktop',
-    stack: ['Fedora bootc', 'GNOME', 'Python'],
-    language: 'Python',
-    status: '0.1 preview',
+    stack: ['Rust', 'TypeScript', 'OpenTUI', 'librespot'],
+    language: 'Rust',
+    status: 'Active',
+    license: 'BSD-2-Clause',
     media: {
-      kind: 'image',
-      src: zeusDesktop,
-      alt: 'Zeus OS desktop: a translucent top bar, the New York at dusk wallpaper, and a floating dock',
-      fit: 'cover',
+      kind: 'terminal',
+      title: 'Resonance · quick start',
+      lines: [
+        { command: 'resonance', note: 'OpenTUI workspace on Unix' },
+        { command: 'resonance --headless', note: 'Rust playback engine only' },
+      ],
     },
   },
   {
@@ -147,41 +148,8 @@ export const flagshipRepos: LabRepo[] = [
   },
 ];
 
-/** Everything else public, shown as compact cards. */
+/** Additional selected public projects, shown as compact cards. */
 export const moreRepos: LabRepo[] = [
-  {
-    slug: 'linkshare',
-    name: 'Linkshare',
-    tagline: 'Link inbox for people and agents',
-    summary:
-      'A two-way link inbox for a person and their coding agents: web UI, JSON API, live updates, shipped as one Go binary in an unprivileged Proxmox LXC.',
-    category: 'platforms',
-    stack: ['Go', 'SQLite'],
-    language: 'Go',
-    status: 'Active',
-  },
-  {
-    slug: 'ncspot',
-    name: 'ncspot',
-    tagline: 'Expressive terminal Spotify fork',
-    summary: 'A visually expressive fork of the ncspot terminal Spotify client.',
-    category: 'desktop',
-    stack: ['Rust', 'TUI'],
-    language: 'Rust',
-    status: 'Fork',
-    license: 'BSD-2-Clause',
-  },
-  {
-    slug: 'RunComp',
-    name: 'RunComp',
-    tagline: 'Running competitions and streaks',
-    summary:
-      'A running-competition app with private groups, streaks, weekly challenges, and push alerts.',
-    category: 'apps',
-    stack: ['TypeScript', 'Next.js'],
-    language: 'TypeScript',
-    status: 'Active',
-  },
   {
     slug: 'portfolio',
     name: 'Portfolio',

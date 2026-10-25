@@ -8,11 +8,8 @@ const CATALOG = [
   ['helm', 'Helm'],
   ['ActionView', 'ActionView'],
   ['nfl-scores', 'NFL Scores'],
-  ['zeusos', 'Zeus OS'],
+  ['resonance', 'Resonance'],
   ['greenlit-app', 'Greenlit'],
-  ['linkshare', 'Linkshare'],
-  ['ncspot', 'ncspot'],
-  ['RunComp', 'RunComp'],
   ['portfolio', 'Portfolio'],
 ] as const;
 const unitHref = (slug: string) => (slug === 'helm' ? '/projects/helm' : `https://github.com/KanterLabs/${slug}`);
@@ -52,7 +49,7 @@ test.describe('KanterLabs rack', () => {
 
     const lead = page.locator('#kanterlabs .rack-row[data-kind="lead"]');
     await expect(lead).toHaveAttribute('data-lab-repo', 'helm');
-    const oneU = await page.locator('#kanterlabs .rack-row[data-lab-repo="linkshare"]').boundingBox();
+    const oneU = await page.locator('#kanterlabs .rack-row[data-lab-repo="portfolio"]').boundingBox();
     const leadBox = await lead.boundingBox();
     expect(Math.abs(leadBox!.height - oneU!.height * 4)).toBeLessThanOrEqual(1);
     // 1U rows are whole-row link targets: keep them >= 24px (WCAG 2.5.8).
@@ -102,7 +99,7 @@ test.describe('KanterLabs rack', () => {
     test.skip(isMobile, 'Hover is a pointer interaction');
     await page.goto('/kanterlabs');
 
-    const row = page.locator('#kanterlabs .rack-row[data-lab-repo="linkshare"]');
+    const row = page.locator('#kanterlabs .rack-row[data-lab-repo="portfolio"]');
     const face = row.locator('.rack-face');
     const before = await face.evaluate((el) => getComputedStyle(el).borderTopColor);
     await row.hover();
@@ -162,7 +159,7 @@ test.describe('KanterLabs rack', () => {
     await page.goto('/kanterlabs');
     const plates = page.locator('#plates .plate');
     const slugs = await plates.evaluateAll((els) => els.map((el) => el.getAttribute('data-lab-repo')));
-    expect(slugs).toEqual(['helm', 'ActionView', 'nfl-scores', 'zeusos', 'greenlit-app']);
+    expect(slugs).toEqual(['helm', 'ActionView', 'nfl-scores', 'resonance', 'greenlit-app']);
 
     for (const slug of slugs) {
       const rackCallout = await page

@@ -1,8 +1,8 @@
 import { HELM_CASE_STUDY_URL, flagshipRepos, moreRepos, repoUrl, type LabRepo } from './kanterlabs';
 
 /**
- * The homepage rack elevation: a front-view drawing of "rack SK-01" in which
- * every active public KanterLabs repository is mounted as a unit.
+ * The catalog rack elevation: a front-view drawing of "rack SK-01" in which
+ * every selected public KanterLabs repository is mounted as a unit.
  *
  * Derived from the curated catalog in ./kanterlabs.ts so the rack can never
  * show (or link) a repository the catalog doesn't list. Unit height encodes

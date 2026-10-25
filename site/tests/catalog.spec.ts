@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { expectNoHorizontalOverflow } from './helpers/navigation';
 
-const flagshipSlugs = ['helm', 'ActionView', 'nfl-scores', 'zeusos', 'greenlit-app'];
-const moreSlugs = ['linkshare', 'ncspot', 'RunComp', 'portfolio'];
+const flagshipSlugs = ['helm', 'ActionView', 'nfl-scores', 'resonance', 'greenlit-app'];
+const moreSlugs = ['portfolio'];
 const publicSlugs = [...flagshipSlugs, ...moreSlugs];
+const removedSlugs = ['zeusos', 'linkshare', 'ncspot', 'RunComp'];
 
 test.describe('KanterLabs catalog', () => {
   test('is reachable from home and exposes the complete public catalog with a route back', async ({ page }, testInfo) => {
@@ -16,6 +17,13 @@ test.describe('KanterLabs catalog', () => {
     const rack = page.locator('#kanterlabs');
     expect(await rack.locator('[data-lab-repo]').evaluateAll((units) => units.map((unit) => unit.getAttribute('data-lab-repo'))))
       .toEqual(publicSlugs);
+    expect(await page.locator('#more-projects [data-lab-repo]').evaluateAll(
+      (items) => items.map((item) => item.getAttribute('data-lab-repo')),
+    )).toEqual(moreSlugs);
+    for (const slug of removedSlugs) {
+      await expect(page.locator(`[data-lab-repo="${slug}"]`)).toHaveCount(0);
+      await expect(page.locator(`a[href="https://github.com/KanterLabs/${slug}"]`)).toHaveCount(0);
+    }
     for (const slug of publicSlugs) {
       await expect(rack.locator(`[data-lab-repo="${slug}"] a.rack-link`)).toHaveAttribute(
         'href', slug === 'helm' ? '/projects/helm' : `https://github.com/KanterLabs/${slug}`,
@@ -119,7 +127,7 @@ test.describe('KanterLabs catalog', () => {
       await expect(video).not.toHaveAttribute('autoplay');
       await expect(video).toHaveAttribute('poster', /nfl-touchdown-poster/);
       await expect(video).toBeVisible();
-      await expect(page.locator('#more-projects').getByRole('link', { name: 'Source on GitHub' })).toHaveCount(4);
+      await expect(page.locator('#more-projects').getByRole('link', { name: 'Source on GitHub' })).toHaveCount(1);
     } finally {
       await context.close();
     }
