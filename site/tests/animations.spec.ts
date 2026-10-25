@@ -16,7 +16,7 @@ test('catalog rack motion stays brief', async ({ page, isMobile }) => {
   // Leader lines draw in, and the whole cascade lands well inside 500ms.
   const leaders = page.locator('#kanterlabs .rack-leader');
   const count = await leaders.count();
-  expect(count).toBeGreaterThan(10);
+  expect(count).toBe(8); // Six projects, the contact panel, and the power unit.
   const timings = await leaders.evaluateAll((els) =>
     els.map((el) => {
       const style = getComputedStyle(el);
@@ -50,7 +50,7 @@ test('motion is disabled when reduced motion is requested', async ({ page }) => 
 
   await page.goto('/kanterlabs');
   const leaders = page.locator('#kanterlabs .rack-leader');
-  expect(await leaders.count()).toBeGreaterThan(10);
+  expect(await leaders.count()).toBe(8);
   for (const leader of await leaders.all()) {
     await expect(leader).toHaveCSS('animation-name', 'none');
   }

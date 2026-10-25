@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-22.1",
+  "version": "2026-10-25.1",
   "entries": [
     {
       "id": "profile",
@@ -65,7 +65,7 @@
         "path": "site/src/lib/kanterlabs.ts",
         "href": "/#kanterlabs"
       },
-      "lastReviewed": "2026-10-22",
+      "lastReviewed": "2026-10-25",
       "topics": [
         "kanterlabs",
         "open source",
@@ -79,15 +79,14 @@
         "GitHub organization",
         "ActionView",
         "NFL Scores",
-        "Zeus OS",
         "Greenlit",
-        "Linkshare",
-        "ncspot",
-        "RunComp",
         "GNOME Shell extension",
-        "self-hosted"
+        "self-hosted",
+        "Resonance",
+        "Spotify",
+        "OpenTUI"
       ],
-      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio lists 9 active public projects, drawn on the homepage as units in a rack elevation, with Helm as the hatched 4U lead unit. Helm is the lead project: a Go and Svelte self-hosted project board and bug tracker where people and software agents move work together, with scoped agent tokens and an auditable API (v0.2.0, with a case study). Other flagships: ActionView (GNOME Shell extension showing the KanterLabs self-hosted GitHub Actions runner fleet), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Zeus OS (a Fedora bootc laptop desktop, 0.1 preview), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). Other active public projects: Linkshare (Go link inbox for a person and their coding agents), an ncspot fork, RunComp (running-competition app with private groups, streaks, weekly challenges, and push alerts), and this portfolio's source, deployed as digest-pinned containers through Coolify."
+      "content": "KanterLabs is the independent product and infrastructure studio Shane founded and operates. It builds developer tools, self-hosted platforms, and practical software, together with the infrastructure to run them, and its public repositories are at github.com/KanterLabs. The portfolio features six selected public projects in its dedicated /kanterlabs catalog, drawn as units in a rack elevation with Helm as the hatched 4U lead unit. This is a curated selection, not the complete organization repository list. Helm is the lead project: a Go and Svelte self-hosted project board and bug tracker where people and software agents move work together, with scoped agent tokens and an auditable API (v0.2.0, with a case study). Other flagships: ActionView (GNOME Shell extension showing GitHub Actions jobs and runner capacity), NFL Scores (GNOME Shell extension with live scores and a drawn-on-the-field gamecast), Resonance (a terminal Spotify client built from ncspot, with a Rust playback engine, an OpenTUI workspace, keyboard controls, and local radio; requires Spotify Premium), and Greenlit (Rust tool for running GitHub Actions workflows locally, pre-release). The catalog also includes this portfolio's Astro source, deployed as digest-pinned containers through Coolify."
     },
     {
       "id": "skills-and-architecture",
