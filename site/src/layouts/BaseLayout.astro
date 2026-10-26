@@ -91,7 +91,12 @@ const jsonLdItems = structuredData
     <title>{title}</title>
     <script is:inline define:vars={{ theme }}>
       const themeStorageKey = 'portfolio-theme';
-      const savedTheme = localStorage.getItem(themeStorageKey);
+      let savedTheme = null;
+      try {
+        savedTheme = localStorage.getItem(themeStorageKey);
+      } catch {
+        // Storage can be disabled by browser privacy settings; use the OS theme.
+      }
       const systemTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
       const resolvedMode = theme === 'dark' ? 'dark' : (savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'system');
       const resolvedTheme = resolvedMode === 'system' ? systemTheme : resolvedMode;
