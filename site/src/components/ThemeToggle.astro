@@ -31,9 +31,16 @@
   const getSystemTheme = () => (mediaQuery.matches ? 'light' : 'dark');
 
   const getMode = (): ThemeMode => {
-    const saved = localStorage.getItem(storageKey);
-    return saved === 'light' || saved === 'dark' ? saved : 'system';
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved === 'light' || saved === 'dark' ? saved : 'system';
+    } catch {
+      return 'system';
+    }
   };
+
+  // Keep this page usable even when reading or saving preferences is blocked.
+  let currentMode = getMode();
 
   const nextMode = (mode: ThemeMode): ThemeMode =>
     modeOrder[(modeOrder.indexOf(mode) + 1) % modeOrder.length];
@@ -54,19 +61,24 @@
 
   document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((toggle) => {
     toggle.addEventListener('click', () => {
-      const mode = nextMode(getMode());
-      if (mode === 'system') {
-        localStorage.removeItem(storageKey);
-      } else {
-        localStorage.setItem(storageKey, mode);
+      const mode = nextMode(currentMode);
+      currentMode = mode;
+      try {
+        if (mode === 'system') {
+          localStorage.removeItem(storageKey);
+        } else {
+          localStorage.setItem(storageKey, mode);
+        }
+      } catch {
+        // Persistence is optional; the selection still applies for this page.
       }
       applyMode(mode);
     });
   });
 
   mediaQuery.addEventListener('change', () => {
-    if (getMode() === 'system') applyMode('system');
+    if (currentMode === 'system') applyMode('system');
   });
 
-  applyMode(getMode());
+  applyMode(currentMode);
 </script>
