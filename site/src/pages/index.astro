@@ -229,27 +229,34 @@ const structuredData = structuredDataFor(Astro.site?.toString() ?? 'https://shan
       });
     };
 
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          const visibleEntries = entries
-            .filter((entry) => entry.isIntersecting)
-            .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((section): section is HTMLElement => section !== null);
+    let scrollFrame = 0;
 
-          if (visibleEntries.length > 0) {
-            setActiveSection(visibleEntries[0].target.id);
-          }
-        },
-        {
-          rootMargin: '-35% 0px -45% 0px',
-          threshold: [0.2, 0.4, 0.6],
-        },
-      );
+    const syncActiveSection = () => {
+      scrollFrame = 0;
+      const headerBottom = document.querySelector('[data-site-header] .header-inner')
+        ?.getBoundingClientRect().bottom ?? 0;
+      const readingLine = Math.max(headerBottom + 24, window.innerHeight * 0.35);
+      let activeId = '';
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= readingLine) activeId = section.id;
+      }
+      setActiveSection(activeId);
+    };
 
-      sectionIds.forEach((id) => {
-        const section = document.getElementById(id);
-        if (section) observer.observe(section);
-      });
-    }
+    // Measure all sections at one reading line. IntersectionObserver percentage
+    // margins resolve against viewport width and can collapse a short viewport;
+    // per-section thresholds also miss tall sections and rapid scroll jumps.
+    const requestSectionSync = () => {
+      if (scrollFrame) return;
+      scrollFrame = window.requestAnimationFrame(syncActiveSection);
+    };
+    window.addEventListener('scroll', requestSectionSync, { passive: true });
+    window.addEventListener('resize', requestSectionSync);
+    window.addEventListener('pageshow', requestSectionSync);
+    document.fonts.ready.then(requestSectionSync);
+    syncActiveSection();
   </script>
 </BaseLayout>
