@@ -124,3 +124,20 @@ test.describe('site header', () => {
     await expect(page.locator('#mobile-nav')).toBeHidden();
   });
 });
+
+test('mobile menu closes when keyboard focus leaves the header', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'mobile menu behavior');
+  await page.goto('/');
+  const toggle = page.getByRole('button', { name: 'Toggle navigation' });
+  const panel = page.locator('#mobile-nav');
+  await toggle.click();
+  await expect(panel.locator('a').first()).toBeFocused();
+  // Moving between menu links must keep the menu available.
+  await page.keyboard.press('Tab');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await panel.locator('a').last().focus();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('main a').first()).toBeFocused();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(panel).toBeHidden();
+});

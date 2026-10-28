@@ -189,6 +189,18 @@ const {
         }
       });
 
+      // Keyboard users can leave this non-modal menu without clicking outside.
+      // Close the overlay without moving focus away from their next control.
+      header.addEventListener('focusout', (event) => {
+        if (
+          mobileToggle.getAttribute('aria-expanded') === 'true' &&
+          event.relatedTarget instanceof Node &&
+          !header.contains(event.relatedTarget)
+        ) {
+          closeMenu(false);
+        }
+      });
+
       document.addEventListener('click', (event) => {
         if (
           mobileToggle.getAttribute('aria-expanded') === 'true' &&
