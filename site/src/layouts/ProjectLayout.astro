@@ -317,7 +317,7 @@ const structuredData = {
 
     const tocLinks = Array.from(document.querySelectorAll('a.toc-link'));
 
-    if (tocLinks.length > 0 && 'IntersectionObserver' in window) {
+    if (tocLinks.length > 0) {
       const headingEls = tocLinks
         .map((link) => {
           const id = link.getAttribute('data-heading');
@@ -337,21 +337,31 @@ const structuredData = {
         });
       };
 
-      const observer = new IntersectionObserver(
-        (entries) => {
-          const visible = entries
-            .filter((entry) => entry.isIntersecting)
-            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      let tocFrame = 0;
+      const syncToc = () => {
+        tocFrame = 0;
+        const headerBottom = document.querySelector('[data-site-header] .header-inner')
+          ?.getBoundingClientRect().bottom ?? 0;
+        const readingLine = Math.max(headerBottom + 24, window.innerHeight * 0.3);
+        let activeHeading = headingEls[0];
+        for (const heading of headingEls) {
+          if (heading.getBoundingClientRect().top <= readingLine) activeHeading = heading;
+        }
+        if (activeHeading) setActive(activeHeading.id);
+      };
 
-          if (visible.length > 0) {
-            setActive(visible[0].target.id);
-          }
-        },
-        { rootMargin: '0px 0px -70% 0px', threshold: 0 },
-      );
-
-      headingEls.forEach((el) => observer.observe(el));
-      if (headingEls[0]) setActive(headingEls[0].id);
+      // Measure every heading after jumps as well as ordinary scrolling.
+      // Observer percentage margins use viewport width, which can eliminate
+      // the observation area entirely in short, wide windows.
+      const requestTocSync = () => {
+        if (tocFrame) return;
+        tocFrame = window.requestAnimationFrame(syncToc);
+      };
+      window.addEventListener('scroll', requestTocSync, { passive: true });
+      window.addEventListener('resize', requestTocSync);
+      window.addEventListener('pageshow', requestTocSync);
+      document.fonts.ready.then(requestTocSync);
+      syncToc();
     }
 
     const tocDetails = document.querySelector('[data-toc-details]');

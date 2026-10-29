@@ -96,6 +96,8 @@ test('Greenlit remains dark and has no portfolio theme control', async ({ page }
 
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.locator('[data-theme-toggle]')).toHaveCount(0);
+  await settle(page);
+  await expectNoAxeViolations(page);
 });
 
 test('theme controls are keyboard accessible and meet touch size', async ({ page }) => {
