@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import RackElevation from '../components/RackElevation.astro';
+import RepoPlates from '../components/RepoPlates.astro';
+import Sheet from '../components/Sheet.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { allPublicRepos, flagshipRepos, moreRepos, repoUrl, KANTERLABS_ORG_URL } from '../lib/kanterlabs';
+import { contactLinks } from '../lib/profile';
+import '../styles/catalog.css';
+
+const categories = {
+  platforms: 'Self-hosted platforms',
+  devtools: 'Developer tools',
+  desktop: 'Desktop software',
+  apps: 'Applications',
+};
+---
+
+<BaseLayout
+  title="KanterLabs | Open-source projects by Shane Kanterman"
+  description="Explore KanterLabs: Helm, developer tools, self-hosted platforms, and desktop software built by Shane Kanterman. Screenshots, case studies, and public source."
+  image="/og/portfolio-rack-v2.png"
+  imageAlt="Shane Kanterman, Data Center Technician, with a rack illustration and KanterLabs branding."
+>
+  <div class="page-shell relative z-10 pb-10 catalog-page">
+    <SiteHeader backHref="/" backLabel="Home" />
+    <main class="pt-6 max-[780px]:pt-1" id="main-content">
+      <Sheet
+        id="catalog"
+        sheet={1}
+        of={3}
+        label="KanterLabs · project catalog"
+        drawing="DWG KL-01 · Rack SK-01"
+        labelledBy="catalog-title"
+        animate={false}
+      >
+        <div class="catalog-hero">
+          <div class="catalog-intro">
+            <p class="dwg-label">Independent software · built by Shane Kanterman</p>
+            <h1 class="hero-title" id="catalog-title">KanterLabs</h1>
+            <p class="catalog-deck dwg-serif">Tools I build, use, and ship.</p>
+            <p class="sheet-intro">
+              My open-source studio: self-hosted platforms, developer tools, and desktop software.
+              Start with Helm, the board I use to coordinate work with coding agents, or browse
+              the full rack. Every project below has public source.
+            </p>
+            <nav class="catalog-nav" aria-label="Catalog">
+              <a class="dwg-btn dwg-btn-primary" href="#plates">Flagship projects</a>
+              <a class="dwg-btn" href="#more-projects">More projects</a>
+              <a class="dwg-btn" href="/">Home</a>
+              <a class="dwg-btn" href="/#contact">Contact</a>
+            </nav>
+            <dl class="catalog-register">
+              <div><dt>Public projects</dt><dd>{String(allPublicRepos.length).padStart(2, '0')}</dd></div>
+              <div><dt>Flagships</dt><dd>{String(flagshipRepos.length).padStart(2, '0')}</dd></div>
+              <div><dt>Source</dt><dd><a href={KANTERLABS_ORG_URL} target="_blank" rel="noopener noreferrer">KanterLabs on GitHub ↗</a></dd></div>
+            </dl>
+            <p class="catalog-reading-note">
+              Pick a rack annotation to open a project. The numbered plates below show the
+              flagship projects in action; the smaller projects follow in the directory.
+            </p>
+          </div>
+          <RackElevation id="kanterlabs" contactLinks={contactLinks} />
+        </div>
+      </Sheet>
+
+      <Sheet
+        id="plates"
+        sheet={2}
+        of={3}
+        label="Flagship projects"
+        drawing={`DWG KL-02 · Plates 1–${flagshipRepos.length}`}
+        labelledBy="plates-title"
+        animate={false}
+      >
+        <h2 class="sheet-title" id="plates-title">Flagship projects</h2>
+        <p class="sheet-intro">
+          Screenshots, recordings, and quick starts from the larger units in the rack.
+          Open a case study for the engineering decisions, or go straight to the source.
+        </p>
+        <RepoPlates />
+      </Sheet>
+
+      <Sheet
+        id="more-projects"
+        sheet={3}
+        of={3}
+        label="More public projects"
+        drawing="DWG KL-03 · Directory"
+        labelledBy="more-projects-title"
+        animate={false}
+      >
+        <h2 class="sheet-title" id="more-projects-title">More projects</h2>
+        <p class="sheet-intro">The source and deployment behind this portfolio.</p>
+        <ul class="catalog-directory" role="list">
+          {moreRepos.map((repo) => (
+            <li class="catalog-entry dwg-box" data-lab-repo={repo.slug}>
+              <div>
+                <p class="dwg-label catalog-category">{categories[repo.category]} · {repo.status}</p>
+                <h3 class="detail-title">{repo.name}</h3>
+                <p class="detail-summary">{repo.summary}</p>
+              </div>
+              <div class="catalog-entry-source">
+                <p class="dwg-label">{repo.stack.join(' · ')}</p>
+                <a class="text-link" href={repoUrl(repo)} target="_blank" rel="noopener noreferrer">
+                  Source on GitHub <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div class="catalog-return">
+          <p>For my infrastructure experience, case studies, and contact details:</p>
+          <a class="dwg-btn" href="/">Shane’s portfolio <span aria-hidden="true">→</span></a>
+          <a class="dwg-btn" href="/#contact">Contact Shane</a>
+        </div>
+      </Sheet>
+    </main>
+  </div>
+</BaseLayout>

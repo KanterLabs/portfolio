@@ -14,33 +14,3 @@ const plated = rackUnits.filter(
     <RepoPlate repo={unit.repo} plate={index + 1} callout={unit.callout} />
   ))}
 </div>
-
-<script>
-  // The NFL Scores gamecast loops only while it is on screen, and never under
-  // reduced motion: without JS, or with motion reduced, the poster frame is
-  // the whole presentation.
-  const videos = document.querySelectorAll<HTMLVideoElement>('[data-lab-video]');
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  if (videos.length > 0 && 'IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const video = entry.target as HTMLVideoElement;
-          if (entry.isIntersecting && !reducedMotion.matches) {
-            video.play().catch(() => {});
-          } else {
-            video.pause();
-          }
-        });
-      },
-      { threshold: 0.35 },
-    );
-
-    videos.forEach((video) => observer.observe(video));
-
-    reducedMotion.addEventListener('change', (event) => {
-      if (event.matches) videos.forEach((video) => video.pause());
-    });
-  }
-</script>

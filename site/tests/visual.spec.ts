@@ -14,6 +14,8 @@ test.describe('visual coverage', () => {
   });
 
   for (const entry of [
+    ['/kanterlabs', 'kanterlabs-catalog'],
+    ['/projects', 'projects-index'],
     ['/projects/helm', 'featured-helm-case-study'],
     ['/projects/kanterlabs-homelab', 'homelab-case-study'],
     ['/projects/multi-node-portfolio', 'portfolio-infrastructure-case-study'],

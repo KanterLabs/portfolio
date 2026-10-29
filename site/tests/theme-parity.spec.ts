@@ -103,13 +103,14 @@ for (const theme of ['light', 'dark'] as const) {
   // boxes must clear the WCAG 1.4.11 non-text minimum against the paper.
   test(`drawing linework clears 3:1 in ${theme}`, async ({ page, isMobile }) => {
     test.skip(isMobile, 'The cabinet outline is the desktop drawing; phones use the unit list');
-    await setTheme(page, theme, '/');
+    await setTheme(page, theme, '/kanterlabs');
 
-    for (const [selector, pseudo] of [
-      ['#kanterlabs .rack', '::before'],
-      ['#kanterlabs .rack-row[data-kind="repo"] .rack-face', undefined],
-      ['#detail-a .dd-node', undefined],
+    for (const [route, selector, pseudo] of [
+      ['/kanterlabs', '#kanterlabs .rack', '::before'],
+      ['/kanterlabs', '#kanterlabs .rack-row[data-kind="repo"] .rack-face', undefined],
+      ['/projects', '#detail-a .dd-node', undefined],
     ] as const) {
+      await page.goto(route);
       const raw = await page.locator(selector).first().evaluate(
         (el, pse) => getComputedStyle(el, pse ?? undefined).borderTopColor,
         pseudo,
@@ -124,7 +125,7 @@ for (const theme of ['light', 'dark'] as const) {
   });
 
   test(`the lead callout bubble clears AA in ${theme}`, async ({ page }) => {
-    await setTheme(page, theme, '/');
+    await setTheme(page, theme, '/kanterlabs');
 
     const bubble = page.locator('#kanterlabs .rack-row[data-kind="lead"] .rack-num');
     const { color, background } = await bubble.evaluate((el) => {
@@ -139,7 +140,7 @@ for (const theme of ['light', 'dark'] as const) {
   });
 
   test(`detail-drawing connectors stay visible in ${theme}`, async ({ page }) => {
-    await setTheme(page, theme, '/');
+    await setTheme(page, theme, '/projects');
 
     const raw = await page
       .locator('#detail-a .dd-connector span')
@@ -243,7 +244,13 @@ for (const theme of ['light', 'dark'] as const) {
     await setTheme(page, theme, '/');
     const pageBg = parseColor(await page.evaluate(() => getComputedStyle(document.body).backgroundColor))!;
 
-    for (const selector of ['#projects .dwg-box', '#skills .dwg-table', '#contact .title-block', '#kanterlabs .rack-row[data-kind="repo"] .rack-face']) {
+    for (const [route, selector] of [
+      ['/', '#projects .dwg-box'],
+      ['/', '#skills .dwg-table'],
+      ['/', '#contact .title-block'],
+      ['/kanterlabs', '#kanterlabs .rack-row[data-kind="repo"] .rack-face'],
+    ]) {
+      await page.goto(route);
       const raw = await page.locator(selector).first().evaluate((el) => getComputedStyle(el).backgroundColor);
       const parsed = parseColor(raw);
       expect(parsed, `unparseable ${selector} background ${raw}`).not.toBeNull();
@@ -251,8 +258,9 @@ for (const theme of ['light', 'dark'] as const) {
       expect(parsed!.rgb, `${selector} is paper-coloured in ${theme}`).toEqual(pageBg.rgb);
     }
 
+    await page.goto('/');
     const shadow = await page
-      .locator('#top .dwg-btn')
+      .locator('#projects .dwg-btn')
       .first()
       .evaluate((el) => getComputedStyle(el).boxShadow);
     expect(shadow, 'drawn buttons carry their offset shadow').not.toBe('none');

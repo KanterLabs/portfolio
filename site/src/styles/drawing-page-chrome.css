@@ -1,0 +1,123 @@
+/* ── Header: drawn controls ── */
+
+.nav-link {
+  font-family: var(--font-family-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.theme-toggle,
+.header-github,
+.mobile-toggle {
+  /* Whole pixels: a 1.5px border puts the icon on a half pixel. */
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  color: var(--ink);
+}
+
+.theme-toggle:hover,
+.header-github:hover {
+  border-color: var(--color-accent);
+  background: var(--paper);
+}
+
+.theme-toggle-label {
+  font-family: var(--font-family-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Case-study sheets ── */
+
+.case-meta {
+  margin-bottom: 1.6rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.case-meta .eyebrow {
+  margin: 0;
+  color: var(--ink);
+  font-size: inherit;
+  font-weight: 500;
+}
+
+.case-head {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+}
+
+.case-head-split {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+}
+
+.case-title {
+  margin: 0 0 1rem;
+  color: var(--ink);
+  font-size: var(--step-title);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  overflow-wrap: break-word;
+}
+
+.case-summary {
+  max-width: 62ch;
+  margin: 0 0 1.4rem;
+  color: var(--color-text-muted);
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.case-stack {
+  font-family: var(--font-family-mono);
+  font-size: 0.74rem;
+}
+
+.case-drawing {
+  padding: 1.25rem 1.35rem 1.1rem;
+}
+
+/* Role / Scope / Outcome read as a title block. */
+.project-detail-facts {
+  gap: 0;
+  margin-top: 2rem;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.project-detail-facts > div {
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+}
+
+.project-proof-copy {
+  color: var(--color-text-muted);
+}
+
+@media (width < 960px) {
+  .case-head-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (width < 780px) {
+  .project-detail-facts {
+    gap: 0;
+  }
+
+  .case-summary {
+    font-size: 1rem;
+  }
+}
+

@@ -14,10 +14,10 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
     h1: document.querySelector('h1')?.textContent?.replace(/\s+/g, ' ').trim(),
     heroParagraph: document.querySelector('.hero-copy')?.textContent?.replace(/\s+/g, ' ').trim(),
     contactText: document.getElementById('contact')?.textContent ?? '',
-    sectionTops: ['kanterlabs', 'projects', 'plates', 'about', 'skills', 'contact'].map((id) => ({
+    sectionTops: ['top', 'about', 'projects', 'skills', 'contact'].map((id) => ({
       id,
       top: Math.round(
-        (document.getElementById(id)?.getBoundingClientRect().top ?? 0) + window.scrollY,
+        (document.getElementById(id)?.getBoundingClientRect().top ?? NaN) + window.scrollY,
       ),
     })),
   }));
@@ -25,17 +25,18 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
   console.log('Mobile metrics:', JSON.stringify(metrics, null, 2));
 
   expect(metrics.hasHorizontalOverflow).toBe(false);
-  // Six sheets, the rack as a unit list, and five media plates in a
-  // single column. The budget still catches runaway growth past that.
-  expect(metrics.scrollHeight).toBeLessThan(15000);
+  // Keep the compact homepage substantially shorter than the old 12,100px catalog.
+  expect(metrics.scrollHeight).toBeLessThan(7500);
   expect(metrics.h1).toBe('Everything I run, in one rack.');
-  expect(metrics.heroParagraph).toContain('production servers at InterServer');
+  expect(metrics.heroParagraph).toContain('production infrastructure at InterServer');
   expect(metrics.contactText).toContain('shanekanterman04@gmail.com');
   expect(metrics.contactText).toContain('Cranford');
-  // The rack is the body of work: it starts within the first screen,
-  // and the sheets follow in order.
-  expect(metrics.sectionTops[0]?.id).toBe('kanterlabs');
+  // The compact hero starts within the first screen; all five sheets
+  // must exist and follow in document order.
+  await expect(page.locator('main > .sheet')).toHaveCount(5);
+  expect(metrics.sectionTops[0]?.id).toBe('top');
   expect(metrics.sectionTops[0]?.top).toBeLessThan(750);
+  for (const section of metrics.sectionTops) expect(Number.isFinite(section.top), section.id).toBe(true);
   for (let i = 1; i < metrics.sectionTops.length; i += 1) {
     expect(metrics.sectionTops[i - 1].top).toBeLessThan(metrics.sectionTops[i].top);
   }
@@ -54,9 +55,10 @@ test('small phones reach the projects without clipping or crowding the actions',
     await page.evaluate(() => document.fonts.ready);
 
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    const actions = page.locator('.hero-actions');
+    const actions = page.locator('.audience-routes');
     const box = await actions.boundingBox();
-    expect(box!.y + box!.height).toBeLessThan(844);
+    expect(box!.y, 'the engineering route begins in the first screen').toBeLessThan(844);
+    expect(box!.y + box!.height, 'both audience routes precede the detailed sections').toBeLessThan(1100);
     for (const link of await actions.getByRole('link').all()) {
       const target = await link.boundingBox();
       expect(target!.height).toBeGreaterThanOrEqual(44);
@@ -64,8 +66,22 @@ test('small phones reach the projects without clipping or crowding the actions',
 
     const study = page.locator('#projects [data-project-entry]').first();
     const heading = await study.getByRole('heading').boundingBox();
-    const drawing = await study.locator('.detail-drawing').boundingBox();
-    expect(heading!.y).toBeLessThan(drawing!.y);
+    expect(heading).not.toBeNull();
+    await expect(page.locator('#projects .detail-drawing')).toHaveCount(0);
+
+    // Full drawings retain their mobile layout on the project index.
+    await page.goto('/projects');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    const drawing = page.locator('[data-project-entry]').first().locator('.detail-drawing');
+    await expect(drawing).toBeVisible();
+    const drawingBox = await drawing.boundingBox();
+    const drawingHeading = await page.locator('[data-project-entry]').first().getByRole('heading').boundingBox();
+    expect(drawingHeading!.y).toBeLessThan(drawingBox!.y);
+
+    await page.goto('/kanterlabs');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await expect(page.locator('#kanterlabs .rack-row').first()).toBeVisible();
+    await expect(page.locator('#plates .plate')).toHaveCount(5);
   }
 });
 
@@ -78,7 +94,7 @@ test('mobile nav panel is compact', async ({ page }) => {
   const navHeight = await page.locator('#mobile-nav').evaluate((el) => el.getBoundingClientRect().height);
   console.log('Mobile nav panel height:', navHeight);
 
-  // Five section anchors plus the KanterLabs GitHub link, 44px each.
+  // Four section anchors and the KanterLabs route, with 44px targets.
   expect(navHeight).toBeLessThan(340);
 });
 

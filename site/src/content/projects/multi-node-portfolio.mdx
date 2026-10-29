@@ -50,6 +50,20 @@ The important distinction is between building a release and running it:
 Coolify does not rebuild the source or deploy a mutable branch tag. Every
 running image can be traced to a tested Git commit.
 
+## Problem
+
+The earlier portfolio deployment uploaded static artifacts to two origins. I needed a release path that could identify exactly what was running, keep beta private, and recover if a new image failed verification through the visitor's actual request path.
+
+## My Contribution
+
+I built and operate the Astro site and its deployment workflow: Nginx container packaging, image publication, separate Coolify applications, and the helper that checks the target, deploys an exact digest, verifies the revision, and restores the previous digest on failure. I also separated public tunnel ingress from private deployment access.
+
+## Result and Evidence
+
+The portfolio runs as an immutable container release with separate beta and production applications. A deployment must pass application health, `/healthz`, and `/_meta/revision` checks before it is accepted. The [deployment guide](https://github.com/KanterLabs/portfolio/blob/main/docs/coolify-deploy.md) and [deployment helper](https://github.com/KanterLabs/portfolio/blob/main/scripts/coolify_deploy.py) document and implement the checks and rollback path.
+
+The revision endpoint makes the running commit inspectable, and the deployment helper retains the previous image digest for recovery.
+
 ## Current Architecture
 
 Production requests follow **Cloudflare → Cloudflare Tunnel → the Coolify

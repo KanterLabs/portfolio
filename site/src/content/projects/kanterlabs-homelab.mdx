@@ -70,6 +70,20 @@ The interesting part is not the machine count. It is the set of boundaries aroun
 - GitHub Actions jobs run in disposable pods instead of long-lived repository runners
 - credentials live outside Git and are injected only where they are needed
 
+## Problem
+
+As the homelab expanded across two Proxmox environments, loosely coupled ingress rules and persistent repository runners made the platform harder to reason about. I needed explicit public and private entrances, isolated management and workload networks, and changes I could recover from if a firewall or route was wrong.
+
+## My Contribution
+
+I designed and built the edge boundaries, network policy, private DNS and TLS, and the ephemeral CI platform described here. I put selected infrastructure configuration into a reviewed repository and kept host changes behind guarded apply steps, with management-path checks and timed rollback. Secrets remain outside Git.
+
+## Result and Evidence
+
+The platform has named traffic paths with positive canaries for allowed access and negative tests for unwanted exposure. The architecture diagrams below show the two-site layout, trust boundaries, repository responsibilities, and disposable runner lifecycle.
+
+The infrastructure repository is private, so this article exposes the design and its verification approach without offering private configuration or live operational data. The [public portfolio source](https://github.com/KanterLabs/portfolio) contains the diagrams used here.
+
 <InfrastructureStats />
 
 <DiagramFigure

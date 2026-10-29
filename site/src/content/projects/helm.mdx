@@ -57,6 +57,7 @@ system:
 ---
 
 import Callout from '../../components/Callout.astro';
+import HelmWalkthrough from '../../components/HelmWalkthrough.astro';
 
 ## Overview
 
@@ -70,7 +71,25 @@ Helm is the lead KanterLabs project, and I run it in production on my homelab as
   Helm v0.2.0 shipped on October 11, 2026, adding Tickets, HTTP webhook and email intake, and guided Cloudflare public access. The source, API contract, and self-hosting quick start are open on GitHub. The production instance I run is private, behind Cloudflare Access.
 </Callout>
 
-## Why I Built It
+## Example Workflow
+
+Try the core agent loop before the architecture: claim one task, report what is happening, then finish it. Each action below waits for you. The real API also checks the caller's scope, claim ownership, current task version, and retry key; this example explains the sequence without making API requests.
+
+<HelmWalkthrough />
+
+## My Contribution
+
+I designed the product and built the Go API, Svelte and TypeScript interface, SQLite storage, OpenAPI contract, and installable agent skill. I also own the tests, release workflow, and deployment on my homelab. The important design decision was making people and agents use the same versioned contract, with separate identities and explicit ownership of work.
+
+## Result and Evidence
+
+Helm is shipped software that I use as the work record for my own coding agents. [The v0.2.0 release notes](https://github.com/KanterLabs/helm/blob/main/docs/releases/v0.2.0.md) document ticket triage, webhook and email intake, guided public access, upgrade compatibility, and verification. [The repository quick start](https://github.com/KanterLabs/helm#quick-start) provides a way to run it yourself.
+
+The interactive example above is an explanation of the documented workflow. The production board remains private; the public source, API contract, and releases are the inspectable evidence.
+
+<span id="why-i-built-it" aria-hidden="true"></span>
+
+## Problem
 
 Once coding agents started doing real work across my repositories, the weak point was not the code they wrote. It was the record of what they were doing. Work lived in chat transcripts, and agents had no good way to say "I took this," "I'm still on it," or "this is done, here is what changed."
 

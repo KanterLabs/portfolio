@@ -128,6 +128,13 @@ Browser tests always build with `PUBLIC_CHAT_ENABLED=true` and mock the Worker;
 they never call OpenAI. Deployment builds also set that flag so the widget
 renders in every environment.
 
+The development toolchain pins Miniflare's Undici dependency to `7.30.1` to
+address [GHSA-xjj6-f33q-929c](https://github.com/advisories/GHSA-xjj6-f33q-929c)
+and the related EventSource and integrity advisories. The override names
+`miniflare@5.20260926.1-alpha` explicitly because an unversioned npm override
+does not match that prerelease. Remove it when Wrangler brings a Miniflare
+version with a patched Undici dependency; keep the dependency audit clean.
+
 ## Deployment and rollback
 
 Pull requests into `beta` validate both packages without publishing a Worker.

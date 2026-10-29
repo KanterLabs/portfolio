@@ -12,7 +12,7 @@ async function box(page: Page, selector: string) {
 // the guard against the identity/title/prose left-edge drift the round
 // fixed (100 / 290 / 542 before this change).
 test.describe('shared page frame', () => {
-  test('header box is identical across the homepage, case studies, and 404', async ({
+  test('header box is identical across the homepage, catalog, case studies, and 404', async ({
     page,
     isMobile,
   }) => {
@@ -21,6 +21,8 @@ test.describe('shared page frame', () => {
     const boxes: Record<string, { x: number; width: number }> = {};
     for (const route of [
       '/',
+      '/kanterlabs',
+      '/projects',
       '/projects/helm',
       '/projects/data-center-operations',
       '/this-page-does-not-exist',

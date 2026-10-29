@@ -1,5 +1,33 @@
 import { test, expect, type Locator } from '@playwright/test';
 
+for (const blockedAccess of ['read', 'write'] as const) {
+  test(`theme switching survives blocked storage ${blockedAccess}`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.addInitScript((access) => {
+      const methods = access === 'read' ? ['getItem'] : ['setItem', 'removeItem'];
+      for (const method of methods) {
+        Object.defineProperty(Storage.prototype, method, {
+          value: () => { throw new DOMException('Storage unavailable', 'SecurityError'); },
+        });
+      }
+    }, blockedAccess);
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto('/');
+    const root = page.locator('html');
+    const toggle = page.locator('[data-theme-toggle]');
+    await expect(root).toHaveAttribute('data-theme-mode', 'system');
+    for (const mode of ['light', 'dark', 'system']) {
+      await toggle.click();
+      await expect(root).toHaveAttribute('data-theme-mode', mode);
+      await expect(root).toHaveAttribute('data-theme', mode === 'light' ? 'light' : 'dark');
+    }
+    await page.emulateMedia({ colorScheme: 'light' });
+    await expect(root).toHaveAttribute('data-theme', 'light');
+    expect(errors).toEqual([]);
+  });
+}
+
 interface Box {
   x: number;
   y: number;
@@ -58,6 +86,8 @@ test.describe('theme toggle layout', () => {
       // The visible (untransformed) icon mirrors the selected mode and
       // fills the slot exactly.
       const visibleIcon = toggle.locator(theme === 'light' ? '.theme-icon-sun' : '.theme-icon-moon');
+      // Theme selection changes the transform; wait for its final frame before measuring.
+      await expect(visibleIcon).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
       const visibleBox = await box(visibleIcon);
       expect(Math.abs(visibleBox.x - stackBox.x)).toBeLessThanOrEqual(0.5);
       expect(Math.abs(visibleBox.y - stackBox.y)).toBeLessThanOrEqual(0.5);

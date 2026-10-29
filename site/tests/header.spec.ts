@@ -11,9 +11,28 @@ async function backgroundAlpha(page: Page, selector: string): Promise<number> {
 }
 
 test.describe('site header', () => {
+
+  test('homepage navigation exposes the approved destinations', async ({ page, isMobile }) => {
+    await page.goto('/');
+    if (isMobile) await page.getByRole('button', { name: 'Toggle navigation' }).click();
+    const nav = page.locator(isMobile ? '#mobile-nav' : 'nav[aria-label="Primary"]');
+    const destinations = [
+      ['Work', '#projects'],
+      ['Experience', '#about'],
+      ['KanterLabs', '/kanterlabs'],
+      ['Skills', '#skills'],
+      ['Contact', '#contact'],
+    ] as const;
+    await expect(nav.locator('[data-nav-link]')).toHaveCount(destinations.length);
+    for (const [name, href] of destinations) {
+      await expect(nav.getByRole('link', { name, exact: true })).toHaveAttribute('href', href);
+    }
+  });
+
   for (const [label, route] of [
     ['case-study', '/projects/kanterlabs-homelab'],
     ['homepage', '/'],
+    ['catalog', '/kanterlabs'],
   ] as const) {
     test(`${label} header gains a solid background on scroll`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -69,8 +88,7 @@ test.describe('site header', () => {
     const themeToggleBox = (await themeToggle.boundingBox())!;
 
     expect(themeToggleBox.x - (navBox.x + navBox.width)).toBeLessThan(40);
-    // Six section anchors plus the KanterLabs GitHub link: the group starts
-    // a little left of center at 1440 but stays anchored to the right edge.
+    // The five navigation links stay grouped toward the right edge.
     expect(navBox.x).toBeGreaterThan(headerInnerBox.x + headerInnerBox.width * 0.35);
 
     await page.goto('/projects/helm');
@@ -105,4 +123,21 @@ test.describe('site header', () => {
     await expect(page.locator('.mobile-toggle')).toBeVisible();
     await expect(page.locator('#mobile-nav')).toBeHidden();
   });
+});
+
+test('mobile menu closes when keyboard focus leaves the header', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'mobile menu behavior');
+  await page.goto('/');
+  const toggle = page.getByRole('button', { name: 'Toggle navigation' });
+  const panel = page.locator('#mobile-nav');
+  await toggle.click();
+  await expect(panel.locator('a').first()).toBeFocused();
+  // Moving between menu links must keep the menu available.
+  await page.keyboard.press('Tab');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await panel.locator('a').last().focus();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('main a').first()).toBeFocused();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(panel).toBeHidden();
 });

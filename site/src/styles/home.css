@@ -1,0 +1,68 @@
+/* The homepage is a short introduction; the complete rack lives in the catalog. */
+.audience-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2rem 3rem;
+}
+.audience-hero .sheet-head { grid-column: 1 / -1; margin-bottom: 0; }
+.audience-hero .hero-title { font-size: clamp(2.3rem, 4.3vw, 3.6rem); }
+.audience-hero .hero-copy { margin: 1.1rem 0; max-width: 34rem; }
+.hero-contact { display: inline-flex; align-items: center; min-height: 44px; gap: 0.7rem; }
+.audience-routes { display: grid; gap: 1rem; }
+.audience-route {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1.15rem 1.3rem;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  background: var(--paper);
+  text-decoration: none;
+  transition: border-color 160ms, box-shadow 160ms;
+}
+.audience-route:hover, .audience-route:focus-visible {
+  border-color: var(--color-accent);
+  box-shadow: 4px 4px 0 var(--fill-accent);
+}
+.audience-route:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.audience-route h2 { font-size: 1.25rem; line-height: 1.25; letter-spacing: -0.02em; margin: 0; }
+.audience-route p { font-size: 0.88rem; line-height: 1.5; color: var(--color-text-muted); margin: 0; }
+.route-action { display: flex; justify-content: space-between; gap: 0.5rem; padding-top: 0.7rem; border-top: 1px solid var(--line); font-size: 0.85rem; font-weight: 600; }
+.audience-proof {
+  grid-area: auto;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 0;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line-strong);
+}
+.audience-proof dt { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.35rem; }
+.audience-proof dd { color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.6; margin: 0; }
+.selected-feature { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); overflow: hidden; }
+.selected-preview { display: grid; align-content: center; background: var(--plate); border-right: 1px solid var(--line); padding: 1.2rem; gap: 1rem; }
+.selected-preview .plate-media { aspect-ratio: 900 / 340; border: 0; }
+.selected-preview > p { text-align: center; line-height: 1.6; }
+.selected-copy { padding: 1.5rem; }
+.selected-result { font-size: 0.95rem; line-height: 1.65; color: var(--color-text-muted); margin: 1rem 0; }
+.selected-stack { margin: 1rem 0; line-height: 1.7; }
+.selected-supporting { margin-top: 1.5rem; }
+.catalog-handoff { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; margin-top: 1.6rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
+.catalog-handoff h3 { font-size: 1.1rem; margin: 0 0 0.4rem; }
+.catalog-handoff p { margin: 0; color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.6; max-width: 31rem; }
+.catalog-handoff > a { flex-shrink: 0; }
+@media (width < 960px) {
+  .audience-hero { grid-template-columns: 1fr; gap: 1.6rem; }
+  .audience-routes { grid-template-columns: 1fr 1fr; }
+}
+@media (width < 780px) {
+  .audience-hero { gap: 1rem; }
+  .audience-routes, .audience-proof, .selected-feature { grid-template-columns: 1fr; }
+  .audience-proof { gap: 1rem; }
+  .audience-route { padding: 1rem; }
+  .audience-hero .hero-title { font-size: 2.3rem; }
+  .selected-preview { border-right: 0; border-bottom: 1px solid var(--line); padding: 1rem; }
+  .selected-copy { padding: 1.2rem; }
+  .catalog-handoff { flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { .audience-route { transition: none; } }

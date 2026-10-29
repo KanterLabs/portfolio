@@ -1,0 +1,446 @@
+/* ── Rack elevation ── */
+
+.rack-figure {
+  margin: 0;
+  min-width: 0;
+  scroll-margin-top: var(--header-offset);
+}
+
+.rack-caption {
+  margin-bottom: 0.7rem;
+  color: var(--ink);
+}
+
+.rack {
+  position: relative;
+  margin: 0;
+  padding: 0.5rem 0;
+  list-style: none;
+}
+
+/* The cabinet: drawn behind the rails and unit column only, so the
+   callouts sit outside it like a real elevation drawing. */
+.rack::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--rail) * 2 + var(--unit-w));
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.rack-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--rail) var(--unit-w) var(--rail) minmax(0, 1fr);
+  height: calc(var(--u) * var(--units));
+}
+
+.rack-rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  border-right: 1px solid var(--ink);
+  color: var(--color-text-soft);
+  font-family: var(--font-family-mono);
+  font-size: 0.56rem;
+  line-height: 1;
+}
+
+.rack-rail-right {
+  border-right: 0;
+  border-left: 1px solid var(--ink);
+}
+
+.rack-range {
+  display: none;
+}
+
+.rack-face {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 2px 3px;
+  padding: 0 0.6rem;
+  min-width: 0;
+  border: 1.4px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-family-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition:
+    transform var(--transition),
+    border-color var(--transition);
+}
+
+.rack-led {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+}
+
+.rack-name {
+  white-space: nowrap;
+}
+
+.rack-vent {
+  flex: 1;
+  align-self: stretch;
+  margin-block: 5px;
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ink) 40%, transparent) 0 1px,
+    transparent 1px 5px
+  );
+}
+
+.rack-code {
+  flex: none;
+  font-weight: 400;
+  font-size: 0.6rem;
+}
+
+.rack-row[data-kind='blank'] .rack-face {
+  border: 1px dashed color-mix(in srgb, var(--ink) 55%, transparent);
+  background: transparent;
+}
+
+.rack-row[data-kind='power'] .rack-face {
+  justify-content: space-between;
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.rack-lcd {
+  padding: 0.2rem 0.45rem;
+  background: var(--fill-accent);
+  color: var(--fill-accent-ink);
+  font-size: 0.56rem;
+}
+
+.rack-row[data-kind='patch'] .rack-face {
+  gap: 0.35rem;
+}
+
+.rack-port {
+  width: 12px;
+  height: 9px;
+  border: 1px solid var(--ink);
+}
+
+.rack-port[data-live] {
+  background: var(--fill-accent);
+}
+
+.rack-port:first-of-type {
+  margin-left: auto;
+}
+
+.rack-row[data-kind='lead'] .rack-face {
+  padding: 7px;
+  border-width: 2.4px;
+  background: var(--hatch), var(--paper);
+}
+
+.rack-lead-plate {
+  display: grid;
+  align-content: center;
+  gap: 0.25rem;
+  align-self: stretch;
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+}
+
+.rack-lead-plate strong {
+  font-family: var(--font-family-sans);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.rack-lead-plate span {
+  font-size: 0.56rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.rack-bays {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.rack-bays i {
+  flex: 1;
+  height: 0.85rem;
+  border: 1px solid var(--ink);
+}
+
+/* Callout: leader line, numbered bubble, note. */
+.rack-callout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.rack-leader {
+  flex: none;
+  width: 1.9rem;
+  height: 1px;
+  background: var(--ink);
+  transform-origin: left center;
+  transition: background-color var(--transition);
+}
+
+.rack-num {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-family-mono);
+  font-size: 0.6rem;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition);
+}
+
+.rack-row[data-kind='lead'] .rack-num {
+  background: var(--fill-accent);
+  color: var(--fill-accent-ink);
+}
+
+.rack-note {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rack-note a,
+.rack-note .rack-note-title {
+  color: var(--ink);
+}
+
+.rack-row[data-kind='power'] .rack-note {
+  white-space: normal;
+}
+
+.rack-version {
+  text-transform: none;
+}
+
+.rack-row[data-kind='lead'] .rack-note {
+  display: grid;
+  gap: 0.15rem;
+  white-space: normal;
+}
+
+.rack-note-title {
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rack-note-more {
+  color: var(--color-accent);
+  font-family: var(--font-family-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-transform: uppercase;
+}
+
+.rack-note-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.7rem;
+}
+
+.rack-note-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* The whole row is one link: the anchor sits in the note, and its
+   ::after stretches over the row so the faceplate is clickable too. */
+.rack-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.rack-link:focus-visible {
+  outline: none;
+}
+
+.rack-link:focus-visible::after {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 1px;
+}
+
+.rack-row:is(:hover, :focus-within) .rack-face {
+  border-color: var(--color-accent);
+  transform: translateX(-5px);
+}
+
+.rack-row:is(:hover, :focus-within) .rack-leader {
+  background: var(--color-accent);
+}
+
+.rack-row:is(:hover, :focus-within) .rack-num {
+  border-color: var(--color-accent);
+}
+
+.rack-row[data-kind='patch']:is(:hover, :focus-within) .rack-face,
+.rack-row[data-kind='blank'] .rack-face {
+  transform: none;
+}
+
+.rack-legend {
+  margin-top: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rack-face,
+  .rack-row:is(:hover, :focus-within) .rack-face {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Leader lines draw in once, quickly: the whole rack is legible before
+   any of it moves, and the sequence is over in well under 500ms. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .rack-leader {
+    animation: rack-leader-draw 260ms ease-out both;
+    animation-delay: calc(var(--row, 0) * 12ms);
+  }
+}
+
+@keyframes rack-leader-draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Phones: the elevation becomes a full-width list of units. Nothing is
+   scaled down; the drawing keeps its structure (U range, callout number,
+   faceplate) and the note moves under the faceplate. */
+@media (width < 780px) {
+  .rack {
+    padding: 0;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+  }
+
+  .rack::before {
+    display: none;
+  }
+
+  .rack-row {
+    grid-template-columns: 3.1rem minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    height: auto;
+    min-height: 2.75rem;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .rack-row:last-child {
+    border-bottom: 0;
+  }
+
+  .rack-row[data-kind='blank'] {
+    display: none;
+  }
+
+  .rack-rail {
+    grid-row: 1 / -1;
+    justify-content: center;
+    font-size: 0.6rem;
+  }
+
+  .rack-rail > span:not(.rack-range),
+  .rack-rail-right {
+    display: none;
+  }
+
+  .rack-range {
+    display: block;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .rack-face {
+    grid-column: 2;
+    min-height: 2.4rem;
+    margin: 0.35rem 0.5rem 0;
+  }
+
+  .rack-vent {
+    display: none;
+  }
+
+  .rack-code {
+    margin-left: auto;
+  }
+
+  .rack-row[data-kind='lead'] .rack-face {
+    min-height: 5.5rem;
+  }
+
+  .rack-callout {
+    grid-column: 2;
+    align-items: flex-start;
+    padding: 0.4rem 0.5rem 0.55rem;
+  }
+
+  .rack-leader {
+    display: none;
+  }
+
+  .rack-num {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.05rem;
+  }
+
+  .rack-note {
+    white-space: normal;
+  }
+
+  .rack-row:is(:hover, :focus-within) .rack-face {
+    transform: none;
+  }
+}
+

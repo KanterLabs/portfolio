@@ -1,0 +1,203 @@
+/* ── Detail drawings (a case study's `system` frontmatter) ── */
+
+.detail-drawing {
+  margin: 0;
+  min-width: 0;
+}
+
+.dd-head {
+  margin-bottom: 0.9rem;
+  color: var(--ink);
+}
+
+.dd-body {
+  display: grid;
+  justify-items: stretch;
+}
+
+.dd-tier {
+  display: grid;
+  gap: 1rem;
+}
+
+.dd-tier[data-split] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dd-node-wrap {
+  position: relative;
+  display: grid;
+  min-width: 0;
+}
+
+.dd-node-wrap[data-accent] {
+  padding: 7px;
+  border: 2px solid var(--ink);
+  background: var(--hatch), var(--paper);
+}
+
+.dd-node {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.7rem 0.85rem 0.75rem;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+}
+
+.dd-node-wrap[data-accent] .dd-node {
+  border-width: 1px;
+}
+
+.dd-node-label {
+  color: var(--color-text-soft);
+  font-family: var(--font-family-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dd-node strong {
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.dd-node-detail {
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 0.68rem;
+}
+
+.dd-callout {
+  position: absolute;
+  top: -0.6rem;
+  right: -0.6rem;
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-family-mono);
+  font-size: 0.6rem;
+}
+
+.dd-node-wrap[data-accent] .dd-callout {
+  background: var(--fill-accent);
+  color: var(--fill-accent-ink);
+}
+
+/* Connectors: straight arrows between single nodes, a bracket where two
+   nodes merge into one (or one fans out to two). */
+.dd-connector {
+  position: relative;
+  height: 2.1rem;
+}
+
+.dd-connector span,
+.dd-connector::before,
+.dd-connector::after {
+  position: absolute;
+}
+
+.dd-connector span {
+  left: calc(50% - 0.75px);
+  top: 0;
+  bottom: 6px;
+  width: 1.5px;
+  background: var(--ink);
+}
+
+.dd-connector span::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: -4.25px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--ink);
+}
+
+.dd-connector[data-from='2']::before {
+  content: '';
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 0.85rem;
+  border: 1.5px solid var(--ink);
+  border-top: 0;
+}
+
+.dd-connector[data-from='2'] span {
+  top: 0.85rem;
+}
+
+.dd-connector[data-to='2'][data-from='1']::before {
+  content: '';
+  bottom: 0;
+  left: 25%;
+  right: 25%;
+  height: 0.9rem;
+  border: 1.5px solid var(--ink);
+  border-bottom: 0;
+}
+
+.dd-connector[data-to='2'][data-from='1'] span {
+  bottom: 0.9rem;
+}
+
+.dd-connector[data-to='2'][data-from='1'] span::after {
+  display: none;
+}
+
+.dd-connector[data-to='2'][data-from='2']::before,
+.dd-connector[data-to='2'][data-from='2']::after {
+  content: '';
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: var(--ink);
+}
+
+.dd-connector[data-to='2'][data-from='2']::before {
+  left: 25%;
+  height: auto;
+  border: 0;
+}
+
+.dd-connector[data-to='2'][data-from='2']::after {
+  right: 25%;
+}
+
+.dd-connector[data-to='2'][data-from='2'] span {
+  display: none;
+}
+
+.dd-notes {
+  display: grid;
+  gap: 0.35rem;
+  margin: 1.1rem 0 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--ink);
+  list-style: none;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.dd-notes .dwg-label {
+  display: inline;
+  margin-right: 0.4rem;
+}
+
+.dd-caption {
+  margin-top: 0.85rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
