@@ -1,0 +1,6 @@
+# Data Center Tycoon page media, exported from KanterLabs/data_center_tycoon
+# (steam/imgs/hero.png and artifacts/ui_review_20261007/*.png), cropped and
+# re-encoded for the web. Binary image exports, not authored source.
+site/src/assets/datacentertycoon/*.png linguist-vendored=true
+site/src/assets/datacentertycoon/*.jpg linguist-vendored=true
+site/public/og/datacentertycoon.jpg linguist-vendored=true
