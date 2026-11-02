@@ -26,6 +26,24 @@ test.describe("utility routes", () => {
     );
   });
 
+  test("Data Center Tycoon page renders its pitch and screenshots", async ({
+    page,
+  }) => {
+    const response = await page.goto("/datacentertycoon");
+
+    expect(response?.status()).toBe(200);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page).toHaveTitle("Data Center Tycoon — Build it, cool it, keep it up");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Keep it up.");
+    await expect(page.locator(".screen-grid img")).toHaveCount(2);
+    await expect(
+      page.getByRole("link", { name: "Request playtest access" }).first(),
+    ).toHaveAttribute(
+      "href",
+      "mailto:shanekanterman04@gmail.com?subject=Data%20Center%20Tycoon%20playtest",
+    );
+  });
+
   test("custom 404 page renders", async ({ page }) => {
     const response = await page.goto("/this-page-does-not-exist");
 
