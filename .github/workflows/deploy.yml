@@ -16,7 +16,8 @@ permissions:
 
 jobs:
   changes:
-    runs-on: ubuntu-24.04
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab' }}
     timeout-minutes: 5
     outputs:
       browser: ${{ steps.paths.outputs.browser }}
@@ -49,8 +50,8 @@ jobs:
           PYCODE
 
   promotion-source:
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    runs-on: ubuntu-24.04
+    if: github.event_name == 'pull_request' && github.base_ref == 'main' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab' }}
     timeout-minutes: 5
     steps:
       - name: Require promotion from this repository's beta branch
@@ -64,7 +65,8 @@ jobs:
           [ "$HEAD_REPOSITORY" = "$TARGET_REPOSITORY" ]
 
   dependency-audit:
-    runs-on: ubuntu-24.04
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab' }}
     timeout-minutes: 5
     strategy:
       fail-fast: false
@@ -86,7 +88,8 @@ jobs:
         run: python3 ../scripts/npm_audit.py
 
   chat-worker-validate:
-    runs-on: ubuntu-24.04
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab' }}
     timeout-minutes: 10
     defaults:
       run:
@@ -114,7 +117,8 @@ jobs:
         run: npm run deploy:dry-run
 
   deployment-helper-test:
-    runs-on: ubuntu-24.04
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab' }}
     timeout-minutes: 5
     steps:
       - name: Record executed workflow source
@@ -127,9 +131,9 @@ jobs:
         run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
 
   browser-test:
-    if: always()
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     needs: changes
-    runs-on: ubuntu-24.04
+    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab-heavy' }}
     timeout-minutes: 20
     env:
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
@@ -188,7 +192,7 @@ jobs:
 
   container:
     needs: [changes, dependency-audit, chat-worker-validate, deployment-helper-test, browser-test]
-    runs-on: ubuntu-24.04
+    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab-heavy' }}
     concurrency:
       group: portfolio-container-${{ github.ref }}
       cancel-in-progress: false
@@ -278,7 +282,7 @@ jobs:
           docker tag "$immutable" "$branch"
           docker push "$immutable"
           docker push "$branch"
-          digest=$(docker buildx imagetools inspect --format '{{json .Manifest}}' "$branch" |
+          digest=$(docker buildx imagetools inspect --format '{{json .Manifest}}' "$immutable" |
             python3 -c 'import json,sys; print(json.load(sys.stdin)["digest"])')
           printf '%s\n' "$digest" | grep -Eq '^sha256:[0-9a-f]{64}$'
           printf 'image_digest=%s\n' "$digest" >> "$GITHUB_OUTPUT"
@@ -290,101 +294,31 @@ jobs:
   deploy-beta:
     if: github.event_name == 'push' && github.ref_name == 'beta'
     needs: container
-    runs-on: ubuntu-24.04
-    concurrency:
-      group: portfolio-deploy-beta-${{ github.ref }}
-      cancel-in-progress: false
-    timeout-minutes: 15
-    environment:
-      name: beta
-      url: https://beta.home.shanekanterman.dev
-    permissions:
-      contents: read
-    env:
-      COOLIFY_API_URL: ${{ vars.COOLIFY_API_URL }}
-      COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
-      COOLIFY_APPLICATION_UUID: ${{ vars.COOLIFY_APPLICATION_UUID }}
-      COOLIFY_APPLICATION_NAME: ${{ vars.COOLIFY_APPLICATION_NAME }}
-      COOLIFY_DESTINATION_UUID: ${{ vars.COOLIFY_DESTINATION_UUID }}
-      COOLIFY_SERVER_UUID: ${{ vars.COOLIFY_SERVER_UUID }}
-      COOLIFY_ENVIRONMENT_UUID: ${{ vars.COOLIFY_ENVIRONMENT_UUID }}
-      PORTFOLIO_IMAGE_DIGEST: ${{ needs.container.outputs.image_digest }}
-      PORTFOLIO_GIT_SHA: ${{ github.sha }}
-      PORTFOLIO_SITE_URL: https://beta.home.shanekanterman.dev
-    steps:
-      - name: Connect protected deployment to the private tailnet
-        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:gha-portfolio-deploy
-      - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - name: Confirm this commit is still the branch tip
-        id: freshness
-        env:
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          current=$(git ls-remote "https://github.com/${REPOSITORY}.git" "refs/heads/${GITHUB_REF_NAME}" | awk '{print $1}')
-          printf '%s\n' "$current" | grep -Eq '^[0-9a-f]{40}$'
-          if [ "$current" = "$GITHUB_SHA" ]; then
-            echo 'deploy=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'deploy=false' >> "$GITHUB_OUTPUT"
-            printf 'Skipping stale %s commit %s; current tip is %s\n' "$GITHUB_REF_NAME" "$GITHUB_SHA" "$current" >> "$GITHUB_STEP_SUMMARY"
-          fi
-      - name: Deploy exact digest through Coolify
-        if: steps.freshness.outputs.deploy == 'true'
-        run: python3 scripts/coolify_deploy.py
+    uses: ./.github/workflows/deploy-coolify.yml
+    with:
+      environment: beta
+      image_digest: ${{ needs.container.outputs.image_digest }}
+    secrets: inherit
 
-  deploy-production:
-    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[ci-hosted-cutover]') && github.ref_name == 'main'
+  deploy-production-pdx1:
+    if: github.event_name == 'push' && github.ref_name == 'main'
     needs: container
-    runs-on: ubuntu-24.04
-    concurrency:
-      group: portfolio-deploy-production-${{ github.ref }}
-      cancel-in-progress: false
-    timeout-minutes: 15
-    environment:
-      name: production
-      url: https://shanekanterman.dev
-    permissions:
-      contents: read
-    env:
-      COOLIFY_API_URL: ${{ vars.COOLIFY_API_URL }}
-      COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
-      COOLIFY_APPLICATION_UUID: ${{ vars.COOLIFY_APPLICATION_UUID }}
-      COOLIFY_APPLICATION_NAME: ${{ vars.COOLIFY_APPLICATION_NAME }}
-      COOLIFY_DESTINATION_UUID: ${{ vars.COOLIFY_DESTINATION_UUID }}
-      COOLIFY_SERVER_UUID: ${{ vars.COOLIFY_SERVER_UUID }}
-      COOLIFY_ENVIRONMENT_UUID: ${{ vars.COOLIFY_ENVIRONMENT_UUID }}
-      PORTFOLIO_IMAGE_DIGEST: ${{ needs.container.outputs.image_digest }}
-      PORTFOLIO_GIT_SHA: ${{ github.sha }}
-      PORTFOLIO_SITE_URL: https://shanekanterman.dev
-    steps:
-      - name: Connect protected deployment to the private tailnet
-        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:gha-portfolio-deploy
-      - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - name: Confirm this commit is still the branch tip
-        id: freshness
-        env:
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          current=$(git ls-remote "https://github.com/${REPOSITORY}.git" "refs/heads/${GITHUB_REF_NAME}" | awk '{print $1}')
-          printf '%s\n' "$current" | grep -Eq '^[0-9a-f]{40}$'
-          if [ "$current" = "$GITHUB_SHA" ]; then
-            echo 'deploy=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'deploy=false' >> "$GITHUB_OUTPUT"
-            printf 'Skipping stale %s commit %s; current tip is %s\n' "$GITHUB_REF_NAME" "$GITHUB_SHA" "$current" >> "$GITHUB_STEP_SUMMARY"
-          fi
-      - name: Deploy exact digest through Coolify
-        if: steps.freshness.outputs.deploy == 'true'
-        run: python3 scripts/coolify_deploy.py
+    uses: ./.github/workflows/deploy-coolify.yml
+    with:
+      environment: production
+      image_digest: ${{ needs.container.outputs.image_digest }}
+      stage_assets: true
+    secrets: inherit
+
+  deploy-production-iad1:
+    if: needs.deploy-production-pdx1.outputs.deployed == 'true'
+    needs: [container, deploy-production-pdx1]
+    uses: ./.github/workflows/deploy-coolify.yml
+    with:
+      environment: production
+      variable_prefix: IAD1_
+      image_digest: ${{ needs.container.outputs.image_digest }}
+      # Once rollout starts, finish the same digest on both origins even when
+      # main advances. The caller serializes the complete branch workflow.
+      check_branch_tip: false
+    secrets: inherit
