@@ -50,7 +50,7 @@ jobs:
       PORTFOLIO_SITE_URL: ${{ vars[format('{0}PORTFOLIO_SITE_URL', inputs.variable_prefix)] }}
     steps:
       - name: Connect protected deployment to the private tailnet
-        uses: tailscale/github-action@d1b6cd204f8dceda5b3eaad7f1f767be390056cd # v4
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c # v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
