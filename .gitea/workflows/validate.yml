@@ -1,38 +1,38 @@
-name: Validate and publish portfolio
+name: Validate Portfolio
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [beta, main]
   push:
     branches: [beta, main]
-  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ gitea.workflow }}-${{ gitea.event.pull_request.number || gitea.ref }}
+  cancel-in-progress: ${{ gitea.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
   changes:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab' }}
+    if: gitea.event_name != 'pull_request' || gitea.event.pull_request.head.repo.full_name == gitea.repository
+    runs-on: homelab
     timeout-minutes: 5
     outputs:
       browser: ${{ steps.paths.outputs.browser }}
       container: ${{ steps.paths.outputs.container }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: https://github.com/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Identify browser and container inputs
         id: paths
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ gitea.event.pull_request.base.sha || gitea.event.before }}
+          HEAD_SHA: ${{ gitea.event.pull_request.head.sha || gitea.sha }}
+          EVENT_NAME: ${{ gitea.event_name }}
         run: |
           python3 - <<'PYCODE'
           import fnmatch, os, subprocess
@@ -42,7 +42,7 @@ jobs:
           else:
               paths = subprocess.check_output(['git', 'diff', '--name-only', base + ('...' if os.environ['EVENT_NAME'] == 'pull_request' else '..') + head], text=True).splitlines()
           browser = any(fnmatch.fnmatch(p, pattern) for p in paths for pattern in
-                        ['site/*', 'chat-worker/*', 'chat-content/*', 'divstack/*', '.gitmodules', 'scripts/*', '.github/workflows/*', 'package*'])
+                        ['site/*', 'chat-worker/*', 'chat-content/*', 'divstack/*', '.gitmodules', 'scripts/*', '.github/workflows/*', '.gitea/workflows/*', 'package*'])
           container = os.environ['EVENT_NAME'] != 'pull_request' or browser or any(
               fnmatch.fnmatch(p, pattern) for p in paths for pattern in ['Dockerfile', '.dockerignore', 'container/*'])
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
@@ -50,23 +50,23 @@ jobs:
           PYCODE
 
   promotion-source:
-    if: github.event_name == 'pull_request' && github.base_ref == 'main' && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab' }}
+    if: gitea.event_name == 'pull_request' && gitea.base_ref == 'main' && gitea.event.pull_request.head.repo.full_name == gitea.repository
+    runs-on: homelab
     timeout-minutes: 5
     steps:
       - name: Require promotion from this repository's beta branch
         env:
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
-          TARGET_REPOSITORY: ${{ github.repository }}
+          HEAD_REF: ${{ gitea.event.pull_request.head.ref }}
+          HEAD_REPOSITORY: ${{ gitea.event.pull_request.head.repo.full_name }}
+          TARGET_REPOSITORY: ${{ gitea.repository }}
         run: |
           set -euo pipefail
           [ "$HEAD_REF" = "beta" ]
           [ "$HEAD_REPOSITORY" = "$TARGET_REPOSITORY" ]
 
   dependency-audit:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab' }}
+    if: gitea.event_name != 'pull_request' || gitea.event.pull_request.head.repo.full_name == gitea.repository
+    runs-on: homelab
     timeout-minutes: 5
     strategy:
       fail-fast: false
@@ -77,9 +77,11 @@ jobs:
         working-directory: ${{ matrix.workspace }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        uses: https://github.com/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        uses: https://github.com/actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: "22.22.1"
           cache: npm
@@ -88,19 +90,20 @@ jobs:
         run: python3 ../scripts/npm_audit.py
 
   chat-worker-validate:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab' }}
+    if: gitea.event_name != 'pull_request' || gitea.event.pull_request.head.repo.full_name == gitea.repository
+    runs-on: homelab
     timeout-minutes: 10
     defaults:
       run:
         working-directory: chat-worker
     steps:
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        uses: https://github.com/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        uses: https://github.com/actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: "22.22.1"
           cache: npm
@@ -117,26 +120,28 @@ jobs:
         run: npm run deploy:dry-run
 
   deployment-helper-test:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab' }}
+    if: gitea.event_name != 'pull_request' || gitea.event.pull_request.head.repo.full_name == gitea.repository
+    runs-on: homelab
     timeout-minutes: 5
     steps:
       - name: Record executed workflow source
         run: |
-          printf 'workflow-source=%s\n' "$GITHUB_WORKFLOW_SHA"
-          printf 'Executed workflow source: `%s`\n' "$GITHUB_WORKFLOW_SHA" >> "$GITHUB_STEP_SUMMARY"
+          printf 'workflow-source=%s\n' "${GITHUB_WORKFLOW_SHA:-$GITHUB_SHA}"
+          printf 'Executed workflow source: `%s`\n' "${GITHUB_WORKFLOW_SHA:-$GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        uses: https://github.com/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Test transactional Coolify deployment helper
         run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
 
   browser-test:
-    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: always() && (gitea.event_name != 'pull_request' || gitea.event.pull_request.head.repo.full_name == gitea.repository)
     needs: changes
-    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab-heavy' }}
+    runs-on: homelab-heavy
     timeout-minutes: 20
     env:
-      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
+      PLAYWRIGHT_BROWSERS_PATH: ${{ gitea.workspace }}/.playwright-browsers
       PUBLIC_CHAT_ENABLED: "true"
     defaults:
       run:
@@ -144,10 +149,12 @@ jobs:
     steps:
       - name: Check out repository
         if: needs.changes.outputs.browser == 'true'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        uses: https://github.com/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Set up Node.js
         if: needs.changes.outputs.browser == 'true'
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        uses: https://github.com/actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: "22.22.1"
           cache: npm
@@ -157,19 +164,19 @@ jobs:
         run: npm ci
       - name: Cache matching Playwright Chromium downloads
         if: needs.changes.outputs.browser == 'true'
-        uses: actions/cache@v6
+        uses: https://github.com/actions/cache@2cdf405574d6ef1f33a1d12acccd3ae82f47b3f2 # v4.1.0
         with:
-          path: ${{ github.workspace }}/.playwright-browsers
+          path: ${{ gitea.workspace }}/.playwright-browsers
           key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ hashFiles('site/package-lock.json') }}
       - name: Install browser
         if: needs.changes.outputs.browser == 'true'
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Run browser tests
         if: needs.changes.outputs.browser == 'true'
         run: npm run test:e2e
       - name: Upload Playwright report
-        if: needs.changes.outputs.browser == 'true' && (failure())
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always() && needs.changes.outputs.browser == 'true' && job.status == 'failure'
+        uses: https://github.com/actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: playwright-report
           path: |
@@ -179,7 +186,7 @@ jobs:
           retention-days: 7
 
       - name: Report required browser validation result
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ gitea.workspace }}
         if: always()
         env:
           CHANGES_RESULT: ${{ needs.changes.result }}
@@ -192,24 +199,21 @@ jobs:
 
   container:
     needs: [changes, dependency-audit, chat-worker-validate, deployment-helper-test, browser-test]
-    runs-on: ${{ (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'source-sync/'))) && 'ubuntu-24.04' || 'homelab-heavy' }}
+    runs-on: homelab-heavy
     concurrency:
-      group: portfolio-container-${{ github.ref }}
+      group: portfolio-container-${{ gitea.ref }}
       cancel-in-progress: false
     timeout-minutes: 20
-    outputs:
-      image_digest: ${{ steps.publish.outputs.image_digest }}
-    permissions:
-      contents: read
-      packages: write
     steps:
       - name: Check out repository
         if: needs.changes.outputs.container == 'true'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        uses: https://github.com/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Build immutable image
         if: needs.changes.outputs.container == 'true'
         env:
-          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          REPOSITORY_OWNER: ${{ gitea.repository_owner }}
         run: |
           set -euo pipefail
           image_owner=$(printf '%s' "$REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
@@ -267,59 +271,3 @@ jobs:
             sleep 1
           done
           exit 1
-      - name: Authenticate to GHCR
-        if: needs.changes.outputs.container == 'true' && (github.event_name != 'pull_request')
-        env:
-          GHCR_TOKEN: ${{ github.token }}
-        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
-      - name: Publish immutable and branch tags
-        id: publish
-        if: needs.changes.outputs.container == 'true' && (github.event_name != 'pull_request')
-        run: |
-          set -euo pipefail
-          immutable="$IMAGE:sha-$GITHUB_SHA"
-          branch="$IMAGE:${GITHUB_REF_NAME//\//-}"
-          docker tag "$immutable" "$branch"
-          docker push "$immutable"
-          docker push "$branch"
-          digest=$(docker buildx imagetools inspect --format '{{json .Manifest}}' "$immutable" |
-            python3 -c 'import json,sys; print(json.load(sys.stdin)["digest"])')
-          printf '%s\n' "$digest" | grep -Eq '^sha256:[0-9a-f]{64}$'
-          printf 'image_digest=%s\n' "$digest" >> "$GITHUB_OUTPUT"
-          printf 'Published %s@%s\n' "$IMAGE" "$digest" >> "$GITHUB_STEP_SUMMARY"
-      - name: Remove GHCR credentials
-        if: always() && needs.changes.outputs.container == 'true' && github.event_name != 'pull_request'
-        run: docker logout ghcr.io
-
-  deploy-beta:
-    if: github.event_name == 'push' && github.ref_name == 'beta'
-    needs: container
-    uses: ./.github/workflows/deploy-coolify.yml
-    with:
-      environment: beta
-      image_digest: ${{ needs.container.outputs.image_digest }}
-    secrets: inherit
-
-  deploy-production-pdx1:
-    if: github.event_name == 'push' && github.ref_name == 'main'
-    needs: container
-    uses: ./.github/workflows/deploy-coolify.yml
-    with:
-      environment: production
-      image_digest: ${{ needs.container.outputs.image_digest }}
-      stage_assets: true
-    secrets: inherit
-
-  deploy-production-iad1:
-    if: needs.deploy-production-pdx1.outputs.deployed == 'true'
-    needs: [container, deploy-production-pdx1]
-    uses: ./.github/workflows/deploy-coolify.yml
-    with:
-      environment: production
-      variable_prefix: IAD1_
-      image_digest: ${{ needs.container.outputs.image_digest }}
-      # Once rollout starts, finish the same digest on both origins even when
-      # main advances. The caller serializes the complete branch workflow.
-      check_branch_tip: false
-    secrets: inherit
-
