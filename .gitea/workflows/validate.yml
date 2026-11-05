@@ -58,15 +58,29 @@ jobs:
     runs-on: homelab
     timeout-minutes: 5
     steps:
-      - name: Require promotion from this repository's beta branch
+      - uses: https://github.com/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require beta promotion or the CI-only migration bootstrap
         env:
           HEAD_REF: ${{ gitea.event.pull_request.head.ref }}
           HEAD_REPOSITORY: ${{ gitea.event.pull_request.head.repo.full_name }}
           TARGET_REPOSITORY: ${{ gitea.repository }}
+          BASE_SHA: ${{ gitea.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ gitea.event.pull_request.head.sha }}
         run: |
-          set -euo pipefail
-          [ "$HEAD_REF" = "beta" ]
-          [ "$HEAD_REPOSITORY" = "$TARGET_REPOSITORY" ]
+          python3 - <<'PYCODE'
+          import os, subprocess
+          assert os.environ['HEAD_REPOSITORY'] == os.environ['TARGET_REPOSITORY']
+          if os.environ['HEAD_REF'] != 'beta':
+              assert os.environ['HEAD_REF'] == 'infra/gitea-actions-main'
+              paths = subprocess.check_output(['git', 'diff', '--name-only',
+                  os.environ['BASE_SHA'] + '...' + os.environ['HEAD_SHA']], text=True).splitlines()
+              allowed = {'.gitea/workflows/validate.yml', '.github/workflows/deploy.yml',
+                         '.github/workflows/deploy-coolify.yml', '.github/workflows/portfolio-cloudflare.yml'}
+              assert paths and set(paths) <= allowed, 'Only CI migration files may bootstrap main'
+          PYCODE
 
   dependency-audit:
     if: gitea.event_name != 'pull_request' || gitea.event.pull_request.head.repo.full_name == gitea.repository
