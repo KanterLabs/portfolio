@@ -138,6 +138,25 @@ jobs:
           persist-credentials: false
       - name: Test transactional Coolify deployment helper
         run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+      - name: Prove canonical CI cannot read protected release configuration
+        env:
+          JOB_READ_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          RELEASE_DEPLOY_SECRET: ${{ secrets.PDX1_COOLIFY_API_TOKEN }}
+        run: |
+          python3 - <<'PYCODE'
+          import os, urllib.request, urllib.error
+          assert not os.environ.get('RELEASE_DEPLOY_SECRET'), 'Release credential reached canonical CI'
+          assert not os.path.exists('/var/run/secrets/kubernetes.io/serviceaccount/token')
+          url = 'https://gitea.home.shanekanterman.dev/api/v1/repos/KanterLabs/portfolio-release/actions/secrets'
+          req = urllib.request.Request(url, headers={'Authorization': 'token ' + os.environ['JOB_READ_TOKEN']})
+          try:
+              urllib.request.urlopen(req, timeout=10).close()
+          except urllib.error.HTTPError as error:
+              assert error.code in (403, 404), error.code
+              print('Protected release API denied:', error.code)
+          else:
+              raise SystemExit('Canonical CI unexpectedly accessed release secrets API')
+          PYCODE
 
   browser-test:
     if: always() && (gitea.event_name != 'pull_request' || gitea.event.pull_request.head.repo.full_name == gitea.repository)
