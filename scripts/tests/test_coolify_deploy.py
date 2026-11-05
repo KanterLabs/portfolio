@@ -4,6 +4,7 @@ import http.server
 import os
 import sys
 import threading
+import tempfile
 import unittest
 from unittest import mock
 from pathlib import Path
@@ -82,6 +83,32 @@ class FakeClient:
 
 
 class CoolifyDeployTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.old_revision = mock.patch.object(deployer, 'fetch_text', return_value='b' * 40)
+        self.old_revision.start()
+        self.addCleanup(self.old_revision.stop)
+
+    def test_unknown_previous_revision_stops_before_mutation(self) -> None:
+        client = FakeClient()
+        with mock.patch.object(deployer, 'fetch_text', return_value='not-a-revision'):
+            with self.assertRaisesRegex(deployer.DeployError, 'previous revision'):
+                deployer.deploy(config(), client, sleep=lambda _: None, verify=lambda *_: None)
+        self.assertFalse(any(call[0] in {'PATCH', 'POST'} for call in client.calls))
+
+    def test_deployment_records_previous_and_requested_digests_before_failure(self) -> None:
+        client = FakeClient()
+        client.deployment_statuses = ["failed", "finished"]
+        with tempfile.TemporaryDirectory() as directory:
+            summary = Path(directory) / "summary.md"
+            with mock.patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": str(summary)}):
+                with self.assertRaisesRegex(deployer.DeployError, "previous digest was restored"):
+                    deployer.deploy(config(), client, sleep=lambda _: None, verify=lambda *_: None)
+            report = summary.read_text()
+        self.assertIn(OLD, report)
+        self.assertIn(NEW, report)
+        self.assertIn("a" * 40, report)
+        self.assertNotIn("secret", report)
+
     def test_config_rejects_mutable_image_reference(self) -> None:
         values = {
             "COOLIFY_API_URL": "https://coolify.example.test/api/v1",
@@ -126,13 +153,13 @@ class CoolifyDeployTests(unittest.TestCase):
 
         def verify(_: deployer.Config, revision: str | None) -> None:
             verified.append(revision)
-            if revision is not None:
+            if revision == "a" * 40:
                 raise deployer.DeployError("revision mismatch")
 
         with self.assertRaisesRegex(deployer.DeployError, "previous digest was restored"):
             deployer.deploy(config(), client, sleep=lambda _: None, verify=verify)
         self.assertEqual(OLD, client.digest)
-        self.assertEqual(["a" * 40, None], verified)
+        self.assertEqual(["a" * 40, "b" * 40], verified)
         self.assertEqual(2, len([call for call in client.calls if call[0] == "PATCH"]))
 
     def test_current_digest_is_idempotent(self) -> None:
@@ -167,6 +194,18 @@ class RedirectingHandler(http.server.BaseHTTPRequestHandler):
 
 
 class CoolifyClientRedirectTests(unittest.TestCase):
+    def test_origin_verification_cannot_follow_a_redirect_to_another_route(self) -> None:
+        RedirectingHandler.seen_authorization = []
+        server = http.server.HTTPServer(("127.0.0.1", 0), RedirectingHandler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+
+        with self.assertRaisesRegex(deployer.DeployError, "verification request failed"):
+            deployer.fetch_text(f"http://127.0.0.1:{server.server_port}/api/v1/healthz")
+
+        self.assertEqual([None], RedirectingHandler.seen_authorization)
+
     def test_redirects_are_refused_without_forwarding_the_token(self) -> None:
         RedirectingHandler.seen_authorization = []
         server = http.server.HTTPServer(("127.0.0.1", 0), RedirectingHandler)

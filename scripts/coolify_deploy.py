@@ -133,6 +133,7 @@ class CoolifyClient:
                     raise DeployError(f"Coolify {method} {path} returned an oversized response")
                 return json.loads(payload) if payload.strip() else {}
         except urllib.error.HTTPError as exc:
+            exc.close()
             raise DeployError(f"Coolify {method} {path} returned HTTP {exc.code}") from None
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
             raise DeployError(f"Coolify {method} {path} did not return a valid response") from exc
@@ -243,9 +244,12 @@ def wait_for_healthy(
 def fetch_text(url: str, timeout: int = 15) -> str:
     request = urllib.request.Request(url, headers={"User-Agent": "portfolio-deployer/1"})
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        # A redirect can silently verify a different load-balanced origin.
+        with urllib.request.build_opener(RejectRedirects).open(request, timeout=timeout) as response:
             payload = response.read(4097)
     except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
+        if isinstance(exc, urllib.error.HTTPError):
+            exc.close()
         raise DeployError("Portfolio verification request failed") from exc
     if len(payload) > 4096:
         raise DeployError("Portfolio verification response was oversized")
@@ -272,6 +276,14 @@ def deploy(
 ) -> dict[str, Any]:
     application = client.get(f"/applications/{cfg.application_uuid}")
     previous_digest = validate_application(application, cfg)
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary_path:
+        with open(summary_path, "a", encoding="utf-8") as summary:
+            summary.write(
+                f"Previous digest: `{previous_digest}`  \n"
+                f"Requested digest: `{cfg.image_digest}`  \n"
+                f"Requested revision: `{cfg.git_sha}`\n"
+            )
     if previous_digest == cfg.image_digest:
         wait_for_healthy(client, cfg, sleep)
         verify(cfg, cfg.git_sha)
@@ -281,6 +293,12 @@ def deploy(
             "git_sha": cfg.git_sha,
         }
 
+    previous_revision = fetch_text(cfg.site_url + "/_meta/revision")
+    if not re.fullmatch(r"[0-9a-f]{40}", previous_revision):
+        raise DeployError("Portfolio previous revision could not be established")
+    if summary_path:
+        with open(summary_path, "a", encoding="utf-8") as summary:
+            summary.write(f"Previous revision: `{previous_revision}`\n")
     changed = False
     deployment_uuid: str | None = None
     try:
@@ -300,7 +318,7 @@ def deploy(
             rollback_uuid = start_deployment(client, cfg)
             wait_for_deployment(client, rollback_uuid, cfg, sleep)
             wait_for_healthy(client, cfg, sleep)
-            verify(cfg, None)
+            verify(cfg, previous_revision)
         except Exception as rollback:
             raise DeployError(
                 f"deployment failed ({original}); rollback also failed ({rollback})"
@@ -313,6 +331,7 @@ def deploy(
         "status": "deployed",
         "deployment_uuid": deployment_uuid,
         "previous_digest": previous_digest,
+        "previous_revision": previous_revision,
         "image_digest": cfg.image_digest,
         "git_sha": cfg.git_sha,
     }
