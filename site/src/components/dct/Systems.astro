@@ -1,5 +1,5 @@
 ---
-import { playtestUrl } from './links';
+import { discordUrl } from './links';
 
 const specs = [
   { label: 'Thermal', value: 'Racks pull cold air in the front and push heat out the back' },
@@ -63,7 +63,7 @@ const pipeline = [
     <div class="dct-panel-body build-body">
       <div class="build-copy">
         <h3>A deterministic sim with a test suite behind it.</h3>
-        <a class="dct-button quiet" href={playtestUrl}>Ask about the next playtest</a>
+        <a class="dct-button quiet" href={discordUrl}>Ask about the next playtest</a>
       </div>
       <ol class="pipeline">
         {pipeline.map((step) => <li>{step}</li>)}

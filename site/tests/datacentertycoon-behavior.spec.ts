@@ -1,20 +1,21 @@
 import { expect, test } from '@playwright/test';
-import { PLAYTEST_HREF, DISCORD_HREF, ACCENT, expectNoOverflow, open } from './helpers/dct';
+import { DISCORD_HREF, ACCENT, expectNoOverflow, open } from './helpers/dct';
 import { expectHashLinkToReachSection } from './helpers/navigation';
 
 test.describe('Data Center Tycoon page', () => {
   test('Discord is the primary ask in the hero, nav, and closing', async ({ page }) => {
     await open(page);
     const heroLinks = page.locator('.hero-actions a');
-    await expect(heroLinks).toHaveCount(3);
+    await expect(heroLinks).toHaveCount(2);
     await expect(heroLinks.first()).toHaveAccessibleName('Join the Discord');
     await expect(heroLinks.first()).toHaveAttribute('href', DISCORD_HREF);
     await expect(heroLinks.first()).toHaveClass(/primary/);
-    await expect(heroLinks.nth(1)).toHaveAttribute('href', PLAYTEST_HREF);
+    await expect(heroLinks.nth(1)).toHaveAttribute('href', '#screens');
     // Visible in the nav at every viewport, including mobile where section links hide.
     await expect(page.locator('.dct-nav').getByRole('link', { name: 'Discord', exact: true })).toBeVisible();
     const hrefs = await page.locator('a[href*="discord"]').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
-    expect(hrefs).toHaveLength(3);
+    // Nav, hero, the build panel's playtest ask, and the closing panel.
+    expect(hrefs).toHaveLength(4);
     for (const href of hrefs) expect(href).toBe(DISCORD_HREF);
     await expectNoOverflow(page);
   });
@@ -44,11 +45,13 @@ test.describe('Data Center Tycoon page', () => {
     }
   });
 
-  test('every playtest mailto link is identical', async ({ page }) => {
+  test('playtests run through Discord, never email', async ({ page }) => {
     await open(page);
-    const hrefs = await page.locator('a[href^="mailto:"]').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
-    expect(hrefs.length).toBeGreaterThanOrEqual(3);
-    for (const href of hrefs) expect(href).toBe(PLAYTEST_HREF);
+    await expect(page.locator('.dct-shell a[href^="mailto:"]')).toHaveCount(0);
+    await expect(page.locator('.dct-shell')).not.toContainText(/by email|pre-filled email|Request playtest access/i);
+    await expect(page.locator('.fact-strip')).toContainText('Small batches, via Discord');
+    const ask = page.locator('.build-copy').getByRole('link', { name: 'Ask about the next playtest' });
+    await expect(ask).toHaveAttribute('href', DISCORD_HREF);
   });
 
   test('headings run in order', async ({ page }) => {

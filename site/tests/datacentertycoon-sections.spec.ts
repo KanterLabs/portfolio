@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { PLAYTEST_HREF, DISCORD_HREF, HOSTING_ALT, ACCENT, BORDER, open } from './helpers/dct';
+import { DISCORD_HREF, HOSTING_ALT, ACCENT, BORDER, open } from './helpers/dct';
 
 test.describe('Data Center Tycoon page', () => {
   test('core loop is a six-tile diagram', async ({ page, isMobile }) => {
@@ -167,26 +167,22 @@ test.describe('Data Center Tycoon page', () => {
 
   test('closing panel frames the one ask', async ({ page }) => {
     await open(page);
-    const closingLinks = page.locator('.closing-actions a');
-    await expect(closingLinks).toHaveText([/^\s*Join the Discord\s*$/, /Request playtest access/]);
-    const discord = page.locator('.closing').getByRole('link', { name: 'Join the Discord' });
+    const closingLinks = page.locator('.closing a');
+    await expect(closingLinks).toHaveText([/^\s*Join the Discord\s*$/]);
+    const discord = closingLinks.first();
     await expect(discord).toHaveAttribute('href', DISCORD_HREF);
     await expect(discord).toHaveClass(/primary/);
-    const cta = page.locator('.closing').getByRole('link', { name: 'Request playtest access' });
-    await expect(cta).toHaveAttribute('href', PLAYTEST_HREF);
-    for (const link of [discord, cta]) expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    expect((await discord.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     await expect(page.locator('.closing')).toHaveClass(/dct-panel/);
     await expect(page.locator('.closing h2')).toHaveText(/Five nines\s*or bust\./);
-    await expect(page.locator('.closing-note')).toBeVisible();
-    await expect(page.locator('.closing-note')).toHaveText('Playtest access opens a pre-filled email to Shane.');
-    await expect(page.locator('.closing')).toContainText('Playtest builds go out in small batches.');
-    await expect(page.locator('.closing-art img')).toHaveCount(1);
-    expect(await page.locator('.closing-art img').getAttribute('alt')).toMatch(/\S/);
-    const art = await page.locator('.closing-art').evaluate((el) => {
-      const s = getComputedStyle(el);
-      return { border: s.borderTopColor, width: s.borderTopWidth, radius: s.borderTopLeftRadius };
-    });
-    expect(art).toEqual({ border: BORDER, width: '1px', radius: '12px' });
+    await expect(page.locator('.closing')).toContainText('Playtests run through the Discord.');
+    // Only real in-game captures: no illustrated key art anywhere on the page.
+    await expect(page.locator('.closing img, .closing-art, .closing-note')).toHaveCount(0);
+    const sources = await page.locator('main img').evaluateAll((els) => els.map((el) => (el as HTMLImageElement).currentSrc || el.getAttribute('src')));
+    expect(sources).toHaveLength(3);
+    for (const src of sources) expect(src).not.toMatch(/key-art/);
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/og\/datacentertycoon\.jpg$/);
+    await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute('content', /in-game screenshot/);
   });
 
   test('the shell gradient runs under the closing margin to the footer', async ({ page }) => {

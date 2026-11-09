@@ -50,7 +50,7 @@ test.describe('Data Center Tycoon page', () => {
       'Management sim · Tycoon',
       'PC · Linux first, Windows in progress',
       'C++20 + SDL2',
-      'Small batches, by email',
+      'Small batches, via Discord',
     ]);
     const factColors = await page
       .locator('.fact-strip dd')

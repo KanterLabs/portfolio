@@ -1,13 +1,13 @@
 ---
 import DiscordGlyph from './DiscordGlyph.astro';
 import RackSkyline from './RackSkyline.astro';
-import { discordUrl, playtestUrl } from './links';
+import { discordUrl } from './links';
 
 const facts = [
   { label: 'Genre', value: 'Management sim · Tycoon' },
   { label: 'Platform', value: 'PC · Linux first, Windows in progress' },
   { label: 'Built with', value: 'C++20 + SDL2' },
-  { label: 'Playtests', value: 'Small batches, by email' },
+  { label: 'Playtests', value: 'Small batches, via Discord' },
 ];
 ---
 
@@ -31,7 +31,6 @@ const facts = [
           <DiscordGlyph />
           Join the Discord
         </a>
-        <a class="dct-button secondary" href={playtestUrl}>Request playtest access</a>
         <a class="see-game dct-button quiet" href="#screens">See the game</a>
       </div>
     </div>

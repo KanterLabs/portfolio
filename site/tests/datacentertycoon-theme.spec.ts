@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { expectTextOverImageContrast, getContrastRatio, parseColor } from './helpers/contrast';
-import { PLAYTEST_HREF, DISCORD_HREF, BORDER, open, box } from './helpers/dct';
+import { DISCORD_HREF, BORDER, open, box } from './helpers/dct';
 
 test.describe('Data Center Tycoon page', () => {
   test('Inter is the only typeface', async ({ page }) => {
@@ -109,21 +109,15 @@ test.describe('Data Center Tycoon page', () => {
       expect(getContrastRatio(white, parseColor('rgb(42, 111, 190)')!.rgb)).toBeGreaterThanOrEqual(4.5);
     }
 
-    const secondary = await page
-      .locator('a.dct-button.secondary')
-      .evaluateAll((els) => els.map((el) => [getComputedStyle(el).backgroundColor, getComputedStyle(el).borderTopColor]));
-    expect(secondary).toHaveLength(2);
-    for (const [bg, border] of secondary) {
-      expect(bg).toBe('rgb(57, 72, 89)');
-      expect(border).toBe('rgb(69, 86, 106)');
-    }
+    // Discord is the only ask, so no secondary button competes with it.
+    await expect(page.locator('a.dct-button.secondary')).toHaveCount(0);
     const seeGame = page.locator('.see-game');
     await expect(seeGame).toHaveClass(/dct-button/);
     await expect(seeGame).toHaveClass(/quiet/);
     expect(await seeGame.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(182, 195, 211)');
-    await expect(page.locator('.hero-actions a')).toHaveCount(3);
+    await expect(page.locator('.hero-actions a')).toHaveCount(2);
     const hrefs = await page.locator('.hero-actions a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
-    expect(hrefs).toEqual([DISCORD_HREF, PLAYTEST_HREF, '#screens']);
+    expect(hrefs).toEqual([DISCORD_HREF, '#screens']);
     await expect(page.locator('.dct-button').filter({ hasText: '→' })).toHaveCount(0);
   });
 
@@ -200,8 +194,7 @@ test.describe('Data Center Tycoon page', () => {
       '.hero-lede',
       '.play-panel .panel-title',
       '.closing h2',
-      '.closing-copy > p:not(.closing-note)',
-      '.closing-note',
+      '.closing-copy p',
       '.fact-strip dd',
     ]) {
       await expectTextOverImageContrast(page, selector);
