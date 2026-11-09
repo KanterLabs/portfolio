@@ -29,7 +29,7 @@
     "@fontsource/instrument-serif": "^5.3.0",
     "@fontsource/inter": "^5.3.0",
     "@fontsource/space-grotesk": "^5.3.0",
-    "@tailwindcss/vite": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.4",
     "astro": "^7.3.5",
     "github-slugger": "^2.0.0",
     "rehype-autolink-headings": "^7.1.0",
