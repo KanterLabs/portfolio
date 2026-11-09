@@ -308,3 +308,6 @@ jobs:
             sleep 1
           done
           exit 1
+
+# Execution is repo-scoped ActionRunners after the AR-20 cutover.
+# Preserve canonical runner labels and required checks; VM131 is retained for rollback.
