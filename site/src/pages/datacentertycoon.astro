@@ -78,7 +78,7 @@ const structuredData = {
      sections' own dt rules keep winning. */
   .dct-shell :global(a:focus-visible) { outline: 2px solid var(--dct-accent); outline-offset: 3px; }
   .dct-shell :global(.dct-panel) { background: var(--dct-panel); border: 1px solid var(--dct-border); border-radius: var(--dct-radius-panel); box-shadow: var(--dct-shadow); }
-  .dct-shell :global(.dct-panel-header) { min-height: 56px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--dct-header); border-bottom: 1px solid var(--dct-border); border-radius: var(--dct-radius-panel) var(--dct-radius-panel) 0 0; }
+  .dct-shell :global(.dct-panel-header) { flex-wrap: wrap; min-height: 56px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--dct-header); border-bottom: 1px solid var(--dct-border); border-radius: var(--dct-radius-panel) var(--dct-radius-panel) 0 0; }
   .dct-shell :global(.dct-panel-body) { padding: 20px; }
   .dct-shell :global(.panel-title) { margin: 0; color: var(--dct-text); font-size: 1.125rem; font-weight: 600; line-height: 1.3; }
   .dct-shell :global(:is(.eyebrow, .fig-label, .hud-label)), .dct-shell :global(:where(.fact-strip, .spec-grid) dt) { color: var(--dct-muted); font-size: .75rem; font-weight: 600; letter-spacing: normal; line-height: 1.4; text-transform: uppercase; }
@@ -87,7 +87,9 @@ const structuredData = {
   .dct-shell :global(.dot-success) { background: var(--dct-success); }
   .dct-shell :global(.dot-cooling) { background: var(--dct-ov-cooling); }
   .dct-shell :global(.dot-power) { background: var(--dct-ov-power); }
-  .dct-shell :global(.dct-button) { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 18px; border: 1px solid; border-radius: var(--dct-radius-control); font-size: .9375rem; font-weight: 600; line-height: 1.2; text-align: center; }
+  /* Keep enlarged text inside narrow cards and controls. */
+  .dct-shell { overflow-wrap: anywhere; }
+  .dct-shell :global(.dct-button) { max-width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 18px; border: 1px solid; border-radius: var(--dct-radius-control); font-size: .9375rem; font-weight: 600; line-height: 1.2; text-align: center; }
   .dct-shell :global(.dct-button.primary) { background: var(--dct-primary-rest); border-color: var(--dct-primary-border); color: #fff; }
   .dct-shell :global(.dct-button.primary:hover) { background: var(--dct-primary-rest-hover); border-color: var(--dct-accent); }
   .dct-shell :global(.dct-button.primary:active) { background: #1f5aa0; }
