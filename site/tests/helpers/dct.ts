@@ -1,7 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
 // Shared fixtures for the Data Center Tycoon page specs.
-export const PLAYTEST_HREF = 'mailto:shanekanterman04@gmail.com?subject=Data%20Center%20Tycoon%20playtest';
 export const DISCORD_HREF = 'https://discord.gg/mqTQ5QcTfA';
 export const HOSTING_ALT =
   'In-game screenshot: the Hosting panel open over the facility map, with VPS and Bare Metal sections, stat cards for subscribers, run rate and prepaid revenue, and the HUD showing cash, power, rack temperature and reputation.';

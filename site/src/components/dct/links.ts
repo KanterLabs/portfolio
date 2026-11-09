@@ -1,3 +1,2 @@
-// Calls to action shared by every section of the Data Center Tycoon page.
-export const playtestUrl = 'mailto:shanekanterman04@gmail.com?subject=Data%20Center%20Tycoon%20playtest';
+// The Data Center Tycoon page's one call to action: playtests run through Discord.
 export const discordUrl = 'https://discord.gg/mqTQ5QcTfA';
