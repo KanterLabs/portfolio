@@ -1,0 +1,64 @@
+---
+const loopSteps = [
+  { title: 'Plan the floor', body: 'Lay out racks with a clear tile in front and behind.' },
+  { title: 'Run power, cooling & network', body: 'Real graphs. A bad layout shows up as a thermal alarm.' },
+  { title: 'Build servers', body: 'Assemble boxes from components.' },
+  { title: 'Sell hosting', body: 'Publish VPS offers or rent whole servers.' },
+  { title: 'Keep it up', body: 'Staff, tickets, maintenance, and SLAs.' },
+  { title: 'Expand', body: 'Outbid competitors and grow into new facilities.' },
+];
+---
+
+<section class="loop section-pad" id="gameplay" aria-labelledby="loop-title">
+  <div class="section-heading">
+    <p class="eyebrow">Core loop · 6</p>
+    <h2 id="loop-title">Six steps, on repeat.</h2>
+  </div>
+  <div class="loop-panel dct-panel">
+    <div class="dct-panel-header">
+      <p class="panel-title">Core loop</p>
+      <span class="status-pill"><span class="dot dot-cooling" aria-hidden="true"></span>Repeats</span>
+    </div>
+    <div class="dct-panel-body">
+      <ol class="loop-steps">
+        {loopSteps.map((step, index) => (
+          <li>
+            <span class="step-num">{String(index + 1).padStart(2, '0')}</span>
+            <h3>{step.title}</h3>
+            <p>{step.body}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+    <p class="loop-return"><span aria-hidden="true">↺</span> Repeat, from garage to hyperscale.</p>
+  </div>
+</section>
+
+<style>
+  .loop-panel { margin-top: 2.5rem; }
+  .loop-steps { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+  .loop-steps li { position: relative; padding: 16px; background: var(--dct-header); border: 1px solid var(--dct-border); border-radius: var(--dct-radius-field); }
+  .step-num { position: relative; z-index: 1; display: inline-grid; place-items: center; min-width: 28px; height: 24px; padding: 0 6px; background: var(--dct-header); border: 1px solid var(--dct-normal-border); border-radius: var(--dct-radius-tab); color: var(--dct-muted); font-size: .75rem; font-weight: 600; line-height: 1; }
+  .loop-steps h3 { margin: .75rem 0 .35rem; color: var(--dct-text); font-size: 1rem; font-weight: 600; line-height: 1.3; }
+  .loop-steps p { margin: 0; color: var(--dct-muted); font-size: .875rem; line-height: 1.5; }
+  .loop-steps li:nth-child(5) { background: var(--dct-surface); border-color: var(--dct-primary-border); }
+  .loop-steps li:nth-child(5) .step-num { background: var(--dct-primary-pressed); border-color: var(--dct-primary-border); color: #fff; }
+  .loop-return { margin: 0; padding: 14px 20px; border-top: 1px solid var(--dct-border); color: var(--dct-muted); font-size: .875rem; }
+
+  @media (width >= 780px) and (width < 1100px) {
+    .loop-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  }
+  @media (width >= 1100px) {
+    .loop-steps { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1.25rem; }
+    .loop-steps li + li::before { content: ''; position: absolute; top: 50%; left: -.95rem; width: 8px; height: 8px; border-top: 2px solid var(--dct-accent); border-right: 2px solid var(--dct-accent); transform: translateY(-50%) rotate(45deg); opacity: .7; }
+  }
+  @media (width < 780px) {
+    .loop-steps li { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: .9rem; align-items: start; }
+    .loop-steps li::before { content: ''; position: absolute; left: 30px; top: -.75rem; bottom: -.75rem; width: 1px; background: var(--dct-border); }
+    .loop-steps li:first-child::before { top: 28px; }
+    .loop-steps li:last-child::before { bottom: auto; height: calc(.75rem + 28px); }
+    .loop-steps .step-num { grid-row: 1 / span 2; align-self: start; }
+    .loop-steps h3 { margin: 0 0 .35rem; line-height: 24px; }
+    .loop-steps p { grid-column: 2; }
+  }
+</style>

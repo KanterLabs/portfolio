@@ -1,0 +1,98 @@
+---
+import DiscordGlyph from './DiscordGlyph.astro';
+import RackSkyline from './RackSkyline.astro';
+import { discordUrl } from './links';
+
+const facts = [
+  { label: 'Genre', value: 'Management sim · Tycoon' },
+  { label: 'Platform', value: 'PC · Linux first, Windows in progress' },
+  { label: 'Built with', value: 'C++20 + SDL2' },
+  { label: 'Playtests', value: 'Small batches, via Discord' },
+];
+---
+
+<section class="hero" aria-labelledby="dct-title">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <p class="status"><span class="prealpha-badge">Pre-alpha</span> <span class="status-pill"><span class="dot dot-success" aria-hidden="true"></span>Playtesting now</span></p>
+      <div class="title-block"><p class="game-title"><span>Data Center</span> <span>Tycoon</span></p></div>
+      <p class="tagline">Build infrastructure. Balance power. Scale your empire.</p>
+      <h1 id="dct-title"><span>Build it.</span> <span>Cool it.</span> <em>Keep it up.</em></h1>
+      <p class="hero-lede">
+        A systems-heavy management sim about running a data center. Lay out the floor, route
+        power and cooling, build servers, sell hosting, and grow from a garage to hyperscale
+        without missing an SLA.
+      </p>
+    </div>
+    <div class="play-panel dct-panel" role="group" aria-labelledby="play-title">
+      <p class="panel-title" id="play-title">Play</p>
+      <div class="hero-actions">
+        <a class="dct-button primary" href={discordUrl}>
+          <DiscordGlyph />
+          Join the Discord
+        </a>
+        <a class="see-game dct-button quiet" href="#screens">See the game</a>
+      </div>
+    </div>
+  </div>
+
+  <RackSkyline />
+
+  <dl class="fact-strip dct-hud">
+    {facts.map((fact) => (
+      <div><dt>{fact.label}</dt><dd>{fact.value}</dd></div>
+    ))}
+  </dl>
+</section>
+
+<style>
+  /* The game's main menu. */
+  .hero { width: min(calc(100% - 3rem), 1180px); margin: 0 auto; padding-top: 4.5rem; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: none; grid-template-rows: none; gap: 2rem; align-items: start; }
+  /* global.css also defines .hero-copy for the homepage; neutralise its max-width, color and type. */
+  .hero-copy { max-width: none; margin: 0; color: inherit; font-size: inherit; line-height: inherit; min-width: 0; }
+  .status { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0 0 20px; }
+  .prealpha-badge { display: inline-block; padding: 4px 10px; border: 1px solid var(--dct-accent); border-radius: 2px; color: var(--dct-accent); font-size: .75rem; font-weight: 400; line-height: 1.2; text-transform: uppercase; }
+  /* The homepage drawing sheet also defines a global .title-block grid; reset it. */
+  .title-block { position: relative; display: block; margin: 0; padding: 0; border: 0; background: none; font: inherit; }
+  .title-block::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 6px; background: var(--dct-accent); border-radius: 1px; }
+  .game-title { display: inline-block; vertical-align: top; margin: 0; padding: 0 0 12px; border: 0; border-bottom: 3px solid var(--dct-accent); color: var(--dct-text); font-size: clamp(2rem, 1.4rem + 2.2vw, 3rem); font-weight: 600; line-height: 1.12; text-transform: uppercase; }
+  .game-title span { display: block; }
+  .tagline { margin: 16px 0 0; color: var(--dct-text); font-size: 1.0625rem; font-weight: 400; }
+  .hero h1 { margin: 2rem 0 0; color: var(--dct-text); font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.125rem); font-weight: 600; line-height: 1.25; letter-spacing: normal; }
+  .hero h1 em { color: var(--dct-accent); font-style: normal; }
+  .hero-lede { max-width: 36rem; margin: 1rem 0 0; color: var(--dct-muted); }
+  .play-panel { padding: 20px; width: 100%; }
+  .play-panel .panel-title { margin-bottom: 16px; font-size: 1.25rem; }
+  .hero-actions { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+  .hero-actions .dct-button { width: 100%; min-height: 48px; }
+
+  /* Fact strip as a HUD bar. */
+  .fact-strip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; margin: 1.5rem 0 0; padding: 14px 16px; background: var(--dct-panel); border: 1px solid var(--dct-border); border-radius: var(--dct-radius-field); box-shadow: 0 10px 24px rgba(0,0,0,.28); }
+  .fact-strip > div { min-width: 0; }
+  .fact-strip dt { margin: 0 0 4px; }
+  .fact-strip dd { margin: 0; color: var(--dct-text); font-size: 1rem; font-weight: 600; line-height: 1.4; }
+  .fact-strip > div:last-child dd { color: var(--dct-success); }
+  .fact-strip > div:last-child dd::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--dct-success); vertical-align: middle; }
+
+  @media (width >= 780px) {
+    .title-block::before { left: -22px; }
+    .fact-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; padding: 0; }
+    .fact-strip > div { padding: 14px 20px; }
+    .fact-strip > div + div { border-left: 1px solid var(--dct-border); }
+  }
+  @media (width >= 780px) and (width < 1100px) {
+    .play-panel { max-width: 420px; }
+  }
+  @media (width >= 1100px) {
+    .hero-grid { grid-template-columns: minmax(0, 1fr) 360px; column-gap: 4rem; align-items: end; }
+  }
+  @media (width < 1100px) {
+    .play-panel { margin: 0; }
+  }
+  @media (width < 780px) {
+    .hero { width: min(calc(100% - 2rem), 1180px); padding-top: 2.5rem; }
+    .title-block { padding-left: 18px; }
+    .title-block::before { left: 0; }
+  }
+</style>

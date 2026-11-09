@@ -1,0 +1,119 @@
+---
+import { discordUrl } from './links';
+
+const specs = [
+  { label: 'Thermal', value: 'Racks pull cold air in the front and push heat out the back' },
+  { label: 'Overlays', value: '' },
+  { label: 'Server builder', value: 'Assemble boxes from components' },
+  { label: 'Hosting', value: 'VPS offers and bare-metal rentals' },
+  { label: 'Staff', value: 'Pathfinding, jobs, and maintenance' },
+  { label: 'Customers', value: 'Contracts, tickets, SLAs, and reputation' },
+  { label: 'Market', value: 'Competitors and a hardware marketplace' },
+  { label: 'Simulation', value: 'Deterministic, with a headless AutoPlayer' },
+];
+
+const overlays = [
+  { cls: 'normal', label: 'Normal' },
+  { cls: 'cool', label: 'Cooling' },
+  { cls: 'power', label: 'Power' },
+  { cls: 'net', label: 'Network' },
+  { cls: 'svc', label: 'Service' },
+];
+
+const pipeline = [
+  'Sim core runs headless, separate from the UI',
+  'An AutoPlayer plays thousands of in-game days for balance testing',
+  'Content lives in data-driven JSON',
+  'Every change goes through CI on self-hosted runners',
+  'A playtest build ships',
+];
+---
+
+<section class="systems section-pad" id="systems" aria-labelledby="systems-title">
+  <div class="section-heading">
+    <p class="eyebrow">Under the hood · 8</p>
+    <h2 id="systems-title">Deep systems, readable at a glance.</h2>
+  </div>
+  <div class="systems-panel dct-panel">
+    <div class="dct-panel-header">
+      <p class="panel-title">Systems</p>
+      <span class="hud-label">8 systems</span>
+    </div>
+    <div class="dct-panel-body">
+      <dl class="spec-grid">
+        {specs.map((spec) => (
+          <div>
+            <dt>{spec.label}</dt>
+            {spec.label === 'Overlays' ? (
+              <dd class="overlay-chips">
+                {overlays.map((overlay) => <span class={overlay.cls}>{overlay.label}</span>)}
+              </dd>
+            ) : (
+              <dd>{spec.value}</dd>
+            )}
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+  <div class="build-panel dct-panel">
+    <div class="dct-panel-header">
+      <p class="panel-title">How it's built</p>
+    </div>
+    <div class="dct-panel-body build-body">
+      <div class="build-copy">
+        <h3>A deterministic sim with a test suite behind it.</h3>
+        <a class="dct-button quiet" href={discordUrl}>Ask about the next playtest</a>
+      </div>
+      <ol class="pipeline">
+        {pipeline.map((step) => <li>{step}</li>)}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .systems-panel { margin-top: 2.5rem; }
+  .spec-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 0; }
+  .spec-grid > div { min-width: 0; padding: 14px 16px; background: var(--dct-header); border: 1px solid var(--dct-border); border-radius: var(--dct-radius-field); }
+  .spec-grid dt { margin: 0 0 .4rem; }
+  .spec-grid dd { min-width: 0; margin: 0; color: var(--dct-text); font-size: .9375rem; line-height: 1.5; }
+  /* The game's bottom-right overlay switcher. */
+  .overlay-chips { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 4px; vertical-align: top; background: var(--dct-header); border: 1px solid var(--dct-border); border-radius: var(--dct-radius-field); }
+  .overlay-chips span { display: inline-flex; align-items: center; gap: 8px; min-height: 30px; padding: 0 10px; border: 1px solid transparent; border-radius: var(--dct-radius-control); color: var(--dct-text); font-size: .8125rem; font-weight: 600; line-height: 1; cursor: default; }
+  .overlay-chips .normal { background: var(--dct-surface); border-color: var(--dct-accent); }
+  .overlay-chips .cool::before, .overlay-chips .power::before, .overlay-chips .net::before, .overlay-chips .svc::before { content: ''; width: 7px; height: 7px; border-radius: 50%; }
+  .overlay-chips .cool::before { background: var(--dct-ov-cooling); }
+  .overlay-chips .power::before { background: var(--dct-ov-power); }
+  .overlay-chips .net::before { background: var(--dct-ov-network); }
+  .overlay-chips .svc::before { background: var(--dct-ov-service); }
+
+  .build-panel { margin-top: 1.5rem; }
+  .build-body { display: grid; gap: 2rem; }
+  .build-panel h3 { margin: 0; color: var(--dct-text); font-size: 1.375rem; font-weight: 600; line-height: 1.25; letter-spacing: normal; }
+  .build-copy .dct-button { min-height: 44px; margin-top: 1.25rem; }
+  .pipeline { margin: 0; padding: 0; list-style: none; }
+  .pipeline li { position: relative; padding: 0 0 1.25rem 1.9rem; color: var(--dct-text); line-height: 1.5; }
+  .pipeline li:last-child { padding-bottom: 0; }
+  .pipeline li::before { content: ''; position: absolute; left: 0; top: .3em; width: 10px; height: 10px; border-radius: 50%; background: var(--dct-success); }
+  .pipeline li:not(:last-child)::after { content: ''; position: absolute; left: 4.5px; top: calc(.3em + 10px); bottom: calc(.3em * -1); width: 1px; background: var(--dct-border); }
+  .pipeline li:last-child::before { background: var(--dct-warning); }
+
+  @media (width >= 780px) {
+    .build-body { grid-template-columns: 1fr 1fr; align-items: center; gap: clamp(2rem, 5vw, 4rem); }
+  }
+  @media (width >= 780px) and (width < 1100px) {
+    .spec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (width >= 1100px) {
+    .spec-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @media (width < 780px) {
+    .spec-grid > div { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); gap: 1rem; align-items: baseline; }
+    .spec-grid dt { margin-bottom: 0; line-height: calc(.9375rem * 1.5); }
+    .overlay-chips { justify-self: start; }
+    /* Chips are taller than a text line, so top-align this row and centre the label on them. */
+    .spec-grid > div:has(.overlay-chips) { align-items: start; }
+    .spec-grid > div:has(.overlay-chips) dt { padding-top: .25rem; }
+  }
+</style>

@@ -26,6 +26,22 @@ test.describe("utility routes", () => {
     );
   });
 
+  test("Data Center Tycoon page renders its pitch and screenshots", async ({
+    page,
+  }) => {
+    const response = await page.goto("/datacentertycoon");
+
+    expect(response?.status()).toBe(200);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page).toHaveTitle("Data Center Tycoon — Build it, cool it, keep it up");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Keep it up.");
+    await expect(page.locator(".screen-grid img")).toHaveCount(3);
+    await expect(
+      page.getByRole("link", { name: "Join the Discord" }).first(),
+    ).toHaveAttribute("href", "https://discord.gg/mqTQ5QcTfA");
+    await expect(page.locator('.dct-shell a[href^="mailto:"]')).toHaveCount(0);
+  });
+
   test("custom 404 page renders", async ({ page }) => {
     const response = await page.goto("/this-page-does-not-exist");
 

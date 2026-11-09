@@ -1,0 +1,55 @@
+---
+const pillars = [
+  {
+    tag: 'Infrastructure',
+    tone: 'cooling',
+    title: 'Every rack has to breathe.',
+    body: 'Power, cooling, and network are real graphs. Racks pull cold air in the front and dump heat out the back, and a bad layout shows up as a thermal alarm.',
+  },
+  {
+    tag: 'Business',
+    tone: 'success',
+    title: 'Uptime is the product.',
+    body: 'Publish VPS offers or rent whole servers, sign contracts, answer tickets, and protect your reputation. Customers prepay, and you earn it by delivering service every day.',
+  },
+  {
+    tag: 'Growth',
+    tone: 'power',
+    title: 'Garage to hyperscale.',
+    body: 'Start with a few racks and a single tech. Hire staff, keep up with maintenance, outbid competitors, and grow into new facilities.',
+  },
+];
+---
+
+<section class="pillars section-pad" aria-labelledby="pillars-title">
+  <div class="section-heading">
+    <p class="eyebrow">What you're running · 3</p>
+    <h2 id="pillars-title">A business built on physics.</h2>
+    <p>
+      Data Center Tycoon is a tycoon game where the infrastructure is the puzzle. Heat,
+      watts, and bandwidth decide whether your customers stay.
+    </p>
+  </div>
+  <div class="pillar-grid">
+    {pillars.map((pillar) => (
+      <article class="dct-panel">
+        <div class="dct-panel-header">
+          <span class="status-pill"><span class={`dot dot-${pillar.tone}`} aria-hidden="true"></span>{pillar.tag}</span>
+        </div>
+        <div class="dct-panel-body">
+          <h3>{pillar.title}</h3>
+          <p>{pillar.body}</p>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .pillar-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; margin-top: 2.5rem; }
+  .pillar-grid h3 { margin: 0 0 .5rem; color: var(--dct-text); font-size: 1.125rem; font-weight: 600; line-height: 1.3; }
+  .pillar-grid p { margin: 0; color: var(--dct-muted); }
+  @media (width >= 780px) {
+    .pillar-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+  }
+</style>

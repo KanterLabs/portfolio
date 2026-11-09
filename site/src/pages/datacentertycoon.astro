@@ -1,0 +1,115 @@
+---
+import '@fontsource/inter/latin-400.css';
+import '@fontsource/inter/latin-600.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DctNav from '../components/dct/DctNav.astro';
+import DctHero from '../components/dct/DctHero.astro';
+import CoreLoop from '../components/dct/CoreLoop.astro';
+import Screenshots from '../components/dct/Screenshots.astro';
+import Pillars from '../components/dct/Pillars.astro';
+import Systems from '../components/dct/Systems.astro';
+import Closing from '../components/dct/Closing.astro';
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'VideoGame',
+  name: 'Data Center Tycoon',
+  genre: ['Simulation', 'Tycoon', 'Management'],
+  gamePlatform: ['PC', 'Linux', 'Windows'],
+  description: 'A systems-heavy data center management sim: design infrastructure, run servers, and grow from a garage to hyperscale while meeting SLAs.',
+  author: {
+    '@type': 'Person',
+    name: 'Shane Kanterman',
+    url: 'https://shanekanterman.dev',
+  },
+};
+---
+
+<BaseLayout
+  title="Data Center Tycoon — Build it, cool it, keep it up"
+  description="A systems-heavy data center management sim. Design power, cooling, and network, run servers, and grow from a garage to hyperscale while meeting SLAs."
+  image="/og/datacentertycoon.jpg"
+  imageAlt="Data Center Tycoon in-game screenshot: the Hosting panel over the facility map, with the HUD showing cash, power, rack temperature and reputation"
+  structuredData={structuredData}
+  theme="dark"
+>
+  <div class="dct-shell">
+    <DctNav />
+    <main id="main-content">
+      <DctHero />
+      <CoreLoop />
+      <Screenshots />
+      <Pillars />
+      <Systems />
+      <Closing />
+    </main>
+  </div>
+</BaseLayout>
+
+<style>
+  /* This sheet is linked (not inlined) and lands before the layout's CSS, so the
+     :global overrides below carry extra specificity instead of relying on order. */
+  :global(html:root) { --font-family-sans: 'Inter', system-ui, sans-serif; --font-family-mono: 'Inter', system-ui, sans-serif; }
+  :global(html[data-theme] body) { background: #1e2733; color: #f1f5fa; font-family: 'Inter', system-ui, sans-serif; }
+  :global(html[data-theme] body::before) { display: none; }
+  :global(html .site-footer) { background: #1b2430; border-color: #3a4656; color: #b6c3d3; }
+  :global(html .site-footer-build) { color: #b6c3d3; }
+  :global(html .site-footer-brand) { border-color: #3a4656; }
+  :global(html .site-footer-links a) { color: #b6c3d3; }
+  :global(html .skip-link) { background: #2669b5; color: #fff; }
+  /* --dct-primary is the game's own fill; it fails AA under a white label, so buttons rest on primary-rest. */
+  .dct-shell {
+    --dct-bg-top: #1e2733; --dct-bg-bottom: #232d3b; --dct-panel: #212b37; --dct-header: #1b2430; --dct-surface: #283341; --dct-border: #3a4656;
+    --dct-text: #f1f5fa; --dct-muted: #b6c3d3; --dct-accent: #b5d0f4;
+    --dct-primary: #2f7fd8; --dct-primary-border: #4a95ea; --dct-primary-pressed: #2669b5; --dct-primary-rest: #2669b5; --dct-primary-rest-hover: #2a6fbe;
+    --dct-normal: #394859; --dct-normal-border: #45566a;
+    --dct-success: #58be78; --dct-warning: #ffbe48;
+    --dct-ov-cooling: #48c3eb; --dct-ov-power: #ebb941; --dct-ov-network: #48eb87; --dct-ov-service: #b973eb;
+    --dct-radius-panel: 17px; --dct-radius-control: 8px; --dct-radius-field: 12px; --dct-radius-tab: 9px;
+    --dct-shadow: 0 14px 36px rgba(0,0,0,.32);
+    display: flow-root; overflow-x: clip; background: linear-gradient(180deg, var(--dct-bg-top) 0%, var(--dct-bg-bottom) 100%);
+    color: var(--dct-text); font-size: 1rem; line-height: 1.6; letter-spacing: normal;
+  }
+
+  /* Shared game components used by every section in components/dct/. They are
+     scoped under the shell so they outrank global.css's same-named classes
+     (.eyebrow, .section-pad, ...), while each section's own scoped rules are
+     more specific still and override them. The dt labels use :where() so the
+     sections' own dt rules keep winning. */
+  .dct-shell :global(a:focus-visible) { outline: 2px solid var(--dct-accent); outline-offset: 3px; }
+  .dct-shell :global(.dct-panel) { background: var(--dct-panel); border: 1px solid var(--dct-border); border-radius: var(--dct-radius-panel); box-shadow: var(--dct-shadow); }
+  .dct-shell :global(.dct-panel-header) { flex-wrap: wrap; min-height: 56px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--dct-header); border-bottom: 1px solid var(--dct-border); border-radius: var(--dct-radius-panel) var(--dct-radius-panel) 0 0; }
+  .dct-shell :global(.dct-panel-body) { padding: 20px; }
+  .dct-shell :global(.panel-title) { margin: 0; color: var(--dct-text); font-size: 1.125rem; font-weight: 600; line-height: 1.3; }
+  .dct-shell :global(:is(.eyebrow, .fig-label, .hud-label)), .dct-shell :global(:where(.fact-strip, .spec-grid) dt) { color: var(--dct-muted); font-size: .75rem; font-weight: 600; letter-spacing: normal; line-height: 1.4; text-transform: uppercase; }
+  .dct-shell :global(.status-pill) { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; gap: 6px; border: 1px solid var(--dct-muted); border-radius: var(--dct-radius-control); background: transparent; color: var(--dct-text); font-size: .8125rem; font-weight: 400; line-height: 1; white-space: nowrap; }
+  .dct-shell :global(.dot) { width: 7px; height: 7px; flex: none; border-radius: 50%; }
+  .dct-shell :global(.dot-success) { background: var(--dct-success); }
+  .dct-shell :global(.dot-cooling) { background: var(--dct-ov-cooling); }
+  .dct-shell :global(.dot-power) { background: var(--dct-ov-power); }
+  /* Keep enlarged text inside narrow cards and controls. */
+  .dct-shell { overflow-wrap: anywhere; }
+  .dct-shell :global(.dct-button) { max-width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 18px; border: 1px solid; border-radius: var(--dct-radius-control); font-size: .9375rem; font-weight: 600; line-height: 1.2; text-align: center; }
+  .dct-shell :global(.dct-button.primary) { background: var(--dct-primary-rest); border-color: var(--dct-primary-border); color: #fff; }
+  .dct-shell :global(.dct-button.primary:hover) { background: var(--dct-primary-rest-hover); border-color: var(--dct-accent); }
+  .dct-shell :global(.dct-button.primary:active) { background: #1f5aa0; }
+  .dct-shell :global(.dct-button.quiet) { background: rgba(255,255,255,.03); border-color: var(--dct-normal-border); color: var(--dct-muted); }
+  .dct-shell :global(.dct-button.quiet:hover) { background: rgba(255,255,255,.06); color: var(--dct-text); }
+
+  /* Section rhythm. */
+  .dct-shell :global(.section-pad) { width: min(calc(100% - 3rem), 1180px); margin: 0 auto; padding: 5rem 0 0; }
+  .dct-shell :global(.section-heading) { max-width: 710px; }
+  .dct-shell :global(.eyebrow) { margin: 0 0 .75rem; }
+  .dct-shell :global(.section-heading h2), .dct-shell :global(.closing h2) { margin: 0; color: var(--dct-text); font-size: clamp(1.5rem, 1.15rem + 1vw, 1.875rem); font-weight: 600; line-height: 1.2; letter-spacing: normal; }
+  .dct-shell :global(.section-heading > p:last-child:not(.eyebrow)) { max-width: 40rem; margin: 1rem 0 0; color: var(--dct-muted); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .dct-shell :global(.dct-button) { transition: background-color 120ms, border-color 120ms, color 120ms; }
+  }
+  @media (width >= 780px) {
+    .dct-shell :global(.dct-panel-body) { padding: 24px; }
+  }
+  @media (width < 780px) {
+    .dct-shell :global(.section-pad) { width: min(calc(100% - 2rem), 1180px); padding-top: 4rem; }
+  }
+</style>
