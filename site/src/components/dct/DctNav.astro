@@ -20,12 +20,12 @@ import { discordUrl } from './links';
 </header>
 
 <style>
-  .dct-nav { width: min(calc(100% - 3rem), 1180px); height: 72px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--dct-border); background: transparent; }
+  .dct-nav { width: min(calc(100% - 3rem), 1180px); min-height: 72px; height: auto; padding-block: 12px; gap: 12px; flex-wrap: wrap; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--dct-border); background: transparent; }
   .brand { display: inline-flex; align-items: center; justify-content: center; gap: .75rem; min-width: 44px; min-height: 44px; font-size: 1rem; font-weight: 600; }
   .brand-mark { width: 28px; height: 28px; padding: 5px 6px; display: grid; align-content: center; gap: 3px; background: var(--dct-panel); border: 1px solid var(--dct-border); border-radius: var(--dct-radius-control); }
   .brand-mark i { position: relative; display: block; height: 3px; background: var(--dct-normal-border); }
   .brand-mark i:first-child::after { content: ''; position: absolute; top: 0; right: 0; width: 3px; height: 3px; background: var(--dct-success); }
-  .dct-nav nav { display: flex; align-items: center; gap: 1.5rem; }
+  .dct-nav nav { display: flex; flex-wrap: wrap; justify-content: flex-end; min-width: 0; align-items: center; gap: 1.5rem; }
   .dct-nav nav > a:not(.dct-button) { display: inline-flex; align-items: center; min-height: 44px; color: var(--dct-muted); font-size: .875rem; font-weight: 600; }
   .dct-nav nav > a:not(.dct-button):hover { color: var(--dct-text); }
   .dct-nav .nav-discord, .dct-nav .nav-portfolio { min-height: 44px; padding: 0 14px; }

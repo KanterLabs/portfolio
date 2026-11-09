@@ -77,7 +77,7 @@ const pipeline = [
   .spec-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 0; }
   .spec-grid > div { min-width: 0; padding: 14px 16px; background: var(--dct-header); border: 1px solid var(--dct-border); border-radius: var(--dct-radius-field); }
   .spec-grid dt { margin: 0 0 .4rem; }
-  .spec-grid dd { margin: 0; color: var(--dct-text); font-size: .9375rem; line-height: 1.5; }
+  .spec-grid dd { min-width: 0; margin: 0; color: var(--dct-text); font-size: .9375rem; line-height: 1.5; }
   /* The game's bottom-right overlay switcher. */
   .overlay-chips { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 4px; vertical-align: top; background: var(--dct-header); border: 1px solid var(--dct-border); border-radius: var(--dct-radius-field); }
   .overlay-chips span { display: inline-flex; align-items: center; gap: 8px; min-height: 30px; padding: 0 10px; border: 1px solid transparent; border-radius: var(--dct-radius-control); color: var(--dct-text); font-size: .8125rem; font-weight: 600; line-height: 1; cursor: default; }
@@ -109,7 +109,7 @@ const pipeline = [
     .spec-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
   @media (width < 780px) {
-    .spec-grid > div { display: grid; grid-template-columns: 7.5rem 1fr; gap: 1rem; align-items: baseline; }
+    .spec-grid > div { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); gap: 1rem; align-items: baseline; }
     .spec-grid dt { margin-bottom: 0; line-height: calc(.9375rem * 1.5); }
     .overlay-chips { justify-self: start; }
     /* Chips are taller than a text line, so top-align this row and centre the label on them. */

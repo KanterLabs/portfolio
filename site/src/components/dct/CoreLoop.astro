@@ -53,7 +53,7 @@ const loopSteps = [
     .loop-steps li + li::before { content: ''; position: absolute; top: 50%; left: -.95rem; width: 8px; height: 8px; border-top: 2px solid var(--dct-accent); border-right: 2px solid var(--dct-accent); transform: translateY(-50%) rotate(45deg); opacity: .7; }
   }
   @media (width < 780px) {
-    .loop-steps li { display: grid; grid-template-columns: 28px 1fr; column-gap: .9rem; align-items: start; }
+    .loop-steps li { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: .9rem; align-items: start; }
     .loop-steps li::before { content: ''; position: absolute; left: 30px; top: -.75rem; bottom: -.75rem; width: 1px; background: var(--dct-border); }
     .loop-steps li:first-child::before { top: 28px; }
     .loop-steps li:last-child::before { bottom: auto; height: calc(.75rem + 28px); }

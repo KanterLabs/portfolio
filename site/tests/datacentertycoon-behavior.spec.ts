@@ -133,6 +133,14 @@ test.describe('Data Center Tycoon page', () => {
     await expectNoOverflow(page);
   });
 
+  test('reflows at 320px with text enlarged to 200%', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await open(page);
+    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    await expectNoOverflow(page);
+    await expect(page.locator('.dct-nav').getByRole('link', { name: /portfolio/i })).toBeVisible();
+  });
+
   test('hash links land on their sections', async ({ page, isMobile }) => {
     await open(page);
     if (!isMobile) {
