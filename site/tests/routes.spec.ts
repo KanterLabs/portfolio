@@ -35,7 +35,7 @@ test.describe("utility routes", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await expect(page).toHaveTitle("Data Center Tycoon — Build it, cool it, keep it up");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Keep it up.");
-    await expect(page.locator(".screen-grid img")).toHaveCount(2);
+    await expect(page.locator(".screen-grid img")).toHaveCount(3);
     await expect(
       page.getByRole("link", { name: "Request playtest access" }).first(),
     ).toHaveAttribute(

@@ -1,0 +1,89 @@
+---
+import { Image } from 'astro:assets';
+import hostingShot from '../../assets/datacentertycoon/hosting.png';
+import panelsShot from '../../assets/datacentertycoon/panels.png';
+import fieldNoteShot from '../../assets/datacentertycoon/field-note.png';
+
+const shots = [
+  {
+    image: hostingShot,
+    alt: 'In-game screenshot: the Hosting panel open over the facility map, with VPS and Bare Metal sections, stat cards for subscribers, run rate and prepaid revenue, and the HUD showing cash, power, rack temperature and reputation.',
+    label: 'FIG. 01',
+    title: 'Hosting',
+    body: 'Sell VPS subscriptions or rent whole servers, with the HUD tracking cash, power, rack temperature and reputation.',
+    widths: [640, 1280, 1920],
+    sizes: '(max-width: 779px) 100vw, 1180px',
+  },
+  {
+    image: fieldNoteShot,
+    alt: "In-game screenshot: a small data hall with a few racks. An inbox email titled 'Field note: racks have a front and a back' explains airflow and how to earn hosting income.",
+    label: 'FIG. 02',
+    title: 'Onboarding by inbox',
+    body: 'Tutorials arrive as ops emails. This field note covers airflow, why every rack needs a free tile in front and behind so staff can work on it, and R / Shift+R to rotate a rack or flip a row.',
+  },
+  {
+    image: panelsShot,
+    alt: 'In-game screenshot: the All panels menu, grouping Business (Hosting, Contracts, Marketing, Finances, Bank), Facility, Operations, and Market panels.',
+    label: 'FIG. 03',
+    title: 'Every panel, one menu',
+    body: 'Business, Facility, Operations, and Market panels in one searchable menu. Right-click to pin the ones you use; the top bar tracks cash, daily net, power, hottest rack, and reputation at 1x to 8x speed.',
+  },
+].map((shot) => ({
+  widths: [640, 1280],
+  sizes: '(max-width: 779px) 100vw, (max-width: 1099px) 92vw, 760px',
+  ...shot,
+}));
+---
+
+<section class="screens section-pad" id="screens" aria-labelledby="screens-title">
+  <div class="section-heading">
+    <p class="eyebrow">In game · 3</p>
+    <h2 id="screens-title">Current build.</h2>
+    <p>Early-game captures from the native client. The UI is still changing between playtests.</p>
+  </div>
+  <div class="screen-grid">
+    {shots.map((shot) => (
+      <figure class="shot">
+        <a class="shot-frame" href={shot.image.src} aria-label={`Open full-size screenshot: ${shot.title}`}>
+          <Image src={shot.image} alt={shot.alt} widths={shot.widths} sizes={shot.sizes} />
+          <span class="shot-zoom" aria-hidden="true">⤢ Full size</span>
+        </a>
+        <figcaption>
+          <span class="fig-label">{shot.label}</span>
+          <h3>{shot.title}</h3>
+          <p>{shot.body}</p>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+</section>
+
+<style>
+  .screen-grid { display: grid; gap: 3rem; margin-top: 2.5rem; }
+  .shot { margin: 0; display: grid; gap: 1.25rem; }
+  .shot figcaption { max-width: 40rem; }
+  .shot-frame { display: block; position: relative; overflow: hidden; background: var(--dct-panel); border: 1px solid var(--dct-border); border-radius: var(--dct-radius-panel); box-shadow: var(--dct-shadow); }
+  .shot-frame img { display: block; width: 100%; height: auto; }
+  .shot-zoom { position: relative; z-index: 1; display: flex; align-items: center; justify-content: flex-end; min-height: 40px; padding: 0 16px; background: var(--dct-header); border-top: 1px solid var(--dct-border); color: var(--dct-text); font-size: .8125rem; font-weight: 600; line-height: 1.2; }
+  .shot h3 { margin: .5rem 0; color: var(--dct-text); font-size: 1.125rem; font-weight: 600; line-height: 1.3; }
+  .shot p { margin: 0; color: var(--dct-muted); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .shot-frame { transition: border-color 300ms ease; }
+    .shot-frame img { transition: transform 300ms ease; }
+    .shot-frame:hover { border-color: var(--dct-primary-border); }
+    .shot-frame:hover img { transform: scale(1.02); }
+  }
+  @media (width >= 1100px) {
+    .screen-grid { gap: 4rem; }
+    .shot { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 3rem; row-gap: 1.25rem; align-items: center; }
+    .shot-frame { grid-row: 1; }
+    .shot figcaption { grid-row: 1; }
+    .shot:first-child .shot-frame { grid-column: 1 / 13; }
+    .shot:first-child figcaption { grid-row: 2; grid-column: 1 / 9; }
+    .shot:nth-child(2) .shot-frame { grid-column: 1 / 9; }
+    .shot:nth-child(2) figcaption { grid-column: 9 / 13; }
+    .shot:nth-child(3) .shot-frame { grid-column: 5 / 13; }
+    .shot:nth-child(3) figcaption { grid-column: 1 / 5; }
+  }
+</style>
