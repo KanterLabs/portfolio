@@ -101,7 +101,7 @@ jobs:
       - name: Set up Node.js
         uses: https://github.com/actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
-          node-version: "22.22.1"
+          node-version: "22.23.4"
           cache: npm
           cache-dependency-path: ${{ matrix.workspace }}/package-lock.json
       - name: Audit locked dependencies
@@ -123,7 +123,7 @@ jobs:
       - name: Set up Node.js
         uses: https://github.com/actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
-          node-version: "22.22.1"
+          node-version: "22.23.4"
           cache: npm
           cache-dependency-path: chat-worker/package-lock.json
       - name: Install dependencies
@@ -193,7 +193,7 @@ jobs:
         if: needs.changes.outputs.browser == 'true'
         uses: https://github.com/actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
-          node-version: "22.22.1"
+          node-version: "22.23.4"
           cache: npm
           cache-dependency-path: site/package-lock.json
       - name: Install dependencies
