@@ -16,6 +16,9 @@ its Coolify-hosted production site and private beta environment.
 
 ## Local Development
 
+Use Node.js 22.23.4 or newer; CI and the Docker build pin 22.23.4 to meet
+Astro's runtime requirement.
+
 ```sh
 cd site
 npm ci
