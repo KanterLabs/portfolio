@@ -1,5 +1,15 @@
 /* The catalog keeps the portfolio's drawing sheets and rack, with a complete
    directory below the flagship plates so every public project is readable. */
+.catalog-page {
+  overflow-wrap: anywhere;
+}
+
+/* Decorative faceplates must not widen the page with enlarged text.
+   The accessible project names and links remain in the adjacent callouts. */
+.catalog-page .rack-face[aria-hidden='true'] {
+  overflow: hidden;
+}
+
 .catalog-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 37rem);
@@ -154,6 +164,18 @@
 }
 
 @media (width < 780px) {
+  .catalog-page .rack-row {
+    grid-template-columns: min(3.1rem, 20%) minmax(0, 1fr);
+  }
+
+  .catalog-page .rack-callout {
+    flex-wrap: wrap;
+  }
+
+  .catalog-page .rack-note {
+    flex: 1 1 8rem;
+  }
+
   .catalog-entry {
     grid-template-columns: minmax(0, 1fr);
   }
