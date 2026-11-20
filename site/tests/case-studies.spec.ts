@@ -9,6 +9,13 @@ const caseStudies = [
     backHref: '/#projects',
   },
   {
+    path: '/projects/actionrunners',
+    title: 'ActionRunners | Shane Kanterman',
+    heading: 'ActionRunners',
+    backLabel: 'Back to selected work',
+    backHref: '/#projects',
+  },
+  {
     path: '/projects/multi-node-portfolio',
     title: 'Coolify Portfolio Deployment | Shane Kanterman',
     heading: 'Coolify Portfolio Deployment',
@@ -327,7 +334,6 @@ test.describe('case studies', () => {
       '/diagrams/homelab-estate.svg',
       '/diagrams/repository-control-map.svg',
       '/diagrams/homelab-trust-zones.svg',
-      '/diagrams/runner-lifecycle.svg',
       '/diagrams/architecture-diagram.svg',
     ];
     const assetText = (
@@ -340,6 +346,7 @@ test.describe('case studies', () => {
       )
     ).join('\n');
     const publicContent = `${renderedText}\n${assetText}`;
+    expect(publicContent).not.toMatch(/Actions Runner Controller|k3s|runner pods/i);
 
     expect(publicContent).not.toMatch(/\b10\.(?:\d{1,3}\.){2}\d{1,3}\b/);
     expect(publicContent).not.toMatch(/\b100\.(?:\d{1,3}\.){2}\d{1,3}\b/);

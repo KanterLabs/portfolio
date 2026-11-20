@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
   <title id="title">KanterLabs infrastructure estate</title>
-  <desc id="desc">Cloudflare and GitHub connect to separate home and remote Proxmox environments. Both sites use hardened edge boundaries with distinct management, ingress, and origin planes. The home environment also provides development and ephemeral CI.</desc>
+  <desc id="desc">The home and remote environments use hardened edge boundaries with distinct management, ingress, and origin planes. The home environment also provides development and disposable VMs for Gitea Actions jobs.</desc>
   <defs>
     <style>
       .title{font:700 30px Inter,Arial,sans-serif;fill:#18181b}.subtitle{font:500 16px Inter,Arial,sans-serif;fill:#52525b}
@@ -18,12 +18,9 @@
   <text x="700" y="50" text-anchor="middle" class="title">KanterLabs Infrastructure Estate</text>
   <text x="700" y="78" text-anchor="middle" class="subtitle">Two sites, two hardened edges, and explicit management, ingress, origin, and CI boundaries</text>
 
-  <rect x="430" y="110" width="220" height="78" rx="16" class="external"/>
-  <text x="540" y="143" text-anchor="middle" class="label">Cloudflare</text>
-  <text x="540" y="166" text-anchor="middle" class="small">DNS, proxy, and TLS</text>
-  <rect x="750" y="110" width="220" height="78" rx="16" class="external"/>
-  <text x="860" y="143" text-anchor="middle" class="label">GitHub</text>
-  <text x="860" y="166" text-anchor="middle" class="small">Repositories and Actions</text>
+  <rect x="590" y="110" width="220" height="78" rx="16" class="external"/>
+  <text x="700" y="143" text-anchor="middle" class="label">Cloudflare</text>
+  <text x="700" y="166" text-anchor="middle" class="small">DNS, proxy, and TLS</text>
 
   <rect x="70" y="250" width="590" height="560" rx="24" class="site"/>
   <text x="105" y="292" class="section">Home Proxmox environment</text>
@@ -40,9 +37,9 @@
   <text x="403" y="446" class="small">Runtime credentials outside Git</text>
 
   <rect x="105" y="515" width="250" height="190" rx="18" class="edge"/>
-  <text x="132" y="550" class="tiny">ORGANIZATION CI</text>
-  <text x="132" y="583" class="label">k3s + ARC</text>
-  <text x="132" y="612" class="small">Disposable runner pods</text>
+  <text x="132" y="550" class="tiny">GITEA ACTIONS</text>
+  <text x="132" y="583" class="label">ActionRunners</text>
+  <text x="132" y="612" class="small">One disposable VM per job</text>
   <text x="132" y="640" class="small">Bounded job resources</text>
   <text x="132" y="668" class="small">Read-only operations view</text>
 
@@ -79,8 +76,7 @@
   <rect x="775" y="744" width="520" height="40" rx="10" class="boundary"/>
   <text x="1035" y="769" text-anchor="middle" class="small">Management, ingress, and origin planes are default-deny</text>
 
-  <path d="M540 188V218H1005V360" class="line" marker-end="url(#arrow)"/>
-  <path d="M860 188V220H362V515" class="line" marker-end="url(#arrow)"/>
+  <path d="M700 188V218H1005V360" class="line" marker-end="url(#arrow)"/>
   <path d="M1035 480V503H897V525" class="line" marker-end="url(#arrow)"/>
   <path d="M1035 480V503H1172V525" class="line" marker-end="url(#arrow)"/>
   <path d="M620 610H715V420H775" class="dash" marker-end="url(#arrow)"/>

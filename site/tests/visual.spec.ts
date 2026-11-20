@@ -18,6 +18,7 @@ test.describe('visual coverage', () => {
     ['/projects', 'projects-index'],
     ['/projects/helm', 'featured-helm-case-study'],
     ['/projects/kanterlabs-homelab', 'homelab-case-study'],
+    ['/projects/actionrunners', 'actionrunners-case-study'],
     ['/projects/multi-node-portfolio', 'portfolio-infrastructure-case-study'],
     ['/projects/data-center-operations', 'datacenter-case-study'],
   ] as const) {

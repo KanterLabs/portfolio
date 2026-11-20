@@ -5,7 +5,7 @@ highlight: Makes each deployment traceable to a tested commit and an immutable i
 impact: Replaced direct deployment to two static origins with a guarded container release workflow in Coolify.
 constraint: Keep beta private, isolate deployment credentials, and restore the previous image if live verification fails.
 role: Designer, builder, and operator.
-scope: Astro, Nginx, Docker, GHCR, Coolify, Cloudflare Tunnel, Tailscale, and GitHub Actions.
+scope: Astro, Nginx, Docker, GHCR, Coolify, Cloudflare Tunnel, Tailscale, and Gitea Actions.
 keyOutcome: Separate beta and production applications with exact-digest deployment, public health and revision checks, and automatic rollback on failed verification.
 featured: false
 order: 5
@@ -15,7 +15,7 @@ stack:
   - Docker
   - Coolify
   - Cloudflare Tunnel
-  - GitHub Actions
+  - Gitea Actions
 status: shipped
 date: 2026-07-18
 socialImage: /og/project-portfolio-infrastructure.png
@@ -23,10 +23,10 @@ links:
   - label: View portfolio repo
     href: https://github.com/KanterLabs/portfolio
 system:
-  caption: GitHub Actions builds and publishes an immutable image to GHCR. Coolify deploys its exact digest to the selected application; production traffic reaches Nginx through Cloudflare Tunnel.
+  caption: Gitea Actions builds and publishes an immutable image to GHCR. Coolify deploys its exact digest to the selected application. Production traffic reaches Nginx through Cloudflare Tunnel.
   tiers:
     - nodes:
-        - title: GitHub Actions
+        - title: Gitea Actions
           detail: Tests + image build
     - nodes:
         - title: GHCR image digest
@@ -43,8 +43,9 @@ system:
 
 This portfolio runs as a static Astro build served by Nginx in a container.
 Coolify operates separate beta and production applications on an OVH app host.
-GitHub Actions builds the image, publishes it to GHCR, and tells Coolify exactly
-which immutable digest to deploy.
+Gitea Actions jobs run on [ActionRunners](/projects/actionrunners). The protected
+release workflow builds the image, publishes it to GHCR, and tells Coolify which
+immutable digest to deploy.
 
 The important distinction is between building a release and running it:
 Coolify does not rebuild the source or deploy a mutable branch tag. Every
@@ -85,9 +86,9 @@ over the tailnet and has no public DNS record.
 Production promotion comes from a pull request from `beta` to `main`. After
 merge, the main workflow repeats validation, builds and smoke-tests its own
 commit-tagged image, and deploys the resulting digest to production. The two
-lanes use separate Coolify application identities, credentials, and protected
-GitHub environments. A stale workflow cannot replace a newer release: the
-job checks that its commit is still the branch tip before deployment.
+lanes use separate Coolify application identities and credentials. Validation
+and protected releases run in separate Gitea repositories. Before deployment,
+the release checks that its commit is still the branch tip.
 
 ## Exact-Digest Deployment
 

@@ -46,6 +46,9 @@ the repository at runtime.
 
 ## Release knowledge checks
 
+- “How do the portfolio's CI runners work?” Expected: describe capacity
+  admission, one Proxmox VM per enrolled Gitea job, single-use registration,
+  and cleanup. Link to `/projects/actionrunners`.
 - “What changed in Helm 0.2.0?” Expected: describe Tickets, webhook and
   email intake, and guided Cloudflare public access; link to `/projects/helm`.
 - “Can I open Shane's Helm dashboard?” Expected: explain that his production

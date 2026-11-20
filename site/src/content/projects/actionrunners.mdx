@@ -1,0 +1,145 @@
+---
+title: ActionRunners
+summary: One disposable Proxmox VM per Gitea Actions job, run by a thin polling controller and watched through a live lifecycle dashboard.
+highlight: Gives every CI job a fresh virtual machine that exists for exactly one job and never holds a reusable runner credential.
+impact: Replaced long-lived CI workers with disposable VMs for enrolled Gitea repositories, including this portfolio and Data Center Tycoon.
+constraint: Keep job VMs away from the control plane, keep registration tokens on one host, and never leak a VM when something crashes.
+role: Designer, builder, and operator.
+scope: A Python controller, the Proxmox VE API, Gitea Actions, the QEMU guest agent, nftables, and a dependency-free live dashboard.
+keyOutcome: Across 105 successful provisions in one production day, runners were ready a median of 18.6 seconds after admission. A live board shows each job's stage.
+featured: false
+order: 3
+stack:
+  - Python
+  - Proxmox VE
+  - Gitea Actions
+  - QEMU guest agent
+  - nftables
+  - SQLite
+status: shipped
+date: 2026-11-12
+socialImage: /og/project-actionrunners.jpg
+system:
+  caption: The controller polls Gitea, checks capacity, and clones a single-use VM for each admitted job. The dashboard receives lifecycle events without holding Gitea or Proxmox credentials.
+  tiers:
+    - nodes:
+        - label: Queue
+          title: Gitea Actions
+          detail: Polled every 5 seconds
+    - nodes:
+        - label: Control
+          title: Controller
+          detail: Admit · register · reap
+          kind: accent
+    - nodes:
+        - label: Per job
+          title: Disposable VM
+          detail: One job, then destroyed
+        - label: Observe
+          title: Live dashboard
+          detail: Pushed snapshots, no credentials
+  footer:
+    - label: Network
+      title: Git server, public web, DNS, NTP only
+    - label: Secrets
+      title: Registration tokens stay on the controller
+---
+
+import ActionRunnersLifecycle from '../../components/ActionRunnersLifecycle.astro';
+import Callout from '../../components/Callout.astro';
+import DiagramFigure from '../../components/DiagramFigure.astro';
+import RepoMedia from '../../components/RepoMedia.astro';
+
+## Overview
+
+ActionRunners gives each enrolled Gitea Actions job its own Proxmox VM. The controller clones a reviewed template, delivers a single-use runner registration, and reclaims the VM after the job. Each clone starts with a fresh workspace and Docker state. Selected projects can reuse explicitly shared build caches.
+
+A small controller makes that happen. It polls Gitea, admits jobs against one capacity ledger, and reports to a live dashboard that shows each job moving through its lifecycle.
+
+<figure class="ar-recording not-prose">
+  <RepoMedia
+    name="ActionRunners dashboard"
+    media={{
+      kind: 'video',
+      mp4: '/projects/actionrunners/board-live.mp4',
+      webm: '/projects/actionrunners/board-live.webm',
+      poster: '/projects/actionrunners/board-live-poster.jpg',
+      alt: 'The ActionRunners dashboard updating live: queued jobs are admitted, VMs boot and pick up jobs, progress bars fill, and finished jobs move to the last column',
+      width: 1280,
+      height: 790,
+    }}
+  />
+  <figcaption>
+    The live board as a CI run moves through it. The dashboard uses synthetic demo data for repositories, VM numbers, and capacity figures.
+  </figcaption>
+</figure>
+
+## Problem
+
+Long-lived CI workers retain their runner registration and can accumulate toolchain and workspace state between jobs. I wanted each job to start in a fresh environment, with a smaller VM for quick checks and more resources for browser tests and container builds.
+
+## My Contribution
+
+I designed and built the controller, the VM templates, the host firewall for runner VMs, and the dashboard. The controller records each reservation in a durable ledger. A separate cleanup pass uses that record to recover after interrupted provisioning or a crash.
+
+## How a Job Runs
+
+Each job takes the same six steps. Step through them below, or press Play.
+
+<ActionRunnersLifecycle />
+
+Two properties make the lifecycle safe to automate.
+
+- **Admission happens before cloning.** A job that would push the fleet past its VM, vCPU, or memory ceilings, or eat into the host's memory reserve, simply stays queued. The controller logs the reason, and the dashboard shows it on the waiting job's card.
+- **Cleanup can recover after a crash.** The controller reclaims a VM after its runner exits and the guest shuts down. A separate janitor pass reclaims owned guests that are stopped, past their lease deadline, or missing from the ledger.
+
+## Runner Isolation
+
+The controller uses scoped Proxmox permissions and touches only designated runner resources. It delivers the single-use runner file through the QEMU guest agent and keeps the reusable registration credential on the controller. Host-level firewall rules keep job guests away from management services and other private workloads.
+
+Portfolio uses separate runner profiles for validation and protected releases. Release jobs run in a trusted repository, with their deployment credentials kept out of ordinary pull-request jobs.
+
+<Callout type="note" title="Fail fast on pull requests">
+  Repositories can opt in to fail-fast cancellation. When a job in an opted-in pull request run fails, the controller cancels the rest of that run, so its VMs are released early and the pull request turns red without waiting for the slowest job. Push and scheduled runs always run to completion so they report every failure.
+</Callout>
+
+## Watching the Fleet
+
+The dashboard shows each job's current stage, why queued jobs are waiting, how long VMs take to become ready, and how runs compare with the old dedicated runner.
+
+The controller pushes snapshots and lifecycle events to the dashboard. The dashboard stores them in SQLite and sends refresh notices to open browsers through server-sent events. It holds no Proxmox or Gitea credentials.
+
+<DiagramFigure
+  src="/projects/actionrunners/now-dark.webp"
+  alt="The dashboard's Now view: a plain-English status sentence, health pills, a five-column lifecycle board, 24-hour trend charts, and capacity bars"
+  caption="The Now view. One sentence says what is happening, health pills appear only for checks that need attention, and every job sits in one of five stages. Trends and capacity sit underneath. Synthetic demo data."
+  wide={true}
+/>
+
+<DiagramFigure
+  src="/projects/actionrunners/runs-dark.webp"
+  alt="The Runs view: each workflow run as a job timeline, with queue time, run time, and a comparison against the old runner's median for every job"
+  caption="Runs compare jobs with the old dedicated runner's median where one exists, so a slow VM profile or a cold cache shows up as a percentage rather than a hunch. Synthetic demo data."
+  wide={true}
+/>
+
+<DiagramFigure
+  src="/projects/actionrunners/fleet-dark.webp"
+  alt="The Fleet history view: a timeline of every VM's provisioning, waiting, and running phases, and a histogram of seconds from admission to a ready VM"
+  caption="Fleet history draws every VM's life and the distribution of time to a ready VM, against a p95 target of three minutes. Synthetic demo data."
+  wide={true}
+/>
+
+The dashboard is plain HTML, CSS, and JavaScript with hand-drawn SVG charts and no third-party packages. Its content security policy allows only same-origin scripts and styles, so every chart sets its geometry through the CSSOM rather than inline styles. It follows the system's light or dark theme and stacks the board into a single column on a phone.
+
+## Result and Evidence
+
+In a 24-hour production sample recorded on November 16, 2026, the controller completed **105 VM provisions**. From admission to readiness, the median was **18.6 seconds** and the 95th percentile was **23.0 seconds**. This interval covers provisioning and runner registration up to readiness. Queue time and job execution are measured separately.
+
+For the Portfolio cutover, canary jobs verified checkout, artifact upload and download, container builds, and denied private routes. The controller's lifecycle records showed that VMs from both the validation and release templates were reclaimed.
+
+## What I Learned
+
+- Polling keeps the forge from needing an inbound path to the controller.
+- Reserving resources before cloning protects host capacity when several workflows arrive together.
+- Showing why a job is queued makes it easier to tell when the fleet is at capacity or provisioning has stalled.
