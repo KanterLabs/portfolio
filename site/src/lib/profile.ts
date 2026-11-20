@@ -9,7 +9,7 @@ export const capabilityGroups = [
   {
     name: 'Platform and Delivery',
     description: 'Build repeatable delivery paths with isolated CI, container workflows, health checks, and rollback.',
-    items: ['GitHub Actions', 'k3s', 'ARC', 'Docker', 'GHCR', 'Coolify', 'Atomic Releases'],
+    items: ['GitHub Actions', 'Gitea Actions', 'Docker', 'GHCR', 'Coolify', 'Atomic Releases'],
   },
   {
     name: 'Software and Data',

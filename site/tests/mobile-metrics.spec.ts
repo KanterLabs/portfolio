@@ -103,6 +103,7 @@ test('mobile case study pages layout', async ({ page }) => {
     ['/projects/helm', 'Helm'],
     ['/projects/multi-node-portfolio', 'Coolify Portfolio Deployment'],
     ['/projects/kanterlabs-homelab', 'KanterLabs Homelab Platform'],
+    ['/projects/actionrunners', 'ActionRunners'],
     ['/projects/data-center-operations', 'InterServer Data Center Operations'],
   ] as const;
 

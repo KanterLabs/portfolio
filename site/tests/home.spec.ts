@@ -136,16 +136,17 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     const entries = page.locator('#projects [data-project-entry]');
-    await expect(entries).toHaveCount(3);
+    await expect(entries).toHaveCount(4);
     const titles = entries.locator('.detail-title a');
-    await expect(titles).toHaveText(['Helm', 'KanterLabs Homelab Platform', 'Coolify Portfolio Deployment']);
+    await expect(titles).toHaveText(['Helm', 'KanterLabs Homelab Platform', 'ActionRunners', 'Coolify Portfolio Deployment']);
     expect(await titles.evaluateAll((links) => links.map((link) => link.getAttribute('href')))).toEqual([
       '/projects/helm',
       '/projects/kanterlabs-homelab',
+      '/projects/actionrunners',
       '/projects/multi-node-portfolio',
     ]);
 
-    for (let index = 0; index < 3; index += 1) {
+    for (let index = 0; index < 4; index += 1) {
       const surface = await entries.nth(index).evaluate((el) => {
         const style = getComputedStyle(el);
         return { border: parseFloat(style.borderTopWidth), background: style.backgroundColor };
@@ -159,8 +160,8 @@ test.describe('homepage', () => {
     await page.goto('/projects');
 
     const drawings = page.locator('#projects .detail-drawing');
-    await expect(drawings).toHaveCount(3);
-    for (let index = 0; index < 3; index += 1) {
+    await expect(drawings).toHaveCount(4);
+    for (let index = 0; index < 4; index += 1) {
       const drawing = drawings.nth(index);
       const caption = (await drawing.locator('figcaption').textContent())?.trim() ?? '';
       expect(caption.length, `drawing ${index} caption`).toBeGreaterThan(20);

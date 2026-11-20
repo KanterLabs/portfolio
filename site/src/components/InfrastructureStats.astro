@@ -10,14 +10,14 @@
     <p>Management, public workloads, and private workloads follow different paths.</p>
   </div>
   <div>
-    <strong>1–3</strong>
-    <span>Ephemeral CI runners</span>
-    <p>One warm runner scales to three concurrent organization jobs.</p>
+    <strong>1 VM</strong>
+    <span>Per enrolled CI job</span>
+    <p>ActionRunners clones a guest on demand and reclaims it after the job.</p>
   </div>
   <div>
-    <strong>1 pod</strong>
-    <span>Per workflow job</span>
-    <p>Runner and Docker state are discarded together after completion.</p>
+    <strong>1 use</strong>
+    <span>Per runner registration</span>
+    <p>The reusable registration credential stays on the controller.</p>
   </div>
 </section>
 

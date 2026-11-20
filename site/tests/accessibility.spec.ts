@@ -10,6 +10,7 @@ const themedRoutes = [
   '/projects/helm',
   '/projects/multi-node-portfolio',
   '/projects/kanterlabs-homelab',
+  '/projects/actionrunners',
   '/projects/data-center-operations',
   '/datacentertycoon',
   '/this-page-does-not-exist',
@@ -133,6 +134,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.goto('/projects/kanterlabs-homelab');
 
     await expectPseudoElementContrast(page, '.prose ol li', '::before', 4.5);
+    await page.goto('/projects/helm');
     await expectPseudoElementContrast(page, '.prose pre[data-language]', '::before', 4.5);
   });
 }

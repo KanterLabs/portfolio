@@ -31,7 +31,7 @@
   <rect x="580" y="285" width="240" height="92" rx="15" class="folder"/>
   <text x="602" y="316" class="tiny">HYPERVISOR</text><text x="602" y="345" class="label">NAT and zone policy</text>
   <rect x="845" y="285" width="230" height="92" rx="15" class="folder"/>
-  <text x="867" y="316" class="tiny">CI PLATFORM</text><text x="867" y="345" class="label">k3s, ARC, runners</text>
+  <text x="867" y="316" class="tiny">CI PLATFORM</text><text x="867" y="345" class="label">ActionRunners fleet</text>
   <rect x="1100" y="285" width="230" height="92" rx="15" class="folder"/>
   <text x="1122" y="316" class="tiny">WORKFLOWS</text><text x="1122" y="345" class="label">Build and smoke tests</text>
 
@@ -50,9 +50,9 @@
 
   <rect x="785" y="500" width="480" height="180" rx="20" class="auto"/>
   <text x="820" y="538" class="tiny">AUTOMATED DELIVERY</text>
-  <text x="820" y="573" class="label">Images and CI contract checks</text>
-  <text x="820" y="605" class="small">Build and publish the runner image</text>
-  <text x="820" y="632" class="small">Pin the immutable image digest</text>
+  <text x="820" y="573" class="label">Runner qualification</text>
+  <text x="820" y="605" class="small">Clone a reviewed VM template</text>
+  <text x="820" y="632" class="small">Verify single-job provisioning and cleanup</text>
   <text x="820" y="659" class="small">Run isolation and toolchain smoke tests</text>
 
   <path d="M185 377V425H375V500" class="manualLine" marker-end="url(#orangeArrow)"/>
@@ -63,5 +63,5 @@
 
   <rect x="440" y="718" width="520" height="66" rx="16" class="secret"/>
   <text x="700" y="745" text-anchor="middle" class="label">External secret stores</text>
-  <text x="700" y="768" text-anchor="middle" class="small">Credentials enter runtime through scoped GitHub, Kubernetes, Infisical, or host-local storage—not Git</text>
+  <text x="700" y="768" text-anchor="middle" class="small">Scoped service credentials, Infisical, and restricted files</text>
 </svg>

@@ -27,7 +27,7 @@
   <rect x="870" y="320" width="260" height="150" rx="20" fill="#f5f3ff" stroke="#7c3aed" filter="url(#shadow)"/>
   <text x="900" y="360" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="2" fill="#64748b">ORGANIZATION CI</text>
   <text x="900" y="402" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700" fill="#18181b">Ephemeral runners</text>
-  <text x="900" y="435" font-family="Inter,Arial,sans-serif" font-size="16" fill="#52525b">k3s · ARC · private Docker</text>
+  <text x="900" y="435" font-family="Inter,Arial,sans-serif" font-size="16" fill="#52525b">Gitea · One VM per job</text>
 
   <path d="M342 355H420V305H465M342 355H420V435H465M755 305H815V395H870M755 435H815V395H870" fill="none" stroke="#64748b" stroke-width="3"/>
   <circle cx="420" cy="355" r="6" fill="#64748b"/>

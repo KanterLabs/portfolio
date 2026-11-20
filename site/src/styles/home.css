@@ -47,6 +47,8 @@
 .selected-result { font-size: 0.95rem; line-height: 1.65; color: var(--color-text-muted); margin: 1rem 0; }
 .selected-stack { margin: 1rem 0; line-height: 1.7; }
 .selected-supporting { margin-top: 1.5rem; }
+/* An odd number of supporting case studies: the last one spans the row instead of sitting alone. */
+.selected-supporting > :last-child:nth-child(odd) { grid-column: 1 / -1; }
 .catalog-handoff { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; margin-top: 1.6rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
 .catalog-handoff h3 { font-size: 1.1rem; margin: 0 0 0.4rem; }
 .catalog-handoff p { margin: 0; color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.6; max-width: 31rem; }

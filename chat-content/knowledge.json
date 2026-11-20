@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-27.1",
+  "version": "2026-11-19.1",
   "entries": [
     {
       "id": "profile",
@@ -95,7 +95,7 @@
         "path": "site/src/pages/index.astro",
         "href": "/#skills"
       },
-      "lastReviewed": "2026-10-27",
+      "lastReviewed": "2026-11-19",
       "topics": [
         "skills",
         "architecture",
@@ -110,9 +110,7 @@
         "Tailscale",
         "PXE Boot",
         "GitHub Actions",
-        "k3s",
-        "Actions Runner Controller",
-        "ARC",
+        "Gitea Actions",
         "Docker",
         "GHCR",
         "atomic releases",
@@ -123,7 +121,7 @@
         "PostgreSQL",
         "Astro"
       ],
-      "content": "The portfolio lists Shane's skills as a bill of materials in three assemblies: systems and networking, platform and delivery, and software and data. Publicly listed tools include Linux, Proxmox, Nginx, Caddy, Cloudflare, Tailscale, PXE Boot, GitHub Actions, k3s, Actions Runner Controller, Docker, GHCR, Coolify, atomic releases, Rust, TypeScript, Next.js, Python, PostgreSQL, Git, and Astro. The architecture work shown in his case studies emphasizes clear ingress boundaries, isolated workloads, ephemeral CI runners, health checks, atomic releases, and retained rollback paths."
+      "content": "The portfolio lists Shane's skills as a bill of materials in three assemblies: systems and networking, platform and delivery, and software and data. Publicly listed tools include Linux, Proxmox, Nginx, Caddy, Cloudflare, Tailscale, PXE Boot, GitHub Actions, Gitea Actions, Docker, GHCR, Coolify, atomic releases, Rust, TypeScript, Next.js, Python, PostgreSQL, Git, and Astro. The architecture work shown in his case studies emphasizes clear ingress boundaries, isolated workloads, ephemeral CI runners, health checks, atomic releases, and retained rollback paths."
     },
     {
       "id": "helm",
@@ -171,7 +169,7 @@
         "path": "site/src/content/projects/kanterlabs-homelab.mdx",
         "href": "/projects/kanterlabs-homelab"
       },
-      "lastReviewed": "2026-10-22",
+      "lastReviewed": "2026-11-19",
       "topics": [
         "project",
         "homelab",
@@ -185,10 +183,6 @@
         "public ingress",
         "private workloads",
         "ephemeral CI",
-        "k3s",
-        "ARC",
-        "Actions Runner Controller",
-        "GitHub Actions",
         "Caddy",
         "CoreDNS",
         "Cloudflare",
@@ -198,9 +192,37 @@
         "private PKI",
         "default-deny",
         "network policy",
-        "GHCR"
+        "Gitea Actions",
+        "ActionRunners"
       ],
-      "content": "The KanterLabs Homelab Platform turns a small collection of systems into an intentional two-site platform. Its public case study describes hardened edge VMs at both sites, distinct management, ingress, public-origin, and private-origin planes, exact service listeners, split-horizon private DNS, verified edge-to-origin TLS, and default-deny network policy. Public traffic uses dedicated Cloudflare paths, while named Tailscale services provide private entrances without direct workload-network access. Network changes use deterministic configuration, timed rollback, independent management checks, synthetic canaries, and negative exposure tests. GitHub Actions jobs run in disposable pods managed by Actions Runner Controller, with secrets kept outside Git."
+      "content": "The KanterLabs Homelab Platform turns a small collection of systems into an intentional two-site platform. Its public case study describes hardened edge VMs at both sites, distinct management, ingress, public-origin, and private-origin planes, exact service listeners, split-horizon private DNS, verified edge-to-origin TLS, and default-deny network policy. Public traffic uses dedicated Cloudflare paths, while named Tailscale services provide private entrances without direct workload-network access. Network changes use deterministic configuration, timed rollback, independent management checks, synthetic canaries, and negative exposure tests. ActionRunners gives each enrolled Gitea Actions job a disposable Proxmox VM. The separate ActionRunners case study covers the runner lifecycle."
+    },
+    {
+      "id": "actionrunners",
+      "source": {
+        "title": "ActionRunners",
+        "path": "site/src/content/projects/actionrunners.mdx",
+        "href": "/projects/actionrunners"
+      },
+      "lastReviewed": "2026-11-19",
+      "topics": [
+        "project",
+        "ci",
+        "homelab",
+        "virtualization"
+      ],
+      "keywords": [
+        "ActionRunners",
+        "Gitea Actions",
+        "Proxmox",
+        "CI runners",
+        "disposable VM",
+        "ephemeral runner",
+        "single-use registration",
+        "capacity ledger",
+        "runner dashboard"
+      ],
+      "content": "ActionRunners gives each enrolled Gitea Actions job one disposable Proxmox VM. The controller polls Gitea, admits jobs against a capacity ledger, and clones a reviewed VM template. It writes a single-use runner registration through the QEMU guest agent. The reusable registration credential stays on the controller. After one job, the guest shuts down and the controller reclaims it. An independent cleanup pass reclaims owned guests left behind after interruptions. The dashboard shows provisioning stages and why jobs are waiting. Its public demo uses synthetic data. Portfolio runs validation and protected releases with separate profiles. In a 24-hour production sample recorded November 16, 2026, 105 completed provisions reached readiness in a median of 18.6 seconds and 23.0 seconds at the 95th percentile. The measurement started at admission. Queue time and job execution are measured separately."
     },
     {
       "id": "portfolio-infrastructure",
@@ -209,7 +231,7 @@
         "path": "site/src/content/projects/multi-node-portfolio.mdx",
         "href": "/projects/multi-node-portfolio"
       },
-      "lastReviewed": "2026-10-22",
+      "lastReviewed": "2026-11-19",
       "topics": [
         "project",
         "portfolio",
@@ -227,7 +249,7 @@
         "GHCR",
         "Cloudflare Tunnel",
         "OVH",
-        "GitHub Actions",
+        "Gitea Actions",
         "immutable image",
         "image digest",
         "rollback",
@@ -235,7 +257,7 @@
         "health checks",
         "revision verification"
       ],
-      "content": "The Coolify Portfolio Deployment case study describes the current static Astro portfolio served by Nginx containers in separate beta and production Coolify applications on an OVH app host. GitHub Actions tests and builds an immutable image, publishes it to GHCR, and deploys its exact digest through the Coolify API. Beta uses a private tailnet hostname with no public DNS record. Production promotion comes from beta to main; the main workflow repeats validation and builds and smoke-tests its own commit-tagged image. The deployment helper checks the application identity, records the previous image digest, and verifies Coolify health, /healthz, and /_meta/revision before accepting the deployment. Failed verification restores and redeploys the previous digest. Production traffic flows through Cloudflare and Cloudflare Tunnel to the application loopback port, while deployment access is private. The chatbot is a separately deployed production-only Cloudflare Worker with retained D1 conversation history; static site deployment alone does not update its knowledge. Earlier dual-origin load balancing and direct artifact deployment are historical; the retired load balancer remains disabled, not active production failover."
+      "content": "The Coolify Portfolio Deployment case study describes the current static Astro portfolio served by Nginx containers in separate beta and production Coolify applications on an OVH app host. Validation and protected releases run in separate Gitea repositories on ActionRunners. The release builds and publishes an immutable image to GHCR, then deploys its exact digest through the Coolify API. Beta uses a private tailnet hostname with no public DNS record. Production promotion comes from beta to main. The main workflow repeats validation and builds and smoke-tests its own commit-tagged image. The deployment helper checks the application identity, records the previous image digest, and verifies Coolify health, /healthz, and /_meta/revision before accepting the deployment. Failed verification restores and redeploys the previous digest. Production traffic flows through Cloudflare and Cloudflare Tunnel to the application loopback port, while deployment access is private. The chatbot is a separately deployed production-only Cloudflare Worker with retained D1 conversation history; static site deployment alone does not update its knowledge. Earlier dual-origin load balancing and direct artifact deployment are historical; the retired load balancer remains disabled, not active production failover."
     },
     {
       "id": "data-center-operations",
