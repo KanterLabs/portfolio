@@ -1,5 +1,6 @@
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { openChat } from './helpers/chat-ui';
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'];
 
@@ -57,18 +58,6 @@ function createGate() {
   return { promise, release };
 }
 
-async function openChat(page: Page) {
-  await expect(page.locator('[data-portfolio-chat]')).toHaveCount(1);
-
-  const launcher = page.locator('[data-chat-launcher]');
-  const panel = page.locator('[data-chat-panel]');
-  await expect(launcher).toBeVisible();
-  await launcher.click();
-  await expect(panel).toBeVisible();
-
-  return { launcher, panel };
-}
-
 async function waitForRequest(requests: ChatRequest[], count: number): Promise<ChatRequest> {
   await expect
     .poll(() => requests.length, { message: `expected ${count} chat request(s)` })
@@ -96,40 +85,6 @@ test('chat renders on the homepage and project pages when enabled', async ({ pag
     await expect(page.locator('[data-portfolio-chat]')).toHaveCount(1);
     await expect(page.locator('[data-chat-launcher]')).toBeVisible();
   }
-});
-
-test('launcher opens and closes the panel, and Escape restores launcher focus', async ({ page }) => {
-  await page.goto('/');
-  const { launcher, panel } = await openChat(page);
-  const close = page.locator('[data-chat-close]');
-
-  await expect(launcher).toBeHidden();
-  await expect(close).toBeVisible();
-  await close.click();
-  await expect(panel).toBeHidden();
-  await expect(launcher).toBeVisible();
-
-  await launcher.click();
-  await expect(panel).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(panel).toBeHidden();
-  await expect(launcher).toBeFocused();
-});
-
-test('closing chat before the opening frame keeps focus on the launcher', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.locator('[data-chat-launcher]')).toBeVisible();
-  const launcherKeepsFocus = await page.evaluate(async () => {
-    const launcher = document.querySelector<HTMLButtonElement>('[data-chat-launcher]')!;
-    launcher.click();
-    if (launcher.getAttribute('aria-expanded') !== 'true') throw new Error('Chat did not open');
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    return document.activeElement === launcher;
-  });
-  expect(launcherKeepsFocus).toBe(true);
-  await expect(page.locator('[data-chat-panel]')).toBeHidden();
-  await expect(page.locator('[data-chat-launcher]')).toBeFocused();
 });
 
 test('discloses that chat content is stored', async ({ page }) => {
