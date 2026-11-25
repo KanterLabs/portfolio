@@ -1,0 +1,40 @@
+{
+  "comment": "Projects shown in the homepage 'What I'm working on' section. Only listed projects are read. t3Project is the T3 Code project title; repo is the local checkout on the dev host. Never add a repoUrl for a private repository.",
+  "projects": [
+    {
+      "name": "Data Center Tycoon",
+      "kind": "Game",
+      "href": "/datacentertycoon",
+      "t3Project": "data_center_tycoon",
+      "repo": "~/projects/data_center_tycoon"
+    },
+    {
+      "name": "Helm",
+      "kind": "Lead project",
+      "href": "/projects/helm",
+      "t3Project": "helm",
+      "repo": "~/projects/helm"
+    },
+    {
+      "name": "ActionRunners",
+      "kind": "CI platform",
+      "href": "/projects/actionrunners",
+      "t3Project": "Actions Dashboard",
+      "repo": "~/actions-dashboard"
+    },
+    {
+      "name": "Lab dashboard",
+      "kind": "Monitoring",
+      "t3Project": "Lab",
+      "repo": "~/projects/lab"
+    },
+    {
+      "name": "Homelab",
+      "kind": "Infrastructure",
+      "href": "/projects/kanterlabs-homelab",
+      "t3Project": "kanteredge-infra",
+      "repo": "~/projects/kanteredge-infra",
+      "defaultKind": "ops"
+    }
+  ]
+}

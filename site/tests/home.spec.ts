@@ -14,7 +14,7 @@ test.describe('homepage', () => {
     }));
     expect(metrics.proofTop).toBeLessThan(1100);
     expect(metrics.experienceTop).toBeLessThan(1500);
-    expect(metrics.height).toBeLessThan(7500);
+    expect(metrics.height).toBeLessThan(9000);
     await expect(page.locator('.rack')).toHaveCount(0);
     await expect(page.locator('#projects .plate-media')).toBeVisible();
     await testInfo.attach('mobile-homepage', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
@@ -111,7 +111,7 @@ test.describe('homepage', () => {
     await page.goto('/');
     const sheets = page.locator('main > .sheet');
     const count = await sheets.count();
-    expect(count).toBe(5);
+    expect(count).toBe(6);
 
     for (let index = 0; index < count; index += 1) {
       const sheet = sheets.nth(index);
@@ -128,7 +128,7 @@ test.describe('homepage', () => {
         .sort((a, b) => a.top - b.top)
         .map((entry) => entry.id),
     );
-    expect(order).toEqual(['top', 'about', 'projects', 'skills', 'contact']);
+    expect(order).toEqual(['top', 'about', 'projects', 'now', 'skills', 'contact']);
   });
 
   test('selected work pairs evidence with case studies in project order', async ({ page }) => {

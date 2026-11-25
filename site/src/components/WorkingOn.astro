@@ -1,0 +1,62 @@
+---
+import raw from '../data/working-on.json';
+import { formatDay, parseWorkingOn, relativeDay, stripDates } from '../lib/workingOn';
+
+const workingOn = parseWorkingOn(raw);
+
+const days = stripDates(workingOn);
+const recentDays = new Set(days.slice(-7));
+const kindLabel = { feat: 'New', fix: 'Fix', perf: 'Perf', ops: 'Ops' } as const;
+---
+
+{workingOn.projects.length === 0 && <p class="working-on-empty">No project activity in the last {days.length} days.</p>}
+<div class="working-on-grid">
+  {workingOn.projects.map((project) => {
+    const worked = new Set(project.daysWorked);
+    const headingId = `working-on-${project.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+    return (
+      <article class="dwg-box working-on-card" aria-labelledby={headingId} data-working-on-project>
+        <header class="working-on-head">
+          <h3 id={headingId}>
+            {project.href ? <a href={project.href}>{project.name}</a> : project.name}
+          </h3>
+          <span class="working-on-kind">{project.kind}</span>
+          <span class="working-on-last">
+            <span class:list={['working-on-dot', project.lastWorked === workingOn.refreshedOn && 'is-today']} aria-hidden="true"></span>
+            <span class="sr-only">Last worked on </span>{relativeDay(project.lastWorked, workingOn.refreshedOn)}
+          </span>
+        </header>
+        <div class="working-on-strip">
+          <div
+            class="working-on-days"
+            role="img"
+            aria-label={`Worked on ${worked.size} of the last ${days.length} days`}
+            style={`--days: ${days.length}`}
+          >
+            {days.map((day) => (
+              <span class:list={[worked.has(day) && 'is-worked', recentDays.has(day) && 'is-recent']} title={formatDay(day)}></span>
+            ))}
+          </div>
+          <span class="working-on-count" aria-hidden="true">{worked.size}/{days.length} days</span>
+        </div>
+        {project.shipped.length > 0 ? (
+          <ul class="working-on-shipped" aria-label={`${project.name}: done this week`}>
+            {project.shipped.map((item) => (
+              <li>
+                <span class:list={['working-on-tag', `is-${item.kind}`]}>{kindLabel[item.kind]}</span>
+                <span class="working-on-title">{item.title}</span>
+                <time datetime={item.date}>{formatDay(item.date)}</time>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="working-on-empty">Nothing finished this week.</p>
+        )}
+      </article>
+    );
+  })}
+</div>
+<p class="dwg-label working-on-note">
+  Refreshed nightly · {formatDay(workingOn.refreshedOn)}. Squares are days I worked on a project; darker squares are the
+  last 7 days. Items are picked from my commits since {formatDay(workingOn.shippedSince)}.
+</p>
