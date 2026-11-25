@@ -48,6 +48,27 @@ with media, and the full interactive rack and flagship plates live in the catalo
 Global and drawing styles are split by responsibility; their entry files preserve
 the shared cascade order.
 
+## What I'm working on
+
+The homepage's "What I'm working on" sheet renders `src/data/working-on.json`,
+which is regenerated every night on the dev host and pushed to `beta`:
+
+- `scripts/working_on.py` reads T3 Code's state database and each project's
+  git checkout, read-only. A day counts when Shane sent a message in that
+  project's T3 threads or committed to it. Only dates leave T3.
+- "Done this week" items are Shane's own `feat`/`fix` commits (or plain
+  subjects that aren't bookkeeping). Subjects naming sites, hosts, sizes,
+  credentials or anything private are dropped, because most source repos
+  are private. Projects and their page links live in
+  `scripts/working_on_projects.json`; never add a private repository URL.
+- `scripts/working_on_nightly.sh` runs from the `portfolio-working-on`
+  systemd user timer (`scripts/systemd/`, installed with the script copied
+  to `~/.local/libexec/portfolio-working-on-nightly.sh`). It keeps its own
+  clone, and each changed refresh is a one-file commit and a normal beta
+  deploy.
+- `src/lib/workingOn.ts` validates the file at build time, so a malformed
+  refresh fails CI instead of shipping.
+
 ## Build Output
 
 `npm run build` writes the static site to `dist/`.

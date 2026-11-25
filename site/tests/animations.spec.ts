@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-test('homepage reveals four supporting sheets without gating the hero', async ({ page, isMobile }) => {
+test('homepage reveals five supporting sheets without gating the hero', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Phones reveal everything immediately (BaseLayout skips the observer below 780px)');
   await page.goto('/');
 
   // The hero sheet is legible on arrival: no reveal class on it.
   await expect(page.locator('#top')).not.toHaveClass(/observe-animate/);
-  await expect(page.locator('main > .sheet.observe-animate')).toHaveCount(4);
+  await expect(page.locator('main > .sheet.observe-animate')).toHaveCount(5);
 });
 
 test('catalog rack motion stays brief', async ({ page, isMobile }) => {

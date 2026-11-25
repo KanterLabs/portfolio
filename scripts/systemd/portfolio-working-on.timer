@@ -1,0 +1,12 @@
+[Unit]
+Description=Refresh the portfolio "What I'm working on" data nightly
+
+[Timer]
+# Late evening, so the day being reported is nearly complete.
+OnCalendar=*-*-* 23:45
+RandomizedDelaySec=5min
+Persistent=true
+Unit=portfolio-working-on.service
+
+[Install]
+WantedBy=timers.target
