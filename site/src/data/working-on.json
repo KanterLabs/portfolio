@@ -103,6 +103,40 @@
       "href": "/projects/kanterlabs-homelab"
     },
     {
+      "name": "ActionRunners",
+      "kind": "CI platform",
+      "activity": {
+        "2026-11-07": 3,
+        "2026-11-12": 3,
+        "2026-11-13": 2,
+        "2026-11-15": 3,
+        "2026-11-16": 3,
+        "2026-11-19": 2,
+        "2026-11-23": 2,
+        "2026-11-24": 2,
+        "2026-11-25": 2
+      },
+      "lastWorked": "2026-11-25",
+      "shipped": [
+        {
+          "kind": "feat",
+          "title": "Explain every controller queue hold on Queued cards",
+          "date": "2026-11-25"
+        },
+        {
+          "kind": "feat",
+          "title": "Explain runner allocation and host memory holds",
+          "date": "2026-11-24"
+        },
+        {
+          "kind": "feat",
+          "title": "Show runner memory holds on the queue board",
+          "date": "2026-11-23"
+        }
+      ],
+      "href": "/projects/actionrunners"
+    },
+    {
       "name": "Helm",
       "kind": "Lead project",
       "activity": {
@@ -146,40 +180,6 @@
         }
       ],
       "href": "/projects/helm"
-    },
-    {
-      "name": "ActionRunners",
-      "kind": "CI platform",
-      "activity": {
-        "2026-11-07": 3,
-        "2026-11-12": 3,
-        "2026-11-13": 2,
-        "2026-11-15": 3,
-        "2026-11-16": 3,
-        "2026-11-19": 2,
-        "2026-11-23": 2,
-        "2026-11-24": 2,
-        "2026-11-25": 1
-      },
-      "lastWorked": "2026-11-25",
-      "shipped": [
-        {
-          "kind": "feat",
-          "title": "Explain runner allocation and host memory holds",
-          "date": "2026-11-24"
-        },
-        {
-          "kind": "feat",
-          "title": "Show runner memory holds on the queue board",
-          "date": "2026-11-23"
-        },
-        {
-          "kind": "feat",
-          "title": "Reconcile ActionRunners job status with live runner state",
-          "date": "2026-11-19"
-        }
-      ],
-      "href": "/projects/actionrunners"
     },
     {
       "name": "Lab dashboard",
