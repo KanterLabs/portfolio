@@ -26,9 +26,10 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
 
   expect(metrics.hasHorizontalOverflow).toBe(false);
   // Keep the compact homepage substantially shorter than the old 12,100px catalog.
-  // 9000 leaves room for the nightly "What I'm working on" sheet (~1500px on a
-  // phone with five projects) on top of the ~7000px it replaced as the budget.
-  expect(metrics.scrollHeight).toBeLessThan(9000);
+  // 8500 leaves room for the nightly "What I'm working on" sheet (~1300px on a
+  // phone; it shows at most three project cards whatever the data holds) on
+  // top of the ~7000px it replaced as the budget.
+  expect(metrics.scrollHeight).toBeLessThan(8500);
   expect(metrics.h1).toBe('Everything I run, in one rack.');
   expect(metrics.heroParagraph).toContain('production infrastructure at InterServer');
   expect(metrics.contactText).toContain('shanekanterman04@gmail.com');

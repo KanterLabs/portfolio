@@ -6,12 +6,13 @@ Two local sources, both read-only:
 * T3 Code's state database: a day counts as worked on a project when Shane
   sent at least one message in one of that project's threads.
 * Each project's git checkout: Shane's commits on branches supply more days
-  worked and the "done this week" items.
+  worked, each day's intensity, and the "done this week" items.
 
 Only projects listed in working_on_projects.json are read. Nothing from T3
 leaves the machine except dates; thread titles and message text never do.
 Commit subjects are published only after the noise and privacy filters below,
-because most of these repositories are private.
+because most of these repositories are private, and the config's "titles"
+map can rename or hide any subject that still reads badly on the homepage.
 """
 
 from __future__ import annotations
@@ -34,6 +35,9 @@ DEFAULT_T3_DB = Path("~/.t3/userdata/statev2.sqlite").expanduser()
 STRIP_DAYS = 31
 SHIPPED_DAYS = 7
 MAX_SHIPPED = 3
+# A day's level: 1 = worked on it without committing (planning, review,
+# testing); 2+ = commits that day reached each threshold.
+LEVEL_THRESHOLDS = (1, 3, 10)
 
 CONVENTIONAL = re.compile(r"^(?P<type>[a-z]+)(?:\([^)]*\))?!?:\s*(?P<subject>.+)$")
 SHOWN_TYPES = {"feat": "feat", "fix": "fix", "perf": "perf"}
@@ -43,7 +47,7 @@ NOISE_PREFIX = re.compile(
     r"chore|wip|t3 checkpoint|regenerate|format|lint|align|rename)\b",
     re.IGNORECASE,
 )
-FIX_VERBS = re.compile(r"^(fix|prevent|repair|restore|correct|resolve|stop|handle)\b", re.IGNORECASE)
+FIX_VERBS = re.compile(r"^(fix|prevent|repair|restore|correct|resolve|stop|handle|keep)\b", re.IGNORECASE)
 # Anything that could locate, identify or help attack private infrastructure.
 SENSITIVE = re.compile(
     r"(\b(ewr|pdx|iad|lga|sea|ord)\d*\b|\bovh|\bvm ?\d+|\d+ ?(gib|gb|tib|tb)\b|proxmox|\bpve\b|"
@@ -82,13 +86,18 @@ def classify(subject: str, default_kind: str = "feat") -> tuple[str, str] | None
     return kind, title[0].upper() + title[1:]
 
 
-def select_shipped(commits: list[Commit], since: str, default_kind: str = "feat") -> list[dict[str, str]]:
+def select_shipped(
+    commits: list[Commit], since: str, default_kind: str = "feat", titles: dict[str, str | None] | None = None,
+) -> list[dict[str, str]]:
     """Up to MAX_SHIPPED publishable commits since `since`, newest first.
 
-    `commits` arrive newest first (git log order). New features win over
+    `commits` arrive newest first (git log order). `titles` maps a display
+    title (case-insensitive) to a replacement, or to None to hide it; a
+    replacement takes the project's default kind. New features win over
     fixes so a week of polish doesn't hide what was built, then the picks
     are shown in date order.
     """
+    overrides = {key.lower(): value for key, value in (titles or {}).items()}
     seen: set[str] = set()
     candidates: list[dict[str, str]] = []
     for commit in commits:
@@ -98,12 +107,24 @@ def select_shipped(commits: list[Commit], since: str, default_kind: str = "feat"
         if result is None:
             continue
         kind, title = result
+        if title.lower() in overrides:
+            if overrides[title.lower()] is None:
+                continue
+            kind, title = default_kind, overrides[title.lower()]
         if title.lower() in seen:
             continue
         seen.add(title.lower())
         candidates.append({"kind": kind, "title": title, "date": commit.day})
     picked = sorted(range(len(candidates)), key=lambda i: (candidates[i]["kind"] == "fix", i))[:MAX_SHIPPED]
     return [candidates[i] for i in sorted(picked)]
+
+
+def day_levels(worked: set[str], commits: list[Commit]) -> dict[str, int]:
+    """Each worked day's intensity level (1-4) from that day's commit count."""
+    counts: dict[str, int] = {}
+    for commit in commits:
+        counts[commit.day] = counts.get(commit.day, 0) + 1
+    return {day: 1 + sum(counts.get(day, 0) >= t for t in LEVEL_THRESHOLDS) for day in sorted(worked)}
 
 
 def git_commits(repo: Path, since: str, author_email: str) -> list[Commit]:
@@ -168,21 +189,25 @@ def build(config: dict, today: dt.date, t3_db: Path, author_email: str) -> dict:
         entry = {
             "name": project["name"],
             "kind": project["kind"],
-            "daysWorked": sorted(worked),
+            "activity": day_levels(worked, commits),
             "lastWorked": max(worked),
-            "shipped": select_shipped(commits, shipped_since, project.get("defaultKind", "feat")),
+            "shipped": select_shipped(
+                commits, shipped_since, project.get("defaultKind", "feat"), config.get("titles"),
+            ),
         }
         if project.get("href"):
             entry["href"] = project["href"]
-        projects.append(entry)
+        # Most active this week leads: days worked, then commits, then the month.
+        week = (sum(d >= shipped_since for d in worked), sum(c.day >= shipped_since for c in commits), len(worked))
+        projects.append((week, entry))
 
-    projects.sort(key=lambda p: (p["lastWorked"], len(p["daysWorked"])), reverse=True)
+    projects.sort(key=lambda item: item[0], reverse=True)
     return {
         "refreshedOn": today.isoformat(),
         "stripStart": strip_start.isoformat(),
         "stripDays": STRIP_DAYS,
         "shippedSince": shipped_since,
-        "projects": projects,
+        "projects": [entry for _, entry in projects],
     }
 
 
