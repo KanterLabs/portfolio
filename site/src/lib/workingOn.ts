@@ -12,11 +12,15 @@ export interface ShippedItem {
   date: string;
 }
 
+/** 1 = worked without committing; 2-4 = more commits that day. */
+export type ActivityLevel = 1 | 2 | 3 | 4;
+
 export interface WorkingOnProject {
   name: string;
   kind: string;
   href?: string;
-  daysWorked: string[];
+  /** Every worked day in the strip and its intensity, by YYYY-MM-DD. */
+  activity: Record<string, ActivityLevel>;
   lastWorked: string;
   shipped: ShippedItem[];
 }
@@ -64,14 +68,21 @@ export function parseWorkingOn(input: unknown): WorkingOnData {
       if (project.href !== undefined && !/^\/[a-z0-9/-]*$/.test(String(project.href))) {
         fail(`${at}.href must be a site-relative path`);
       }
-      if (!Array.isArray(project.daysWorked) || !Array.isArray(project.shipped)) {
-        fail(`${at} needs daysWorked and shipped arrays`);
+      const activity = project.activity;
+      if (typeof activity !== 'object' || activity === null || Array.isArray(activity) || !Array.isArray(project.shipped)) {
+        fail(`${at} needs an activity map and a shipped array`);
       }
       return {
         name: text(project.name, `${at}.name`),
         kind: text(project.kind, `${at}.kind`),
         ...(project.href === undefined ? {} : { href: String(project.href) }),
-        daysWorked: project.daysWorked.map((day, i) => date(day, `${at}.daysWorked[${i}]`)),
+        activity: Object.fromEntries(
+          Object.entries(activity).map(([day, level]) => {
+            date(day, `${at}.activity key`);
+            if (level !== 1 && level !== 2 && level !== 3 && level !== 4) fail(`${at}.activity[${day}] must be 1-4`);
+            return [day, level as ActivityLevel];
+          }),
+        ),
         lastWorked: date(project.lastWorked, `${at}.lastWorked`),
         shipped: project.shipped.map((entry, i) => {
           const shipped = entry as Record<string, unknown>;
@@ -101,10 +112,14 @@ const shortDate = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numer
 /** "Nov 25" for a YYYY-MM-DD date. */
 export const formatDay = (iso: string) => shortDate.format(new Date(toUtc(iso)));
 
-/** "today", "yesterday" or "Nov 21", relative to the refresh date. */
-export function relativeDay(iso: string, refreshedOn: string): string {
-  const days = Math.round((toUtc(refreshedOn) - toUtc(iso)) / DAY_MS);
+/**
+ * "today" or "yesterday" when `iso` is that close to `now` (both YYYY-MM-DD),
+ * otherwise null. The page renders absolute dates and upgrades them in the
+ * viewer's browser, so a deploy that lags the data never claims "today".
+ */
+export function relativeDay(iso: string, now: string): 'today' | 'yesterday' | null {
+  const days = Math.round((toUtc(now) - toUtc(iso)) / DAY_MS);
   if (days === 0) return 'today';
   if (days === 1) return 'yesterday';
-  return formatDay(iso);
+  return null;
 }

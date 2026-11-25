@@ -1,18 +1,22 @@
 ---
 import raw from '../data/working-on.json';
-import { formatDay, parseWorkingOn, relativeDay, stripDates } from '../lib/workingOn';
+import { formatDay, parseWorkingOn, stripDates } from '../lib/workingOn';
 
 const workingOn = parseWorkingOn(raw);
 
+// The three most active projects this week get cards; the rest share a line.
+const MAX_CARDS = 3;
+const cards = workingOn.projects.slice(0, MAX_CARDS);
+const also = workingOn.projects.slice(MAX_CARDS);
 const days = stripDates(workingOn);
-const recentDays = new Set(days.slice(-7));
 const kindLabel = { feat: 'New', fix: 'Fix', perf: 'Perf', ops: 'Ops' } as const;
+const levelLabel = ['', 'no commits', 'a few commits', 'steady commits', 'heavy commits'] as const;
 ---
 
 {workingOn.projects.length === 0 && <p class="working-on-empty">No project activity in the last {days.length} days.</p>}
 <div class="working-on-grid">
-  {workingOn.projects.map((project) => {
-    const worked = new Set(project.daysWorked);
+  {cards.map((project) => {
+    const worked = Object.keys(project.activity).length;
     const headingId = `working-on-${project.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
     return (
       <article class="dwg-box working-on-card" aria-labelledby={headingId} data-working-on-project>
@@ -22,22 +26,29 @@ const kindLabel = { feat: 'New', fix: 'Fix', perf: 'Perf', ops: 'Ops' } as const
           </h3>
           <span class="working-on-kind">{project.kind}</span>
           <span class="working-on-last">
-            <span class:list={['working-on-dot', project.lastWorked === workingOn.refreshedOn && 'is-today']} aria-hidden="true"></span>
-            <span class="sr-only">Last worked on </span>{relativeDay(project.lastWorked, workingOn.refreshedOn)}
+            <span class="working-on-dot" aria-hidden="true"></span>
+            <span class="sr-only">Last worked on </span>
+            <time datetime={project.lastWorked} data-working-on-relative>{formatDay(project.lastWorked)}</time>
           </span>
         </header>
         <div class="working-on-strip">
           <div
             class="working-on-days"
             role="img"
-            aria-label={`Worked on ${worked.size} of the last ${days.length} days`}
+            aria-label={`Worked on ${worked} of the last ${days.length} days`}
             style={`--days: ${days.length}`}
           >
-            {days.map((day) => (
-              <span class:list={[worked.has(day) && 'is-worked', recentDays.has(day) && 'is-recent']} title={formatDay(day)}></span>
-            ))}
+            {days.map((day) => {
+              const level = project.activity[day];
+              return (
+                <span
+                  data-level={level}
+                  title={level ? `${formatDay(day)}: ${levelLabel[level]}` : formatDay(day)}
+                ></span>
+              );
+            })}
           </div>
-          <span class="working-on-count" aria-hidden="true">{worked.size}/{days.length} days</span>
+          <span class="working-on-count" aria-hidden="true">{worked}/{days.length} days</span>
         </div>
         {project.shipped.length > 0 ? (
           <ul class="working-on-shipped" aria-label={`${project.name}: done this week`}>
@@ -56,7 +67,35 @@ const kindLabel = { feat: 'New', fix: 'Fix', perf: 'Perf', ops: 'Ops' } as const
     );
   })}
 </div>
-<p class="dwg-label working-on-note">
-  Refreshed nightly · {formatDay(workingOn.refreshedOn)}. Squares are days I worked on a project; darker squares are the
-  last 7 days. Items are picked from my commits since {formatDay(workingOn.shippedSince)}.
+{also.length > 0 && (
+  <p class="working-on-also" data-working-on-also>
+    <span class="dwg-label">Also this month</span>
+    {also.map((project) => (
+      <span class="working-on-also-item" data-working-on-also-project>
+        {project.href ? <a href={project.href}>{project.name}</a> : <span>{project.name}</span>}
+        <span class="working-on-also-meta">
+          {Object.keys(project.activity).length}/{days.length} days · last {formatDay(project.lastWorked)}
+        </span>
+      </span>
+    ))}
+  </p>
+)}
+<p class="dwg-label working-on-note" data-working-on-note data-refreshed={workingOn.refreshedOn}>
+  Updated {formatDay(workingOn.refreshedOn)} from my commits and work log. Each square is a day I worked on a project;
+  darker squares mean more commits that day. Items are picked from my commits since {formatDay(workingOn.shippedSince)}.
 </p>
+
+<script>
+  import { relativeDay } from '../lib/workingOn';
+
+  // Dates render as "Nov 25" so a deploy that lags the data stays truthful;
+  // the viewer's own clock decides whether one is really today or yesterday.
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  for (const time of document.querySelectorAll<HTMLTimeElement>('[data-working-on-relative]')) {
+    const relative = relativeDay(time.dateTime, today);
+    if (!relative) continue;
+    time.textContent = relative;
+    if (relative === 'today') time.parentElement?.querySelector('.working-on-dot')?.classList.add('is-today');
+  }
+</script>

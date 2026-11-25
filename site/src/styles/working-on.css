@@ -8,8 +8,9 @@
   margin-top: 1.5rem;
 }
 
-/* The most recently worked project leads at full width. */
-.working-on-card:first-child {
+/* The most active project leads at full width, as does a lone second card. */
+.working-on-card:first-child,
+.working-on-card:nth-child(2):last-child {
   grid-column: 1 / -1;
 }
 
@@ -111,12 +112,24 @@
   border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
 }
 
-.working-on-days .is-worked {
-  border-color: color-mix(in srgb, var(--color-accent) 80%, var(--paper));
-  background: color-mix(in srgb, var(--color-accent) 60%, var(--paper));
+/* Intensity ramp: 1 = worked without committing, 4 = a heavy commit day. */
+.working-on-days [data-level] {
+  border-color: color-mix(in srgb, var(--color-accent) 75%, var(--paper));
 }
 
-.working-on-days .is-worked.is-recent {
+.working-on-days [data-level='1'] {
+  background: color-mix(in srgb, var(--color-accent) 18%, var(--paper));
+}
+
+.working-on-days [data-level='2'] {
+  background: color-mix(in srgb, var(--color-accent) 42%, var(--paper));
+}
+
+.working-on-days [data-level='3'] {
+  background: color-mix(in srgb, var(--color-accent) 70%, var(--paper));
+}
+
+.working-on-days [data-level='4'] {
   border-color: var(--color-accent);
   background: var(--color-accent);
 }
@@ -165,6 +178,43 @@
   margin: 0;
   color: var(--color-text-muted);
   font-size: 0.88rem;
+}
+
+.working-on-also {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 1.25rem;
+  margin: 1rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px dashed color-mix(in srgb, var(--ink) 35%, transparent);
+}
+
+.working-on-also-item {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.5rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.working-on-also-item a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
+  text-underline-offset: 4px;
+}
+
+.working-on-also-item a:hover {
+  color: var(--color-accent);
+}
+
+.working-on-also-meta {
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+  font-weight: 400;
 }
 
 .working-on-note {

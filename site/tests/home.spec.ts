@@ -14,7 +14,7 @@ test.describe('homepage', () => {
     }));
     expect(metrics.proofTop).toBeLessThan(1100);
     expect(metrics.experienceTop).toBeLessThan(1500);
-    expect(metrics.height).toBeLessThan(9000);
+    expect(metrics.height).toBeLessThan(8500);
     await expect(page.locator('.rack')).toHaveCount(0);
     await expect(page.locator('#projects .plate-media')).toBeVisible();
     await testInfo.attach('mobile-homepage', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
