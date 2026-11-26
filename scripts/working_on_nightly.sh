@@ -6,8 +6,8 @@
 # site/src/data/working-on.json with the generator from the tip of the target
 # branch. `beta` is protected (no direct pushes; merges need the Validate
 # Portfolio checks), so a changed refresh is force-pushed to its own branch and
-# working_on_publish.py opens or updates the PR and queues it to merge when the
-# checks pass. That merge is a normal beta deploy.
+# working_on_publish.py opens or updates the PR for Shane's manual review and
+# merge after checks pass. Shane's merge triggers the normal beta deploy.
 set -euo pipefail
 
 remote=${WORKING_ON_REMOTE:-https://gitea.home.shanekanterman.dev/KanterLabs/portfolio.git}
