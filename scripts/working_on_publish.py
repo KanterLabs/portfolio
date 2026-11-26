@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Open (or update) the nightly "What I'm working on" refresh PR and queue it to merge.
+"""Open (or update) the nightly "What I'm working on" PR for manual review.
 
 `beta` is protected: no direct pushes, and every merge needs the Validate
 Portfolio checks. working_on_nightly.sh therefore pushes the refresh to its
 own branch, and this script makes sure one PR from that branch into beta
-exists and is scheduled to merge as soon as those checks pass. A refresh that
-fails CI simply stays open; the next night force-pushes a fresh commit over it.
+exists for Shane to review and merge. Passing checks never authorizes an
+automatic merge. The next night may replace the refresh with a fresh commit.
 
 The Gitea token comes from git's credential helper for the remote's host and
 is never printed.
@@ -70,7 +70,7 @@ def gitea_api(remote: Remote, token: str) -> Api:
 
 
 def publish(api: Api, head: str, base: str, sha: str, title: str, body: str) -> int:
-    """Ensure an open PR head->base exists and is queued to merge at `sha`."""
+    """Ensure a review PR exists, clearing any previously queued automatic merge."""
     pulls = api("GET", "/pulls?state=open&limit=50", None) or []
     pr = next((p for p in pulls if p["head"]["ref"] == head and p["base"]["ref"] == base), None)
     if pr is None:
@@ -78,18 +78,13 @@ def publish(api: Api, head: str, base: str, sha: str, title: str, body: str) -> 
     else:
         api("PATCH", f"/pulls/{pr['number']}", {"title": title, "body": body})
     number = pr["number"]
-    # A schedule from an earlier night pins that night's commit; replace it.
+    # Clear a queue left by an older publisher so this PR waits for Shane.
     try:
         api("DELETE", f"/pulls/{number}/merge", None)
     except urllib.error.HTTPError as error:
         if error.code != 404:
             raise
-    api("POST", f"/pulls/{number}/merge", {
-        "Do": "merge",
-        "head_commit_id": sha,
-        "merge_when_checks_succeed": True,
-        "delete_branch_after_merge": True,
-    })
+        error.close()
     return number
 
 
@@ -109,11 +104,12 @@ def main(argv: list[str] | None = None) -> int:
         title=f"chore(working-on): refresh for {args.date}",
         body=(
             "Nightly refresh of `site/src/data/working-on.json` from the dev host "
-            "(`scripts/working_on_nightly.sh`). Merges automatically once the required "
-            "Validate Portfolio checks pass."
+            "(`scripts/working_on_nightly.sh`). Awaiting Shane's manual review and merge "
+            f"into `{args.base}` after the required Validate Portfolio checks pass.\n\n"
+            f"Review commit: `{args.sha}`. Passing checks does not merge this PR."
         ),
     )
-    print(f"working-on: PR #{number} queued to merge {args.sha[:7]} into {args.base} when checks pass")
+    print(f"working-on: PR #{number} awaiting manual review of {args.sha[:7]} into {args.base}")
     return 0
 
 

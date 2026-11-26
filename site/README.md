@@ -51,7 +51,7 @@ the shared cascade order.
 ## What I'm working on
 
 The homepage's "What I'm working on" sheet renders `src/data/working-on.json`,
-which is regenerated every night on the dev host and merged into `beta`:
+which is regenerated every night on the dev host and proposed in a `beta` PR:
 
 - `scripts/working_on.py` reads T3 Code's state database and each project's
   git checkout, read-only. A day counts when Shane sent a message in that
@@ -75,9 +75,12 @@ which is regenerated every night on the dev host and merged into `beta`:
   to `~/.local/libexec/portfolio-working-on-nightly.sh`). It keeps its own
   clone. `beta` is protected, so a changed refresh is a one-file commit
   force-pushed to `chore/working-on-refresh`; `scripts/working_on_publish.py`
-  opens or updates that PR and queues it to merge once the required
-  Validate Portfolio checks pass, which is a normal beta deploy. A refresh
-  that fails CI stays open and is replaced the next night.
+  opens or updates that PR for Shane's manual review and merge after the
+  required Validate Portfolio checks pass. It clears any automatic merge
+  queued by an older publisher; passing checks never merges a refresh.
+  Shane's merge triggers the normal beta deploy. An unmerged refresh stays
+  open and may be replaced the next night. The PR identifies its current
+  review commit. The installed timer and its cadence are unchanged.
 - `src/lib/workingOn.ts` validates the file at build time, so a malformed
   refresh fails CI instead of shipping.
 
