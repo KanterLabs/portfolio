@@ -2,10 +2,10 @@
 title: KanterLabs Homelab Platform
 summary: A two-site Proxmox platform with hardened edge VMs, isolated network planes, private DNS and TLS, and ephemeral CI, all governed by reviewed infrastructure configuration.
 highlight: Turns a collection of servers into an intentional platform with fail-closed network boundaries and guarded, recoverable operations.
-impact: Replaced loosely coupled ingress rules and persistent runners with reusable edge boundaries, default-deny network policy, and organization-wide ephemeral CI.
+impact: Replaced loosely coupled ingress rules and persistent runners with reusable edge boundaries, default-deny network policy, and a disposable VM for each enrolled CI job.
 constraint: Keep the system understandable and recoverable without publishing secrets, mounting host privileges into CI jobs, or pretending every change is continuously reconciled.
 role: Infrastructure designer, builder, and operator.
-scope: Proxmox, Linux, VLANs, nftables, Caddy, CoreDNS, Cloudflare, Tailscale, private PKI, k3s, Actions Runner Controller, GHCR, and GitHub Actions.
+scope: Proxmox, Linux, VLANs, nftables, Caddy, CoreDNS, Cloudflare, Tailscale, private PKI, and Gitea Actions.
 keyOutcome: A reusable two-edge platform whose public, private, management, and origin traffic paths are explicit, tested, and recoverable.
 featured: false
 order: 2
@@ -14,10 +14,8 @@ stack:
   - Linux
   - Caddy
   - Tailscale
-  - k3s
-  - GitHub Actions
-  - ARC
-  - Docker
+  - Gitea Actions
+  - nftables
 status: shipped
 date: 2026-07-25
 socialImage: /og/project-homelab-platform.svg
@@ -25,7 +23,7 @@ links:
   - label: View portfolio source
     href: https://github.com/KanterLabs/portfolio
 system:
-  caption: Public and private traffic enter through distinct Cloudflare and Tailscale paths on hardened edge VMs; default-deny policy isolates management, ingress, and origin planes while CI runs in ephemeral ARC pods.
+  caption: Cloudflare and Tailscale traffic enters through distinct paths on hardened edge VMs. Default-deny policy separates management, ingress, and origin traffic. CI jobs run in disposable Proxmox VMs.
   tiers:
     - nodes:
         - label: Public entry
@@ -48,7 +46,7 @@ system:
           detail: Tailnet-only apps
   footer:
     - label: CI
-      title: runs-on homelab → ephemeral ARC pod
+      title: Gitea Actions → one VM per job
     - label: Secrets
       title: Outside Git, injected at runtime
 ---
@@ -67,7 +65,7 @@ The interesting part is not the machine count. It is the set of boundaries aroun
 - private applications have separate Tailnet-only names and listeners
 - management, ingress, and origin networks are distinct planes with default-deny forwarding
 - edge services bind to exact interfaces, and private DNS answers only on the intended views
-- GitHub Actions jobs run in disposable pods instead of long-lived repository runners
+- ActionRunners gives each enrolled Gitea Actions job a disposable Proxmox VM
 - credentials live outside Git and are injected only where they are needed
 
 ## Problem
@@ -80,7 +78,7 @@ I designed and built the edge boundaries, network policy, private DNS and TLS, a
 
 ## Result and Evidence
 
-The platform has named traffic paths with positive canaries for allowed access and negative tests for unwanted exposure. The architecture diagrams below show the two-site layout, trust boundaries, repository responsibilities, and disposable runner lifecycle.
+The platform has named traffic paths with positive canaries for allowed access and negative tests for unwanted exposure. The architecture diagrams below show the two-site layout, trust boundaries, and repository responsibilities.
 
 The infrastructure repository is private, so this article exposes the design and its verification approach without offering private configuration or live operational data. The [public portfolio source](https://github.com/KanterLabs/portfolio) contains the diagrams used here.
 
@@ -104,10 +102,9 @@ That distinction matters. A merged change records the intended configuration and
 | Edge configuration | Exact Caddy listeners, split-horizon DNS, Tailnet policy, and workload interfaces | Rendered from reviewed plans, validated, and deliberately installed on each edge VM |
 | Workload policy | Host firewall rules and private/public service bindings | Applied on the relevant workload |
 | Hypervisor networking | VLAN-aware bridges, NAT, forwarding allowlists, and isolation between planes | Installed through guarded host-managed transactions |
-| CI platform | k3s, ARC, runner pods, custom images, verification, and dashboard | Installed with versioned scripts and Helm values |
-| GitHub workflows | Runner image publication and end-to-end smoke checks | Executed by GitHub Actions |
+| CI platform | ActionRunners controller, VM templates, fleet policy, and isolation checks | Applied with versioned scripts and qualified with Gitea Actions canaries |
 
-Secrets are intentionally absent. GitHub App credentials, deployment keys, and service tokens are provisioned through GitHub, Infisical, Kubernetes Secrets, or root-only environment files.
+Deployment keys and service tokens are provisioned outside Git through scoped service credentials, Infisical, or restricted files.
 
 <Callout type="note" title="Reviewed does not mean automatic">
   The repository makes changes inspectable and repeatable, while the install scripts preserve an explicit operator checkpoint. That is a deliberate tradeoff for a small environment where an incorrect firewall or ingress change can disconnect the very host needed to repair it.
@@ -154,78 +151,17 @@ The same policy is exercised negatively: unknown hostnames, incorrect TLS names,
   wide={true}
 />
 
-## Organization-Wide Ephemeral CI
+<span id="organization-wide-ephemeral-ci"></span>
 
-The CI migration replaced repository-specific, persistent runners with one organization runner scale set selected by:
+## Disposable CI Runners
 
-```yaml
-jobs:
-  test:
-    runs-on: homelab
-```
-
-The runner group is available to current and future KanterLabs repositories. Actions Runner Controller maintains one warm runner and can scale to three concurrent runners when jobs arrive.
-
-Each job receives a fresh Kubernetes pod with two cooperating containers:
-
-- a non-root Actions runner containing the pinned development toolchain
-- a private Docker-in-Docker sidecar for image builds and Compose-based tests
-
-The containers share only the job workspace, Docker socket, and bounded ephemeral storage they need. The host Docker socket, host home directory, and Kubernetes service-account token are not mounted into the runner.
-
-When the job finishes, ARC deletes the pod and its private Docker daemon. Package and compiler caches can persist on the runner host, but workspace and container state do not.
-
-<DiagramFigure
-  src="/diagrams/runner-lifecycle.svg"
-  alt="Lifecycle of a GitHub Actions job on the KanterLabs homelab runner scale set"
-  caption="ARC turns an organization workflow request into a disposable runner pod, then removes the job environment after completion."
-  wide={true}
-/>
-
-## A Pinned Runner Environment
-
-The runner image is built from Git and published to GitHub Container Registry. ARC references the result by immutable digest, so a tag cannot silently change the environment underneath a workflow.
-
-The image carries the common tools used across the organization:
-
-- Node.js and pnpm for web projects
-- Rust, Clippy, rustfmt, and sccache for systems projects
-- Docker Compose and Buildx for container workflows
-- Python and YAML tooling for repository contract checks
-- Chromium and Firefox dependencies for browser tests
-- GitHub and Infisical CLIs for controlled automation
-
-A smoke workflow verifies both the toolchain and the isolation contract. It confirms the runner is ephemeral and non-root, checks that sensitive host paths are absent, and performs a real Docker build through the per-job daemon.
-
-## Resource and Failure Boundaries
-
-The runner platform uses a single-node k3s cluster because the goal is controlled CI capacity, not a general-purpose Kubernetes environment.
-
-That keeps operations small, but it creates an honest failure domain: if the runner VM or its Proxmox host is unavailable, homelab jobs wait. The configuration accounts for this with:
-
-- reserved CPU, memory, and disk space for the node and Kubernetes services
-- explicit pod requests and limits
-- bounded work and Docker storage per job
-- eviction thresholds before the node exhausts storage or memory
-- pinned installer, chart, controller, runner, and Docker image versions
-- retained migration state and a documented rollback window
-
-The custom dashboard is LAN-only and read-only. It combines GitHub job state with host and cluster health without sending its server-side credentials to the browser.
+ActionRunners polls Gitea and provisions a Proxmox VM from a reviewed template when there is room for the job. The guest receives one single-use runner registration. After the job ends, the guest shuts down and the controller reclaims it. The [ActionRunners case study](/projects/actionrunners) walks through provisioning, isolation, cleanup, and the live dashboard.
 
 ## Security Decisions
 
-The platform does not claim that running untrusted CI is risk-free. Docker-in-Docker still needs a privileged sidecar. The security boundary is instead made narrow and disposable:
+The host firewall isolates runner guests from the LAN and management network. Reusable runner registration credentials stay on the controller even when a job builds and runs containers inside its VM.
 
-- privilege is isolated to the job's Docker sidecar rather than the host daemon
-- the runner itself stays non-root
-- credentials are not baked into the image
-- host access is limited to a purpose-built cache directory
-- workloads cannot move laterally between public, private, and management zones
-- secret values never enter the infrastructure repository
-
-The network follows the same philosophy. Configuration is rendered deterministically, rejected if it contains wildcard binds or unapproved routes, and applied through a guarded transaction. A timed rollback, independent management-path checks, configuration hashes, service health, positive canaries, and negative exposure tests must all succeed before a candidate becomes the retained state.
-
-This is a practical balance for my own organization: enough capability to run browser, Rust, Node, and container-heavy tests, with far less persistent state than the old runner fleet.
+Network configuration is rendered deterministically, rejected if it contains wildcard binds or unapproved routes, and applied through a guarded transaction. A timed rollback protects the change until management-path checks, configuration hashes, service health, positive canaries, and negative exposure tests pass.
 
 ## What I Learned
 
@@ -234,7 +170,7 @@ The largest improvement came from treating infrastructure as a set of contracts 
 - **Ingress contract:** every application has one intended entrance.
 - **Network contract:** every allowed flow names its source, destination, interface, and purpose; everything else fails closed.
 - **Name and TLS contract:** public and private DNS views, hostnames, and certificates agree with the traffic plane.
-- **CI contract:** `runs-on: homelab` always means the same disposable environment.
+- **CI contract:** Each admitted job gets a single-use runner and a VM sized for its workload.
 - **Repository contract:** reviewed files describe intended state, while secrets and host-local state remain outside Git.
 - **Recovery contract:** network changes keep an automatic rollback and an independently tested management path until the replacement has been exercised.
 

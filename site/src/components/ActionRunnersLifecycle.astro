@@ -1,0 +1,151 @@
+---
+import '../styles/actionrunners.css';
+
+// A teaching example that follows the controller's real sequence. It never connects to a runner.
+const stages = [
+  {
+    key: 'queued', short: 'Queued', actor: 'Gitea', token: 'job waiting',
+    title: 'Gitea queues the job',
+    detail: 'A workflow job waits in Gitea. Its runs-on label picks a VM profile. The controller polls for waiting jobs every five seconds.',
+    boundary: 'The forge does not need an inbound route to the controller.',
+  },
+  {
+    key: 'admitted', short: 'Admitted', actor: 'Controller', token: 'slot reserved',
+    title: 'One ledger admits it',
+    detail: 'A single capacity ledger decides. The job is admitted only if the concurrent-VM, vCPU and memory ceilings allow it and a host-memory reserve stays free afterwards. Otherwise it stays queued, and the dashboard shows why.',
+    boundary: 'Admission is a pure function over a durable, locked ledger, so overlapping passes cannot double-book a slot.',
+  },
+  {
+    key: 'cloned', short: 'Cloned', actor: 'Proxmox', token: 'VM 301 · cloning',
+    title: 'A linked clone boots from a pinned template',
+    detail: 'The controller clones an immutable Debian template, with a pinned runner version, into a reserved slot that has a fixed MAC and address.',
+    boundary: 'The controller is scoped to designated Proxmox resources and reclaims only its own tagged VMs.',
+  },
+  {
+    key: 'delivered', short: 'Runner', actor: 'Controller → VM', token: 'VM 301 · ready',
+    title: 'One single-use runner is delivered',
+    detail: 'The controller registers an ephemeral runner itself, then writes a single .runner file into the guest through the QEMU guest agent. A systemd path unit starts the runner.',
+    boundary: 'The registration token never leaves the controller host. The guest has no SSH key or password.',
+  },
+  {
+    key: 'running', short: 'Running', actor: 'VM', token: 'VM 301 · running',
+    title: 'It runs exactly one job',
+    detail: 'The runner takes one job. Its steps run inside the guest. Container builds use a separate Docker daemon inside that VM.',
+    boundary: 'A per-slot bridge firewall allows only the Git server, public web traffic, public DNS and NTP. Private, Tailscale, link-local and host addresses are dropped.',
+  },
+  {
+    key: 'destroyed', short: 'Destroyed', actor: 'Controller + janitor', token: 'VM 301 · gone',
+    title: 'The VM powers off and is destroyed',
+    detail: 'When the job ends, the runner exits and the guest powers itself off. The controller destroys the VM and deletes its runner record, freeing the slot for the next job.',
+    boundary: 'A separate janitor pass can reclaim owned guests left behind by an interrupted job or controller crash.',
+  },
+];
+---
+
+<section class="ar-lifecycle" aria-label="ActionRunners job lifecycle example" data-ar-lifecycle>
+  <p class="ar-label">Interactive · Example job</p>
+  <h3>One job, one VM, start to finish</h3>
+  <p class="ar-disclosure">
+    Illustrative example with invented names. It follows the controller's real sequence and connects to nothing.
+  </p>
+
+  <div class="ar-track" aria-hidden="true" data-ar-track>
+    <div class="ar-rail"><span class="ar-rail-fill"></span></div>
+    {stages.map(({ key, short, actor }, index) => (
+      <div class="ar-node" data-ar-node={index} data-stage={key}>
+        <span class="ar-dot"></span>
+        <span class="ar-node-title">{short}</span>
+        <span class="ar-node-actor">{actor}</span>
+      </div>
+    ))}
+    <div class="ar-token" data-ar-token data-stage="queued">{stages[0].token}</div>
+  </div>
+
+  <ol class="ar-steps">
+    {stages.map(({ title, detail, boundary }, index) => (
+      <li data-ar-step={index} aria-current={index === 0 ? 'step' : undefined}>
+        <strong>{title}.</strong> {detail}
+        <span class="ar-boundary"><span>Boundary</span> {boundary}</span>
+      </li>
+    ))}
+  </ol>
+
+  <div class="ar-controls" role="group" aria-label="Lifecycle steps" hidden data-ar-controls>
+    <button type="button" data-ar-prev disabled>Previous step</button>
+    <button type="button" data-ar-next>Next step</button>
+    <button type="button" data-ar-play>Play</button>
+    <button type="button" data-ar-reset>Reset example</button>
+  </div>
+  <p class="ar-status" role="status" aria-live="polite" aria-atomic="true" data-ar-status>
+    Step 1 of {stages.length}: {stages[0].title}.
+  </p>
+  <noscript><p>Enable JavaScript to step through the lifecycle. The list above describes every step.</p></noscript>
+  <script type="application/json" data-ar-stages set:html={JSON.stringify(stages.map(({ key, title, token }) => ({ key, title, token })))} />
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-ar-lifecycle]').forEach((example) => {
+    const q = <T extends Element>(selector: string) => example.querySelector<T>(selector);
+    const track = q<HTMLElement>('[data-ar-track]');
+    const token = q<HTMLElement>('[data-ar-token]');
+    const status = q<HTMLElement>('[data-ar-status]');
+    const controls = q<HTMLElement>('[data-ar-controls]');
+    const prev = q<HTMLButtonElement>('[data-ar-prev]');
+    const next = q<HTMLButtonElement>('[data-ar-next]');
+    const play = q<HTMLButtonElement>('[data-ar-play]');
+    const reset = q<HTMLButtonElement>('[data-ar-reset]');
+    const data = q<HTMLScriptElement>('[data-ar-stages]');
+    if (!track || !token || !status || !controls || !prev || !next || !play || !reset || !data) return;
+    const stages: { key: string; title: string; token: string }[] = JSON.parse(data.textContent ?? '[]');
+    const steps = Array.from(example.querySelectorAll<HTMLElement>('[data-ar-step]'));
+    const nodes = Array.from(example.querySelectorAll<HTMLElement>('[data-ar-node]'));
+    const last = stages.length - 1;
+    let current = 0;
+    let timer = 0;
+
+    const render = () => {
+      // Geometry goes through the CSSOM so a strict style-src policy still allows it.
+      track.style.setProperty('--ar-step', String(current));
+      token.dataset.stage = stages[current].key;
+      token.textContent = stages[current].token;
+      nodes.forEach((node, index) => {
+        node.classList.toggle('is-done', index < current);
+        node.classList.toggle('is-active', index === current);
+      });
+      steps.forEach((step, index) => {
+        if (index === current) step.setAttribute('aria-current', 'step');
+        else step.removeAttribute('aria-current');
+      });
+      status.textContent = `Step ${current + 1} of ${stages.length}: ${stages[current].title}.`;
+      prev.disabled = current === 0;
+      next.disabled = current === last;
+    };
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = 0;
+      play.textContent = 'Play';
+    };
+    const go = (index: number) => {
+      current = Math.max(0, Math.min(last, index));
+      render();
+    };
+
+    prev.addEventListener('click', () => { stop(); go(current - 1); if (prev.disabled) next.focus(); });
+    next.addEventListener('click', () => { stop(); go(current + 1); if (next.disabled) reset.focus(); });
+    reset.addEventListener('click', () => { stop(); go(0); next.focus(); });
+    // Plays only when asked, one step at a time, and stops at the end.
+    play.addEventListener('click', () => {
+      if (timer) { stop(); return; }
+      if (current === last) go(0);
+      play.textContent = 'Pause';
+      timer = window.setInterval(() => {
+        go(current + 1);
+        if (current === last) stop();
+      }, 1700);
+    });
+
+    example.dataset.enhanced = '';
+    controls.hidden = false;
+    render();
+  });
+</script>

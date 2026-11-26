@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh the portfolio "What I'm working on" data and push it to beta
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+UMask=0077
+NoNewPrivileges=yes
+TimeoutStartSec=10min
+ExecStart=/bin/bash %h/.local/libexec/portfolio-working-on-nightly.sh

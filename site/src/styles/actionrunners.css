@@ -1,0 +1,334 @@
+/* ActionRunners case study: the lifecycle example and its media.
+   State colours match the dashboard: queued grey, provisioning violet,
+   ready amber, running blue, finished green. */
+.ar-lifecycle {
+  --ar-queued: #8f8e86;
+  --ar-prov: #9a84f5;
+  --ar-ready: #e3a83c;
+  --ar-run: #3d8ef0;
+  --ar-done: #2fae6c;
+  /* The token carries white text, so it uses darker shades that clear 4.5:1 in both themes. */
+  --ar-token-queued: #5f5e58;
+  --ar-token-prov: #6a50d6;
+  --ar-token-ready: #8a5d05;
+  --ar-token-run: #1f63b8;
+  --ar-token-done: #16784a;
+  --ar-step: 0;
+  margin: 1.5rem 0 2rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+  color: var(--color-text-base);
+  overflow-wrap: anywhere;
+}
+
+[data-theme="light"] .ar-lifecycle {
+  --ar-queued: #77766f;
+  --ar-prov: #6a52d0;
+  --ar-ready: #a87310;
+  --ar-run: #2367b8;
+  --ar-done: #1a8a50;
+}
+
+.ar-lifecycle .ar-label {
+  margin: 0 0 0.5rem;
+  font: 600 0.75rem/1.5 var(--font-family-mono);
+  color: var(--color-text-muted);
+}
+
+.ar-lifecycle h3 {
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: 0;
+  font-size: 1.25rem;
+}
+
+.ar-lifecycle .ar-disclosure {
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+
+/* ── Track: six stages and a token that travels along them ── */
+.ar-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin: 1.5rem 0 1rem;
+  padding-top: 2.6rem;
+}
+
+.ar-rail {
+  position: absolute;
+  top: calc(2.6rem + 0.55rem);
+  left: calc(100% / 12);
+  right: calc(100% / 12);
+  height: 2px;
+  background: var(--color-line-strong);
+}
+
+.ar-rail-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--ar-step) / 5 * 100%);
+  background: var(--ar-run);
+  transition: width 0.6s ease;
+}
+
+.ar-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.ar-dot {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--color-line-strong);
+  border-radius: 50%;
+  background: var(--color-bg-elevated);
+  transition: background 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
+}
+
+.ar-node.is-done .ar-dot {
+  border-color: var(--ar-run);
+  background: var(--ar-run);
+}
+
+.ar-node.is-active .ar-dot {
+  border-color: var(--ar-run);
+  transform: scale(1.25);
+}
+
+.ar-node-title {
+  margin-top: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.ar-node-actor {
+  font: 500 0.68rem/1.3 var(--font-family-mono);
+  color: var(--color-text-muted);
+}
+
+.ar-token {
+  position: absolute;
+  top: 0;
+  left: calc((var(--ar-step) + 0.5) / 6 * 100%);
+  transform: translateX(-50%);
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--ar-token-queued);
+  color: #fff;
+  font: 600 0.72rem/1.4 var(--font-family-mono);
+  white-space: nowrap;
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.6);
+  transition: left 0.6s cubic-bezier(0.3, 0.7, 0.3, 1), background 0.4s ease;
+}
+
+.ar-token[data-stage="admitted"],
+.ar-token[data-stage="cloned"] { background: var(--ar-token-prov); }
+.ar-token[data-stage="delivered"] { background: var(--ar-token-ready); }
+.ar-token[data-stage="running"] { background: var(--ar-token-run); }
+.ar-token[data-stage="destroyed"] { background: var(--ar-token-done); }
+
+.ar-token[data-stage="running"]::after {
+  content: "";
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-left: 0.4rem;
+  border-radius: 50%;
+  background: #fff;
+  vertical-align: 0.05rem;
+  animation: ar-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ar-pulse {
+  50% { opacity: 0.25; }
+}
+
+/* ── Steps: a full ordered list without JavaScript, one detail card with it ── */
+.ar-lifecycle .ar-steps {
+  margin: 1rem 0;
+  padding-left: 1.4rem;
+  list-style: decimal;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.ar-lifecycle .ar-steps li {
+  margin: 0.6rem 0;
+  padding: 0;
+}
+
+.ar-lifecycle .ar-steps li::before {
+  content: none;
+}
+
+.ar-boundary {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.ar-boundary > span {
+  margin-right: 0.35rem;
+  font: 600 0.68rem/1 var(--font-family-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-soft);
+}
+
+.ar-lifecycle[data-enhanced] .ar-steps {
+  padding: 0.9rem 1rem;
+  list-style: none;
+  border: 1px solid var(--color-line-strong);
+  border-left: 3px solid var(--ar-run);
+  border-radius: 6px;
+  background: var(--color-bg-elevated);
+  min-height: 9.5rem;
+}
+
+.ar-lifecycle[data-enhanced] .ar-steps li {
+  margin: 0;
+}
+
+.ar-lifecycle[data-enhanced] .ar-steps li:not([aria-current]) {
+  display: none;
+}
+
+.ar-controls:not([hidden]) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.ar-controls button {
+  min-height: 44px;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  background: var(--accent-color);
+  color: var(--accent-ink);
+  font: 600 0.8rem/1.4 var(--font-family-sans);
+  cursor: pointer;
+}
+
+.ar-controls button:disabled {
+  border-color: var(--color-line-strong);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
+.ar-controls [data-ar-play],
+.ar-controls [data-ar-reset] {
+  background: transparent;
+  color: var(--color-text-base);
+  border-color: var(--color-line-strong);
+}
+
+.ar-controls button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 4px;
+}
+
+.ar-lifecycle .ar-status {
+  margin: 1rem 0 0;
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--accent-color);
+  font-size: 0.9rem;
+}
+
+/* ── Media: the recorded board ── */
+.ar-recording {
+  margin: 2rem 0;
+}
+
+.ar-recording .lab-media {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: #0f0f0e;
+}
+
+.ar-recording video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ar-recording figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* ── Narrow screens: the track turns vertical ── */
+@media (width < 640px) {
+  .ar-track {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: 3.4rem;
+    padding: 0 0 0 1.6rem;
+  }
+
+  .ar-rail {
+    top: 1.7rem;
+    bottom: 1.7rem;
+    left: 2.15rem;
+    right: auto;
+    width: 2px;
+    height: auto;
+  }
+
+  .ar-rail-fill {
+    inset: 0 0 auto 0;
+    width: auto;
+    height: calc(var(--ar-step) / 5 * 100%);
+    transition-property: height;
+  }
+
+  .ar-node {
+    display: grid;
+    grid-template-columns: 1.1rem minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 0.75rem;
+    align-content: center;
+    align-items: center;
+    text-align: left;
+  }
+
+  .ar-dot { grid-row: 1 / span 2; }
+  .ar-node-title { margin: 0; }
+
+  .ar-token {
+    top: calc((var(--ar-step) + 0.5) / 6 * 100%);
+    left: auto;
+    right: 0;
+    transform: translateY(-50%);
+    transition-property: top, background;
+  }
+
+  .ar-controls button { flex: 1 1 9rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-rail-fill,
+  .ar-dot,
+  .ar-token {
+    transition: none;
+  }
+
+  .ar-token[data-stage="running"]::after {
+    animation: none;
+  }
+}

@@ -26,19 +26,19 @@ const {
 
 <header class="site-header sticky top-0 z-20" data-site-header data-home={home ? '' : undefined}>
   <div
-    class="header-inner flex items-center justify-between gap-4 py-5 border-b border-transparent transition-[background-color,border-color,padding] duration-[180ms] ease-out"
+    class="header-inner flex flex-wrap items-center justify-between gap-4 py-5 border-b border-transparent transition-[background-color,border-color,padding] duration-[180ms] ease-out"
   >
     <a class="inline-flex items-center gap-2.5 min-w-0 min-h-11" href={home ? '#top' : '/'} aria-label="Shane Kanterman home">
       <BrandRabbit height={40} mode="logo" class="site-header-rabbit" />
-      <span class="header-brand-text grid gap-0.5">
-        <strong class="text-[0.95rem] leading-tight text-text-base font-semibold whitespace-nowrap">Shane Kanterman</strong>
+      <span class="header-brand-text grid min-w-0 gap-0.5 [overflow-wrap:anywhere]">
+        <strong class="text-[0.95rem] leading-tight text-text-base font-semibold">Shane Kanterman</strong>
         <span class="kl-header-sub text-[0.74rem] leading-tight tracking-[0.02em]">KanterLabs</span>
       </span>
     </a>
 
     {home ? (
-      <div class="flex items-center gap-6 max-[780px]:gap-2">
-        <nav class="flex items-center gap-6 max-[780px]:hidden" aria-label="Primary">
+      <div class="flex flex-wrap min-w-0 items-center gap-6 max-[780px]:gap-2">
+        <nav class="flex flex-wrap items-center gap-6 max-[780px]:hidden" aria-label="Primary">
           {navItems.map((item) => (
             <a
               href={item.href}
@@ -74,7 +74,7 @@ const {
         <ThemeToggle />
       </div>
     ) : (
-      <div class="flex items-center gap-6 max-[780px]:gap-2">
+      <div class="flex flex-wrap min-w-0 items-center gap-6 max-[780px]:gap-2">
         <a
           href={backHref}
           class="header-back inline-flex items-center gap-2 min-h-11 text-text-muted hover:text-text-base transition-colors duration-[180ms]"

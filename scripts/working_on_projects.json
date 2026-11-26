@@ -1,0 +1,50 @@
+{
+  "comment": "Projects shown in the homepage 'What I'm working on' section. Only listed projects are read. t3Project is the T3 Code project title; repo is the local checkout on the dev host. Never add a repoUrl for a private repository.",
+  "projects": [
+    {
+      "name": "Data Center Tycoon",
+      "kind": "Game",
+      "href": "/datacentertycoon",
+      "t3Project": "data_center_tycoon",
+      "repo": "~/projects/data_center_tycoon"
+    },
+    {
+      "name": "Helm",
+      "kind": "Lead project",
+      "href": "/projects/helm",
+      "t3Project": "helm",
+      "repo": "~/projects/helm"
+    },
+    {
+      "name": "ActionRunners",
+      "kind": "CI platform",
+      "href": "/projects/actionrunners",
+      "t3Project": "Actions Dashboard",
+      "repo": "~/actions-dashboard"
+    },
+    {
+      "name": "Lab dashboard",
+      "kind": "Monitoring",
+      "t3Project": "Lab",
+      "repo": "~/projects/lab"
+    },
+    {
+      "name": "Homelab",
+      "kind": "Infrastructure",
+      "href": "/projects/kanterlabs-homelab",
+      "t3Project": "kanteredge-infra",
+      "repo": "~/projects/kanteredge-infra",
+      "defaultKind": "ops"
+    }
+  ],
+  "titlesComment": "Display titles to rename (string) or hide (null) on the homepage, matched case-insensitively against the title the generator would show. Use it for subjects that only make sense inside the project or that repeat another project's item; hide rather than guess at a rename.",
+  "titles": {
+    "Keep available work capacity in the board toolbar": "Show available work capacity in the board toolbar",
+    "Rebind Helm runtime devices during native boot": null,
+    "Use the real claim expiry in the phone capacity journey": null,
+    "Prevent Gitea from discovering Helm GitHub workflows on main": null,
+    "Keep canonical TLS identity on pinned uptime routes": null,
+    "Use measured host RAM once runner startup is observed": null,
+    "Account for host memory reservations during runner admission": null
+  }
+}

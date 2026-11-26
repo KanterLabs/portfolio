@@ -14,7 +14,7 @@ test.describe('homepage', () => {
     }));
     expect(metrics.proofTop).toBeLessThan(1100);
     expect(metrics.experienceTop).toBeLessThan(1500);
-    expect(metrics.height).toBeLessThan(7500);
+    expect(metrics.height).toBeLessThan(8500);
     await expect(page.locator('.rack')).toHaveCount(0);
     await expect(page.locator('#projects .plate-media')).toBeVisible();
     await testInfo.attach('mobile-homepage', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
@@ -111,7 +111,7 @@ test.describe('homepage', () => {
     await page.goto('/');
     const sheets = page.locator('main > .sheet');
     const count = await sheets.count();
-    expect(count).toBe(5);
+    expect(count).toBe(6);
 
     for (let index = 0; index < count; index += 1) {
       const sheet = sheets.nth(index);
@@ -128,7 +128,7 @@ test.describe('homepage', () => {
         .sort((a, b) => a.top - b.top)
         .map((entry) => entry.id),
     );
-    expect(order).toEqual(['top', 'about', 'projects', 'skills', 'contact']);
+    expect(order).toEqual(['top', 'about', 'projects', 'now', 'skills', 'contact']);
   });
 
   test('selected work pairs evidence with case studies in project order', async ({ page }) => {
@@ -136,16 +136,17 @@ test.describe('homepage', () => {
     await page.goto('/');
 
     const entries = page.locator('#projects [data-project-entry]');
-    await expect(entries).toHaveCount(3);
+    await expect(entries).toHaveCount(4);
     const titles = entries.locator('.detail-title a');
-    await expect(titles).toHaveText(['Helm', 'KanterLabs Homelab Platform', 'Coolify Portfolio Deployment']);
+    await expect(titles).toHaveText(['Helm', 'KanterLabs Homelab Platform', 'ActionRunners', 'Coolify Portfolio Deployment']);
     expect(await titles.evaluateAll((links) => links.map((link) => link.getAttribute('href')))).toEqual([
       '/projects/helm',
       '/projects/kanterlabs-homelab',
+      '/projects/actionrunners',
       '/projects/multi-node-portfolio',
     ]);
 
-    for (let index = 0; index < 3; index += 1) {
+    for (let index = 0; index < 4; index += 1) {
       const surface = await entries.nth(index).evaluate((el) => {
         const style = getComputedStyle(el);
         return { border: parseFloat(style.borderTopWidth), background: style.backgroundColor };
@@ -159,8 +160,8 @@ test.describe('homepage', () => {
     await page.goto('/projects');
 
     const drawings = page.locator('#projects .detail-drawing');
-    await expect(drawings).toHaveCount(3);
-    for (let index = 0; index < 3; index += 1) {
+    await expect(drawings).toHaveCount(4);
+    for (let index = 0; index < 4; index += 1) {
       const drawing = drawings.nth(index);
       const caption = (await drawing.locator('figcaption').textContent())?.trim() ?? '';
       expect(caption.length, `drawing ${index} caption`).toBeGreaterThan(20);
