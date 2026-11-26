@@ -37,24 +37,24 @@
         "2026-11-22": 4,
         "2026-11-23": 4,
         "2026-11-24": 3,
-        "2026-11-25": 3
+        "2026-11-25": 4
       },
       "lastWorked": "2026-11-25",
       "shipped": [
         {
           "kind": "feat",
-          "title": "Simplify rental pricing and custom server sales",
+          "title": "Make daily cash flow readable and project operating choices",
           "date": "2026-11-25"
         },
         {
           "kind": "feat",
-          "title": "Visualize hosting quotes and build reusable walkthroughs",
-          "date": "2026-11-24"
+          "title": "Add yearly tier refreshes and a release calendar",
+          "date": "2026-11-25"
         },
         {
           "kind": "feat",
-          "title": "Integrate hardware generations, itemized leases and inference sales",
-          "date": "2026-11-24"
+          "title": "Simplify rental pricing and custom server sales",
+          "date": "2026-11-25"
         }
       ],
       "href": "/datacentertycoon"
@@ -90,14 +90,24 @@
         "2026-11-22": 1,
         "2026-11-23": 3,
         "2026-11-24": 2,
-        "2026-11-25": 1
+        "2026-11-25": 3
       },
       "lastWorked": "2026-11-25",
       "shipped": [
         {
           "kind": "ops",
-          "title": "Wire Lab uptime ingestion and history backups",
-          "date": "2026-11-23"
+          "title": "Let the shared deployer build on its own host and push to the app host",
+          "date": "2026-11-25"
+        },
+        {
+          "kind": "ops",
+          "title": "Replace the per-app deployers with one config-driven service",
+          "date": "2026-11-25"
+        },
+        {
+          "kind": "ops",
+          "title": "Deploy passing KFP main commits from the ActionRunners fleet",
+          "date": "2026-11-25"
         }
       ],
       "href": "/projects/kanterlabs-homelab"
