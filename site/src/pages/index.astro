@@ -1,7 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SelectedWork from '../components/SelectedWork.astro';
+import WorkingOn from '../components/WorkingOn.astro';
 import '../styles/home.css';
+import '../styles/working-on.css';
 import { capabilityGroups, profilePoints, timelineEntries, emailUrl, linkedInUrl, personalGithubUrl, structuredDataFor } from '../lib/profile';
 import GitHubIcon from '../components/GitHubIcon.astro';
 import Sheet from '../components/Sheet.astro';
@@ -22,7 +24,8 @@ const navItems = [
   { label: 'Contact', href: '#contact' },
 ];
 
-const SHEET_COUNT = 5;
+const SHEET_COUNT = 6;
+const pad = (value: number) => String(value).padStart(2, '0');
 const structuredData = structuredDataFor(Astro.site?.toString() ?? 'https://shanekanterman.dev');
 
 ---
@@ -134,9 +137,15 @@ const structuredData = structuredDataFor(Astro.site?.toString() ?? 'https://shan
         </div>
       </Sheet>
 
+      <Sheet id="now" sheet={4} of={SHEET_COUNT} label="Work in progress" drawing="DWG SK-07 · Daily log" labelledBy="now-title">
+        <h2 class="sheet-title" id="now-title">What I’m working on.</h2>
+        <p class="sheet-intro">The projects I’ve been at lately and what I finished in each this week, pulled from my own commits and work log.</p>
+        <WorkingOn />
+      </Sheet>
+
       <Sheet
         id="skills"
-        sheet={4}
+        sheet={5}
         of={SHEET_COUNT}
         label="Bill of materials"
         drawing="DWG SK-05 · BOM"
@@ -173,7 +182,7 @@ const structuredData = structuredDataFor(Astro.site?.toString() ?? 'https://shan
 
       <Sheet
         id="contact"
-        sheet={5}
+        sheet={6}
         of={SHEET_COUNT}
         label="Title block · contact"
         drawing="DWG SK-06"
@@ -206,7 +215,7 @@ const structuredData = structuredDataFor(Astro.site?.toString() ?? 'https://shan
             <div class="tb-wide"><dt>Based in</dt><dd>Cranford, NJ and New Haven, CT</dd></div>
             <div><dt>LinkedIn</dt><dd><a href={linkedInUrl} target="_blank" rel="noopener noreferrer">/in/shane-kanterman</a></dd></div>
             <div><dt>Personal GitHub</dt><dd><a href={personalGithubUrl} target="_blank" rel="noopener noreferrer">ShaneKanterman04</a></dd></div>
-            <div><dt>Sheet</dt><dd>05 of 05</dd></div>
+            <div><dt>Sheet</dt><dd>{pad(SHEET_COUNT)} of {pad(SHEET_COUNT)}</dd></div>
             <div><dt>Scale</dt><dd>1:1</dd></div>
           </dl>
         </div>

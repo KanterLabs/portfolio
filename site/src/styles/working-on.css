@@ -1,0 +1,251 @@
+/* Homepage "What I'm working on" sheet. Every colour is a theme token or a
+   color-mix() of one, so both themes and the no-JS mirror resolve here. */
+
+.working-on-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* The most active project leads at full width, as does a lone second card. */
+.working-on-card:first-child,
+.working-on-card:nth-child(2):last-child {
+  grid-column: 1 / -1;
+}
+
+.working-on-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.working-on-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.6rem;
+}
+
+.working-on-head h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.working-on-head h3 a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.working-on-head h3 a:hover {
+  color: var(--color-accent);
+  text-decoration-color: currentColor;
+}
+
+.working-on-kind,
+.working-on-tag {
+  border: 1px solid var(--ink);
+  font-family: var(--font-family-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.working-on-kind {
+  padding: 0.25rem 0.4rem;
+  background: var(--fill-accent);
+  color: var(--fill-accent-ink);
+}
+
+.working-on-last,
+.working-on-count,
+.working-on-shipped time {
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.working-on-last {
+  margin-left: auto;
+}
+
+.working-on-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.35rem;
+  border: 1px solid var(--color-text-muted);
+  border-radius: 50%;
+}
+
+.working-on-dot.is-today {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.working-on-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.working-on-days {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(var(--days), minmax(0, 1fr));
+  gap: 2px;
+}
+
+.working-on-days span {
+  height: 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+/* Intensity ramp: 1 = worked without committing, 4 = a heavy commit day. */
+.working-on-days [data-level] {
+  border-color: color-mix(in srgb, var(--color-accent) 75%, var(--paper));
+}
+
+.working-on-days [data-level='1'] {
+  background: color-mix(in srgb, var(--color-accent) 18%, var(--paper));
+}
+
+.working-on-days [data-level='2'] {
+  background: color-mix(in srgb, var(--color-accent) 42%, var(--paper));
+}
+
+.working-on-days [data-level='3'] {
+  background: color-mix(in srgb, var(--color-accent) 70%, var(--paper));
+}
+
+.working-on-days [data-level='4'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.working-on-shipped {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0 0 0 0.7rem;
+  border-left: 1.5px solid var(--ink);
+  list-style: none;
+}
+
+.working-on-shipped li {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.2rem 0;
+}
+
+.working-on-tag {
+  padding: 0.25rem 0;
+  text-align: center;
+  color: var(--ink);
+}
+
+.working-on-tag.is-feat {
+  background: var(--fill-accent);
+  color: var(--fill-accent-ink);
+}
+
+.working-on-tag.is-fix,
+.working-on-tag.is-perf,
+.working-on-tag.is-ops {
+  background: color-mix(in srgb, var(--ink) 10%, var(--paper));
+}
+
+.working-on-title {
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.working-on-empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.working-on-also {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 1.25rem;
+  margin: 1rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px dashed color-mix(in srgb, var(--ink) 35%, transparent);
+}
+
+.working-on-also-item {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.5rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.working-on-also-item a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
+  text-underline-offset: 4px;
+}
+
+.working-on-also-item a:hover {
+  color: var(--color-accent);
+}
+
+.working-on-also-meta {
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
+.working-on-note {
+  margin-top: 1rem;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+@media (width < 780px) {
+  .working-on-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .working-on-shipped li {
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    gap: 0 0.6rem;
+  }
+
+  .working-on-shipped time {
+    grid-column: 2;
+    font-size: 0.66rem;
+  }
+
+  /* Phones keep the two newest items per project so the section doesn't
+     push contact details out of the homepage's length budget. */
+  .working-on-shipped li:nth-child(n + 3) {
+    display: none;
+  }
+
+  .working-on-card {
+    gap: 0.6rem;
+    padding: 0.9rem 1rem;
+  }
+}

@@ -14,7 +14,7 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
     h1: document.querySelector('h1')?.textContent?.replace(/\s+/g, ' ').trim(),
     heroParagraph: document.querySelector('.hero-copy')?.textContent?.replace(/\s+/g, ' ').trim(),
     contactText: document.getElementById('contact')?.textContent ?? '',
-    sectionTops: ['top', 'about', 'projects', 'skills', 'contact'].map((id) => ({
+    sectionTops: ['top', 'about', 'projects', 'now', 'skills', 'contact'].map((id) => ({
       id,
       top: Math.round(
         (document.getElementById(id)?.getBoundingClientRect().top ?? NaN) + window.scrollY,
@@ -26,14 +26,17 @@ test('mobile homepage metrics and content spot checks', async ({ page }, testInf
 
   expect(metrics.hasHorizontalOverflow).toBe(false);
   // Keep the compact homepage substantially shorter than the old 12,100px catalog.
-  expect(metrics.scrollHeight).toBeLessThan(7500);
+  // 8500 leaves room for the nightly "What I'm working on" sheet (~1300px on a
+  // phone; it shows at most three project cards whatever the data holds) on
+  // top of the ~7000px it replaced as the budget.
+  expect(metrics.scrollHeight).toBeLessThan(8500);
   expect(metrics.h1).toBe('Everything I run, in one rack.');
   expect(metrics.heroParagraph).toContain('production infrastructure at InterServer');
   expect(metrics.contactText).toContain('shanekanterman04@gmail.com');
   expect(metrics.contactText).toContain('Cranford');
-  // The compact hero starts within the first screen; all five sheets
+  // The compact hero starts within the first screen; all six sheets
   // must exist and follow in document order.
-  await expect(page.locator('main > .sheet')).toHaveCount(5);
+  await expect(page.locator('main > .sheet')).toHaveCount(6);
   expect(metrics.sectionTops[0]?.id).toBe('top');
   expect(metrics.sectionTops[0]?.top).toBeLessThan(750);
   for (const section of metrics.sectionTops) expect(Number.isFinite(section.top), section.id).toBe(true);

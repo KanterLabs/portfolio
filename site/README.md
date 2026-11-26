@@ -48,6 +48,42 @@ with media, and the full interactive rack and flagship plates live in the catalo
 Global and drawing styles are split by responsibility; their entry files preserve
 the shared cascade order.
 
+## What I'm working on
+
+The homepage's "What I'm working on" sheet renders `src/data/working-on.json`,
+which is regenerated every night on the dev host and proposed in a `beta` PR:
+
+- `scripts/working_on.py` reads T3 Code's state database and each project's
+  git checkout, read-only. A day counts when Shane sent a message in that
+  project's T3 threads or committed to it. Only dates leave T3. Each day
+  gets an intensity level: 1 for a day worked without commits, then 2-4 as
+  that day's commit count reaches 1, 3 and 10.
+- Projects are ordered by days worked this week, then commits this week.
+  The top three get cards; the rest share an "Also this month" line.
+- "Done this week" items are Shane's own `feat`/`fix` commits (or plain
+  subjects that aren't bookkeeping). Subjects naming sites, hosts, sizes,
+  credentials or anything private are dropped, because most source repos
+  are private. Projects and their page links live in
+  `scripts/working_on_projects.json`; never add a private repository URL.
+  Its `titles` map renames (string) or hides (`null`) a title that only makes
+  sense inside a project or repeats another project's item.
+- Dates render as absolute days ("Nov 25"). A small script switches them to
+  "today"/"yesterday" from the viewer's own clock, so production stays
+  truthful even when it is deployed less often than beta.
+- `scripts/working_on_nightly.sh` runs from the `portfolio-working-on`
+  systemd user timer (`scripts/systemd/`, installed with the script copied
+  to `~/.local/libexec/portfolio-working-on-nightly.sh`). It keeps its own
+  clone. `beta` is protected, so a changed refresh is a one-file commit
+  force-pushed to `chore/working-on-refresh`; `scripts/working_on_publish.py`
+  opens or updates that PR for Shane's manual review and merge after the
+  required Validate Portfolio checks pass. It clears any automatic merge
+  queued by an older publisher; passing checks never merges a refresh.
+  Shane's merge triggers the normal beta deploy. An unmerged refresh stays
+  open and may be replaced the next night. The PR identifies its current
+  review commit. The installed timer and its cadence are unchanged.
+- `src/lib/workingOn.ts` validates the file at build time, so a malformed
+  refresh fails CI instead of shipping.
+
 ## Build Output
 
 `npm run build` writes the static site to `dist/`.
